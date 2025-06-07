@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     observer.observe(el);
   });
 
+  // ダークモード切替
   const checkbox = document.getElementById("theme-toggle");
   const userTheme = localStorage.getItem("theme");
   const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
