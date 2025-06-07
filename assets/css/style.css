@@ -13,14 +13,16 @@ body {
   color: #eee;
 }
 
+
 .logo {
   font-family: 'Outfit', sans-serif;
   font-weight: 200;
-  font-size: 2.75rem;
-  letter-spacing: 0.35em;
+  font-size: 3.2rem;
+  letter-spacing: 0.42em;
   text-transform: uppercase;
   text-align: center;
-  margin: 2.5rem 0 1.5rem;
+  margin: 3rem 0 2rem;
+  line-height: 1.1;
 }
 .nav {
   display: flex;
