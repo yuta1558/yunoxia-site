@@ -13,7 +13,7 @@ document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 if (prefersDark) document.documentElement.classList.add('dark');
 
-document.getElementById('toggle-dark')?.addEventListener('click', () => {
+document.getElementById('theme-toggle')?.addEventListener('click', () => {
   document.documentElement.classList.toggle('dark');
 });
 
