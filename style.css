@@ -44,3 +44,22 @@ footer {
   font-size: 0.8rem;
   color: #888;
 }
+
+/* レスポンシブ対応 */
+@media screen and (max-width: 600px) {
+  body {
+    padding: 1em;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .kana {
+    font-size: 0.9rem;
+  }
+
+  footer {
+    font-size: 0.7rem;
+  }
+}
