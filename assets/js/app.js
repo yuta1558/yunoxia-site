@@ -14,15 +14,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setTimeout(() => {
           container.innerHTML = newContent;
+
+          // アニメーションの再適用はここで行う
+          reinitScripts();
+
           container.classList.add("fade-in");
           container.style.opacity = 1;
 
           if (addToHistory) {
             window.history.pushState(null, "", url);
           }
-
-          // 再度Observer・トグル・アニメーション再適用
-          reinitScripts();
         }, 200);
       });
   }
