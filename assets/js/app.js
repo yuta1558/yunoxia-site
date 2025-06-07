@@ -52,25 +52,30 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const loadContent = async (url, addToHistory = true) => {
-    const res = await fetch(url);
-    const html = await res.text();
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    const newContent = doc.querySelector("main").innerHTML;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch");
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const newContent = doc.querySelector("main").innerHTML;
 
-    container.classList.remove("fade-in");
-    container.style.opacity = 0;
+      container.classList.remove("fade-in");
+      container.style.opacity = 0;
 
-    setTimeout(() => {
-      container.innerHTML = newContent;
-      reinitScripts();
+      setTimeout(() => {
+        container.innerHTML = newContent;
+        reinitScripts();
 
-      container.classList.add("fade-in");
-      container.style.opacity = 1;
+        container.classList.add("fade-in");
+        container.style.opacity = 1;
 
-      if (addToHistory) {
-        window.history.pushState(null, "", url);
-      }
-    }, 200);
+        if (addToHistory) {
+          window.history.pushState(null, "", url);
+        }
+      }, 200);
+    } catch (err) {
+      window.location.href = url;
+    }
   };
 
   const initLinks = () => {
