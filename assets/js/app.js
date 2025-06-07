@@ -3,20 +3,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function loadContent(url, addToHistory = true) {
     fetch(url)
-      .then(res => res.text())
+      .then(res => {
+        if (!res.ok) throw new Error("fetch failed");
+        return res.text();
+      })
       .then(html => {
         const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newContent = doc.querySelector("main").innerHTML;
+        const doc = parser.parseFromString(html, "text/html");
+        const newMain = doc.querySelector("main");
+        if (!newMain) {
+          window.location.href = url;
+          return;
+        }
+        const newContent = newMain.innerHTML;
 
         container.classList.remove("fade-in");
         container.style.opacity = 0;
 
         setTimeout(() => {
           container.innerHTML = newContent;
+          document.title = doc.title;
 
           // アニメーションの再適用はここで行う
           reinitScripts();
+          initLinks();
 
           container.classList.add("fade-in");
           container.style.opacity = 1;
@@ -25,6 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
             window.history.pushState(null, "", url);
           }
         }, 200);
+      })
+      .catch(() => {
+        window.location.href = url;
       });
   }
 
