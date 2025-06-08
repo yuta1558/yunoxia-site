@@ -1,19 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
-  document.documentElement.classList.remove("no-js");
+  const root = document.documentElement;
+  root.classList.remove("no-js");
   const container = document.querySelector("main");
+  let observer;
 
   const themeToggleHandler = (e) => {
     const dark = e.target.checked;
-    document.documentElement.classList.toggle("dark", dark);
+    root.classList.toggle("dark", dark);
     localStorage.setItem("theme", dark ? "dark" : "light");
   };
 
   const initTheme = () => {
     const checkbox = document.getElementById("theme-toggle");
-    const user = localStorage.getItem("theme");
-    const system = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const dark = user ? user === "dark" : system;
-    document.documentElement.classList.toggle("dark", dark);
+    const stored = localStorage.getItem("theme");
+    const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const dark = stored ? stored === "dark" : prefers;
+    root.classList.toggle("dark", dark);
     if (checkbox) {
       checkbox.checked = dark;
       checkbox.addEventListener("change", themeToggleHandler);
@@ -21,17 +23,20 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const initObserver = () => {
-    const observer = new IntersectionObserver((entries) => {
+    if (observer) observer.disconnect();
+    observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) entry.target.classList.add("visible");
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          observer.unobserve(entry.target);
+        }
       });
     });
-    document.querySelectorAll(".fade-in").forEach((el) => observer.observe(el));
+    container.querySelectorAll(".fade-in").forEach((el) => observer.observe(el));
   };
 
-  const animate = () => {
+  const animateNav = () => {
     if (typeof gsap === "undefined") return;
-    gsap.from("main", { duration: 0.8, y: 30, opacity: 0, ease: "power2.out" });
     gsap.from("nav a", {
       duration: 0.5,
       y: -10,
@@ -42,9 +47,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  const animateMain = () => {
+    if (typeof gsap === "undefined") return;
+    gsap.from(container, { duration: 0.8, y: 30, opacity: 0, ease: "power2.out" });
+  };
+
   const reinitScripts = () => {
     initObserver();
-    animate();
+    animateMain();
     const checkbox = document.getElementById("theme-toggle");
     if (checkbox) {
       checkbox.removeEventListener("change", themeToggleHandler);
@@ -52,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const loadContent = async (url, addToHistory = true) => {
+  const loadContent = async (url, push = true) => {
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch");
@@ -60,21 +70,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const doc = new DOMParser().parseFromString(html, "text/html");
       const newContent = doc.querySelector("main").innerHTML;
 
-      container.classList.remove("fade-in");
-      container.style.opacity = 0;
+      container.innerHTML = newContent;
+      if (push) window.history.pushState(null, "", url);
 
-      setTimeout(() => {
-        container.innerHTML = newContent;
-        reinitScripts();
-
-        container.classList.add("fade-in");
-        container.style.opacity = 1;
-
-        if (addToHistory) {
-          window.history.pushState(null, "", url);
-        }
-      }, 200);
-    } catch (err) {
+      reinitScripts();
+      initLinks();
+    } catch {
       window.location.href = url;
     }
   };
@@ -93,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("popstate", () => loadContent(location.href, false));
 
   initTheme();
-  initObserver();
-  animate();
+  animateNav();
+  reinitScripts();
   initLinks();
 });
