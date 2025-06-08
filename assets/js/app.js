@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  document.documentElement.classList.remove("no-js");
   const container = document.querySelector("main");
 
   const themeToggleHandler = (e) => {

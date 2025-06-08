@@ -123,6 +123,11 @@ body {
   background-color: #ccc;
 }
 
+.no-js .fade-in {
+  opacity: 1;
+  transform: none;
+}
+
 .fade-in {
   opacity: 0;
   transform: translateY(10px);
