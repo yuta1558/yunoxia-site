@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   root.classList.remove("no-js");
   const container = document.querySelector("main");
   let observer;
+  let linkHandler;
 
   const themeToggleHandler = (e) => {
     const dark = e.target.checked;
@@ -81,14 +82,14 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const initLinks = () => {
-    document
-      .querySelectorAll("a:not([target]):not([href^='#'])")
-      .forEach((link) => {
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-          loadContent(link.href);
-        });
-      });
+    if (linkHandler) document.removeEventListener("click", linkHandler);
+    linkHandler = (e) => {
+      const link = e.target.closest("a:not([target]):not([href^='#'])");
+      if (!link) return;
+      e.preventDefault();
+      loadContent(link.href);
+    };
+    document.addEventListener("click", linkHandler);
   };
 
   window.addEventListener("popstate", () => loadContent(location.href, false));
