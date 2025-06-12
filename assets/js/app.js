@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let observer;
   let linkHandler;
 
-
   const themeToggleHandler = (e) => {
     const dark = e.target.checked;
     root.classList.toggle("dark", dark);
