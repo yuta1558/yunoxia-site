@@ -36,6 +36,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const initObserver = () => {
     if (observer) observer.disconnect();
+    if (!("IntersectionObserver" in window)) {
+      container
+        .querySelectorAll(".fade-in")
+        .forEach((el) => el.classList.add("visible"));
+      return;
+    }
     observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
