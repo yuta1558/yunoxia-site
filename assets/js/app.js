@@ -107,6 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const newContent = doc.querySelector("main").innerHTML;
 
       container.innerHTML = newContent;
+      document.title = doc.title;
+      window.scrollTo({ top: 0, left: 0 });
       if (push) window.history.pushState(null, "", url);
 
       reinitScripts();
