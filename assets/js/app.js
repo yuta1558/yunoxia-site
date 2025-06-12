@@ -82,9 +82,15 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const reinitScripts = () => {
+    if (typeof ScrollTrigger !== "undefined") {
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    }
     initObserver();
     animateMain();
     animateSections();
+    if (typeof ScrollTrigger !== "undefined") {
+      ScrollTrigger.refresh();
+    }
     const checkbox = document.getElementById("theme-toggle");
     if (checkbox) {
       checkbox.removeEventListener("change", themeToggleHandler);
