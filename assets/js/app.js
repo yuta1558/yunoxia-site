@@ -1,13 +1,30 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const root = document.documentElement;
   root.classList.remove("no-js");
-  const container = document.querySelector("main");
+  let container;
   let observer;
   let linkHandler;
+
+  const loadPartials = async () => {
+    const includes = document.querySelectorAll("[data-include]");
+    for (const el of includes) {
+      try {
+        const res = await fetch(el.getAttribute("data-include"));
+        if (res.ok) {
+          el.outerHTML = await res.text();
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  };
 
   if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
   }
+
+  await loadPartials();
+  container = document.querySelector("main");
 
   const themeToggleHandler = (e) => {
     const dark = e.target.checked;
