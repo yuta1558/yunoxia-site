@@ -19,9 +19,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
-  if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
-    gsap.registerPlugin(ScrollTrigger);
-  }
 
   await loadPartials();
   container = document.querySelector("main");
@@ -81,33 +78,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     gsap.from(container, { duration: 0.8, y: 30, opacity: 0, ease: "power2.out" });
   };
 
-  const animateSections = () => {
-    if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
-    document.querySelectorAll("section.page").forEach((section) => {
-      gsap.from(section, {
-        opacity: 0,
-        y: 50,
-        duration: 1,
-        scrollTrigger: {
-          trigger: section,
-          start: "top 80%",
-          end: "bottom 20%",
-          scrub: true,
-        },
-      });
-    });
-  };
 
   const reinitScripts = () => {
-    if (typeof ScrollTrigger !== "undefined") {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    }
     initObserver();
     animateMain();
-    animateSections();
-    if (typeof ScrollTrigger !== "undefined") {
-      ScrollTrigger.refresh();
-    }
     const checkbox = document.getElementById("theme-toggle");
     if (checkbox) {
       checkbox.removeEventListener("change", themeToggleHandler);
