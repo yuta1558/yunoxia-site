@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   let container;
   let observer;
   let linkHandler;
+  // Enable verbose logging by setting `localStorage.debug` to "true"
+  const debug = localStorage.getItem("debug") === "true";
 
   const loadPartials = async () => {
     const includes = document.querySelectorAll("[data-include]");
@@ -102,7 +104,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       reinitScripts();
       initLinks();
-    } catch {
+    } catch (err) {
+      if (debug) console.error("loadContent fetch failed", err);
       window.location.href = url;
     }
   };
