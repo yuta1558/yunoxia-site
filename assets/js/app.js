@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const DEBUG =
+    location.hostname === "localhost" ||
+    location.search.includes("debug=true");
   const root = document.documentElement;
   root.classList.remove("no-js");
   const container = document.querySelector("main");
@@ -113,7 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       reinitScripts();
       initLinks();
-    } catch {
+    } catch (err) {
+      if (DEBUG) console.error(err);
       window.location.href = url;
     }
   };
