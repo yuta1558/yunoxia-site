@@ -105,6 +105,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const loadContent = async (url, push = true) => {
+    if (!("fetch" in window)) {
+      window.location.href = url;
+      return;
+    }
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch");
@@ -125,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const initLinks = () => {
+    if (!("fetch" in window)) return;
     if (linkHandler) document.removeEventListener("click", linkHandler);
     linkHandler = (e) => {
       const link = e.target.closest("a:not([target]):not([href^='#'])");
