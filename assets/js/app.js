@@ -50,6 +50,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const initObserver = () => {
     if (observer) observer.disconnect();
+    if (!("IntersectionObserver" in window)) {
+      container
+        .querySelectorAll(".fade-in")
+        .forEach((el) => el.classList.add("visible"));
+      return;
+    }
     observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -90,6 +96,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const loadContent = async (url, push = true) => {
+    if (!("fetch" in window)) {
+      window.location.href = url;
+      return;
+    }
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch");
@@ -108,6 +118,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const initLinks = () => {
+    if (!("fetch" in window)) return;
     if (linkHandler) document.removeEventListener("click", linkHandler);
     linkHandler = (e) => {
       const link = e.target.closest("a:not([target]):not([href^='#'])");
