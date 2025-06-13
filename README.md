@@ -21,3 +21,19 @@ Because it is entirely static, the site can be deployed to any static hosting pr
 - A dark‑mode toggle (`theme-switch` element) remembers the user's preference and respects the system color scheme.
 - PJAX navigation in `assets/js/app.js` fetches page fragments and updates the history so navigation feels instant without full page reloads.
 
+## Running tests
+
+Install development dependencies:
+
+```bash
+npm install
+```
+
+Then execute:
+
+```bash
+npm test
+```
+
+The command launches a headless browser using Puppeteer and runs the Mocha/Chai suite defined in `tests/`.
+
