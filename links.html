@@ -10,34 +10,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Outfit:wght@200;400;700&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <label class="theme-switch">
-    <input type="checkbox" id="theme-toggle" />
-    <span class="slider">
-      <span class="icon sun"></span>
-      <span class="icon moon"></span>
-    </span>
-  </label>
-  <h1 class="logo">Yunoxia</h1>
-  <header>
-    <nav>
-      <ul class="nav">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="works.html">Works</a></li>
-        <li><a href="log.html">Log</a></li>
-        <li><a href="links.html">Links</a></li>
-      </ul>
-    </nav>
-  </header>
+  <header data-include="partials/header.html"></header>
   <main id="pjax-container">
     <section class="page fade-in">
       <h2>Links</h2>
       <p>外部リンク集</p>
     </section>
   </main>
-  <footer>
-    <p class="credit">© 2025 ゆー / yunoxia.one</p>
-  </footer>
+  <footer data-include="partials/footer.html"></footer>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
   <script src="assets/js/app.js" defer></script>
