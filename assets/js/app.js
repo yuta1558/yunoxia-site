@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.querySelector("main");
   let observer;
   let linkHandler;
+  // Enable verbose logging by setting `localStorage.debug` to "true"
+  const debug = localStorage.getItem("debug") === "true";
 
   if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
@@ -113,7 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       reinitScripts();
       initLinks();
-    } catch {
+    } catch (err) {
+      if (debug) console.error("loadContent fetch failed", err);
       window.location.href = url;
     }
   };
