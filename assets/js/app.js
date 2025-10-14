@@ -151,28 +151,44 @@ document.addEventListener("DOMContentLoaded", async () => {
   setActiveNav(location.href);
   initCardTilt();
 
-  const themeToggleHandler = (e) => {
-    const dark = e.target.checked;
-    root.classList.toggle("dark", dark);
-    localStorage.setItem("theme", dark ? "dark" : "light");
-    if (typeof gsap !== "undefined") {
-      gsap.to("body", {
-        backgroundColor: dark ? "#121212" : "#ffffff",
-        color: dark ? "#ffffff" : "#000000",
-        duration: 0.5,
-      });
+  const applyTheme = (theme, persist = false) => {
+    const resolved = theme === "dark" ? "dark" : "light";
+    root.setAttribute("data-theme", resolved);
+    if (persist) {
+      localStorage.setItem("theme", resolved);
     }
   };
 
-  const initTheme = () => {
+  const themeToggleHandler = (event) => {
+    const nextTheme = event.target.checked ? "dark" : "light";
+    applyTheme(nextTheme, true);
+  };
+
+  const syncThemeToggle = () => {
     const checkbox = document.getElementById("theme-toggle");
+    if (!checkbox) return;
+    checkbox.checked = root.getAttribute("data-theme") === "dark";
+    checkbox.removeEventListener("change", themeToggleHandler);
+    checkbox.addEventListener("change", themeToggleHandler);
+  };
+
+  const initTheme = () => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
     const stored = localStorage.getItem("theme");
-    const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const dark = stored ? stored === "dark" : prefers;
-    root.classList.toggle("dark", dark);
-    if (checkbox) {
-      checkbox.checked = dark;
-      checkbox.addEventListener("change", themeToggleHandler);
+    const initial = stored || (media.matches ? "dark" : "light");
+    applyTheme(initial);
+    syncThemeToggle();
+
+    const handleSchemeChange = (event) => {
+      if (localStorage.getItem("theme")) return;
+      applyTheme(event.matches ? "dark" : "light");
+      syncThemeToggle();
+    };
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", handleSchemeChange);
+    } else if (typeof media.addListener === "function") {
+      media.addListener(handleSchemeChange);
     }
   };
 
@@ -212,11 +228,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     animateMain();
     initCardTilt();
     setActiveNav(location.href);
-    const checkbox = document.getElementById("theme-toggle");
-    if (checkbox) {
-      checkbox.removeEventListener("change", themeToggleHandler);
-      checkbox.addEventListener("change", themeToggleHandler);
-    }
+    syncThemeToggle();
   };
 
   const loadContent = async (url, push = true) => {
