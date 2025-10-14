@@ -254,6 +254,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const initLinks = () => {
     if (linkHandler) document.removeEventListener("click", linkHandler);
     linkHandler = (e) => {
+      if (!e.target.closest) return;
       const link = e.target.closest("a:not([target]):not([href^='#'])");
       if (!link) return;
       e.preventDefault();
