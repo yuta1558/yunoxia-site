@@ -1,9 +1,22 @@
 <!DOCTYPE html>
-<html class="no-js" lang="ja">
+<html class="no-js" lang="ja" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home - yunoxia.one</title>
+  <script>
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let theme = prefersDark ? 'dark' : 'light';
+    try {
+      const storedTheme = localStorage.getItem('theme');
+      if (storedTheme) {
+        theme = storedTheme;
+      }
+    } catch (error) {
+      /* localStorage may be unavailable */
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+  </script>
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
