@@ -44,11 +44,13 @@ body {
   margin: 3rem 0 2rem;
   line-height: 1.1;
 }
-.nav {
+nav {
+  position: relative;
   display: flex;
   gap: 2rem;
   padding: 1rem;
   justify-content: center;
+  align-items: center;
 }
 .nav-link {
   text-decoration: none;
@@ -181,7 +183,6 @@ body {
 }
 
 /* 共有アンダーライン */
-nav { position: relative; }
 .nav-underline {
   position: absolute;
   left: 0; bottom: 0;
