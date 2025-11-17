@@ -56,6 +56,26 @@ a {
   border: 0;
 }
 
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: var(--accent);
+  color: white;
+  text-decoration: none;
+  border-radius: 0 0 8px 8px;
+  font-weight: 600;
+  box-shadow: var(--shadow-soft);
+  transition: top var(--transition-base);
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
 .logo {
   font-family: 'Outfit', sans-serif;
   font-weight: 200;
