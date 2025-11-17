@@ -429,6 +429,7 @@ const PJAX = {
    */
   async loadContent(url, pushState = true) {
     this.showProgress();
+    EnhancedPageTransition.show();
     Navigation.setActive(url);
 
     try {
@@ -447,6 +448,9 @@ const PJAX = {
         throw new Error('Main content container not found in response');
       }
 
+      // Delay for transition effect
+      await new Promise(resolve => setTimeout(resolve, 200));
+
       if (state.elements.container) {
         state.elements.container.innerHTML = newContent.innerHTML;
       }
@@ -455,10 +459,19 @@ const PJAX = {
         window.history.pushState(null, '', url);
       }
 
+      // Scroll to top
+      window.scrollTo(0, 0);
+
       // Reinitialize dynamic features
       this.reinitialize();
+
+      // Hide transition
+      setTimeout(() => {
+        EnhancedPageTransition.hide();
+      }, 100);
     } catch (error) {
       console.error('PJAX navigation failed:', error);
+      EnhancedPageTransition.hide();
       // Fallback to full page load
       window.location.href = url;
     }
@@ -473,6 +486,10 @@ const PJAX = {
     CardTilt.init();
     Navigation.setActive(location.href);
     Theme.syncToggle();
+    TextAnimation.init();
+    ParallaxEffect.update();
+    ScrollProgress.update();
+    ScrollToTop.update();
   },
 
   /**
@@ -746,6 +763,573 @@ const ServiceWorkerManager = {
 };
 
 // =============================================================================
+// Enhanced UX/UI Modules / 強化されたUX/UIモジュール
+// =============================================================================
+
+const CursorFollower = {
+  /**
+   * Initialize cursor follower effect
+   */
+  init() {
+    // Skip on touch devices
+    if (window.matchMedia('(hover: none)').matches) return;
+
+    const cursor = document.createElement('div');
+    cursor.className = 'cursor-follower';
+    document.body.appendChild(cursor);
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let cursorX = 0;
+    let cursorY = 0;
+    const speed = 0.15;
+
+    const moveCursor = () => {
+      const dx = mouseX - cursorX;
+      const dy = mouseY - cursorY;
+
+      cursorX += dx * speed;
+      cursorY += dy * speed;
+
+      cursor.style.left = `${cursorX}px`;
+      cursor.style.top = `${cursorY}px`;
+
+      requestAnimationFrame(moveCursor);
+    };
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursor.classList.add('active');
+    });
+
+    document.addEventListener('mousedown', () => {
+      cursor.classList.add('clicking');
+    });
+
+    document.addEventListener('mouseup', () => {
+      cursor.classList.remove('clicking');
+    });
+
+    document.addEventListener('mouseleave', () => {
+      cursor.classList.remove('active');
+    });
+
+    moveCursor();
+  },
+};
+
+const RippleEffect = {
+  /**
+   * Create ripple effect on click
+   * @param {MouseEvent} event
+   */
+  createRipple(event) {
+    const container = event.currentTarget;
+    const rect = container.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = event.clientX - rect.left - size / 2;
+    const y = event.clientY - rect.top - size / 2;
+
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    ripple.style.width = ripple.style.height = `${size}px`;
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+
+    container.appendChild(ripple);
+
+    ripple.addEventListener('animationend', () => {
+      ripple.remove();
+    });
+  },
+
+  /**
+   * Initialize ripple effect on elements
+   */
+  init() {
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('.ripple-container');
+      if (target) {
+        this.createRipple(e);
+      }
+    });
+  },
+};
+
+const ScrollProgress = {
+  /**
+   * Update scroll progress indicator
+   */
+  update() {
+    const indicator = query('.scroll-progress');
+    if (!indicator) return;
+
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const maxScroll = documentHeight - windowHeight;
+    const scrollPercent = (scrollTop / maxScroll) * 100;
+
+    indicator.style.transform = `scaleX(${scrollPercent / 100})`;
+  },
+
+  /**
+   * Initialize scroll progress indicator
+   */
+  init() {
+    const indicator = document.createElement('div');
+    indicator.className = 'scroll-progress';
+    document.body.appendChild(indicator);
+
+    const throttledUpdate = throttle(this.update.bind(this), 16);
+    window.addEventListener('scroll', throttledUpdate);
+    this.update();
+  },
+};
+
+const ParallaxEffect = {
+  /**
+   * Update parallax elements
+   */
+  update() {
+    const elements = queryAll('.parallax');
+    const scrollY = window.pageYOffset;
+
+    elements.forEach((el) => {
+      const speed = parseFloat(el.dataset.parallaxSpeed || '0.5');
+      const offset = scrollY * speed;
+      el.style.transform = `translateY(${offset}px)`;
+    });
+  },
+
+  /**
+   * Initialize parallax effect
+   */
+  init() {
+    const throttledUpdate = throttle(this.update.bind(this), 16);
+    window.addEventListener('scroll', throttledUpdate);
+    this.update();
+  },
+};
+
+const TextAnimation = {
+  /**
+   * Create typing effect
+   * @param {Element} element
+   */
+  typeText(element) {
+    const text = element.dataset.typeText || element.textContent;
+    element.textContent = '';
+    element.style.display = 'inline-block';
+
+    let index = 0;
+    const speed = parseInt(element.dataset.typeSpeed || '50');
+
+    const type = () => {
+      if (index < text.length) {
+        element.textContent += text.charAt(index);
+        index++;
+        setTimeout(type, speed);
+      } else {
+        element.style.borderRight = 'none';
+      }
+    };
+
+    type();
+  },
+
+  /**
+   * Fade in characters one by one
+   * @param {Element} element
+   */
+  fadeInChars(element) {
+    const text = element.textContent;
+    element.textContent = '';
+
+    Array.from(text).forEach((char, index) => {
+      const span = document.createElement('span');
+      span.className = 'text-fade-in-char';
+      span.textContent = char === ' ' ? '\u00A0' : char;
+      span.style.animationDelay = `${index * 0.05}s`;
+      element.appendChild(span);
+    });
+  },
+
+  /**
+   * Initialize text animations
+   */
+  init() {
+    queryAll('[data-text-animation="typing"]').forEach((el) => {
+      this.typeText(el);
+    });
+
+    queryAll('[data-text-animation="fade-chars"]').forEach((el) => {
+      this.fadeInChars(el);
+    });
+  },
+};
+
+const ToastNotification = {
+  container: null,
+
+  /**
+   * Create toast container
+   */
+  createContainer() {
+    if (!this.container) {
+      this.container = document.createElement('div');
+      this.container.className = 'toast-container';
+      this.container.setAttribute('role', 'status');
+      this.container.setAttribute('aria-live', 'polite');
+      document.body.appendChild(this.container);
+    }
+  },
+
+  /**
+   * Show toast notification
+   * @param {string} title
+   * @param {string} message
+   * @param {string} type - success, error, info, warning
+   * @param {number} duration
+   */
+  show(title, message = '', type = 'info', duration = 3000) {
+    this.createContainer();
+
+    const icons = {
+      success: '✓',
+      error: '✕',
+      info: 'ℹ',
+      warning: '⚠',
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon" aria-hidden="true">${icons[type]}</span>
+      <div class="toast-content">
+        <div class="toast-title">${title}</div>
+        ${message ? `<div class="toast-message">${message}</div>` : ''}
+      </div>
+    `;
+
+    this.container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('removing');
+      setTimeout(() => toast.remove(), 400);
+    }, duration);
+  },
+};
+
+const Tooltip = {
+  /**
+   * Show tooltip
+   * @param {Element} trigger
+   */
+  show(trigger) {
+    const text = trigger.dataset.tooltip;
+    if (!text) return;
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.textContent = text;
+    tooltip.setAttribute('role', 'tooltip');
+
+    trigger.appendChild(tooltip);
+
+    // Position tooltip
+    const rect = trigger.getBoundingClientRect();
+    tooltip.style.bottom = 'calc(100% + 0.5rem)';
+    tooltip.style.left = '50%';
+    tooltip.style.transform = 'translateX(-50%)';
+
+    requestAnimationFrame(() => {
+      tooltip.classList.add('visible');
+    });
+  },
+
+  /**
+   * Hide tooltip
+   * @param {Element} trigger
+   */
+  hide(trigger) {
+    const tooltip = trigger.querySelector('.tooltip');
+    if (tooltip) {
+      tooltip.classList.remove('visible');
+      setTimeout(() => tooltip.remove(), 200);
+    }
+  },
+
+  /**
+   * Initialize tooltip system
+   */
+  init() {
+    document.addEventListener('mouseenter', (e) => {
+      const trigger = e.target.closest('[data-tooltip]');
+      if (trigger) this.show(trigger);
+    }, true);
+
+    document.addEventListener('mouseleave', (e) => {
+      const trigger = e.target.closest('[data-tooltip]');
+      if (trigger) this.hide(trigger);
+    }, true);
+  },
+};
+
+const Lightbox = {
+  lightbox: null,
+
+  /**
+   * Open lightbox
+   * @param {string} src - Image source
+   */
+  open(src) {
+    if (!this.lightbox) {
+      this.lightbox = document.createElement('div');
+      this.lightbox.className = 'lightbox';
+      this.lightbox.innerHTML = `
+        <div class="lightbox-content">
+          <button class="lightbox-close" aria-label="Close lightbox">×</button>
+          <img class="lightbox-image" alt="Lightbox image" />
+        </div>
+      `;
+      document.body.appendChild(this.lightbox);
+
+      this.lightbox.addEventListener('click', (e) => {
+        if (e.target === this.lightbox || e.target.classList.contains('lightbox-close')) {
+          this.close();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this.lightbox.classList.contains('active')) {
+          this.close();
+        }
+      });
+    }
+
+    const img = this.lightbox.querySelector('.lightbox-image');
+    img.src = src;
+
+    requestAnimationFrame(() => {
+      this.lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+  },
+
+  /**
+   * Close lightbox
+   */
+  close() {
+    if (this.lightbox) {
+      this.lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  },
+
+  /**
+   * Initialize lightbox
+   */
+  init() {
+    document.addEventListener('click', (e) => {
+      const img = e.target.closest('img[data-lightbox]');
+      if (img) {
+        e.preventDefault();
+        this.open(img.src);
+      }
+    });
+  },
+};
+
+const SmoothScroll = {
+  /**
+   * Scroll to target
+   * @param {string} target - Selector or 'top'
+   */
+  scrollTo(target) {
+    if (target === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const element = query(target);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  },
+
+  /**
+   * Initialize smooth scroll
+   */
+  init() {
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="#"]');
+      if (link && link.hash) {
+        const target = link.hash;
+        if (target === '#' || target === '#top') {
+          e.preventDefault();
+          this.scrollTo('top');
+        } else {
+          const element = query(target);
+          if (element) {
+            e.preventDefault();
+            this.scrollTo(target);
+          }
+        }
+      }
+    });
+  },
+};
+
+const ScrollToTop = {
+  button: null,
+
+  /**
+   * Update button visibility
+   */
+  update() {
+    if (!this.button) return;
+
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (scrollTop > 300) {
+      this.button.classList.add('visible');
+    } else {
+      this.button.classList.remove('visible');
+    }
+  },
+
+  /**
+   * Initialize scroll to top button
+   */
+  init() {
+    this.button = document.createElement('button');
+    this.button.className = 'scroll-to-top';
+    this.button.innerHTML = '↑';
+    this.button.setAttribute('aria-label', 'Scroll to top');
+    document.body.appendChild(this.button);
+
+    this.button.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    const throttledUpdate = throttle(this.update.bind(this), 100);
+    window.addEventListener('scroll', throttledUpdate);
+    this.update();
+  },
+};
+
+const GradientMesh = {
+  /**
+   * Initialize animated gradient mesh background
+   */
+  init() {
+    const mesh = document.createElement('div');
+    mesh.className = 'gradient-mesh';
+    mesh.setAttribute('aria-hidden', 'true');
+    document.body.insertBefore(mesh, document.body.firstChild);
+  },
+};
+
+const CopyToClipboard = {
+  /**
+   * Copy text to clipboard
+   * @param {string} text
+   * @param {Element} button
+   */
+  async copy(text, button) {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.showFeedback(button, 'Copied!');
+      ToastNotification.show('Copied to clipboard', text, 'success', 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      ToastNotification.show('Copy failed', 'Please try again', 'error', 2000);
+    }
+  },
+
+  /**
+   * Show copy feedback
+   * @param {Element} button
+   * @param {string} message
+   */
+  showFeedback(button, message) {
+    let feedback = button.querySelector('.copy-feedback');
+
+    if (!feedback) {
+      feedback = document.createElement('span');
+      feedback.className = 'copy-feedback';
+      button.appendChild(feedback);
+    }
+
+    feedback.textContent = message;
+    feedback.classList.add('visible');
+
+    setTimeout(() => {
+      feedback.classList.remove('visible');
+    }, 2000);
+  },
+
+  /**
+   * Initialize copy to clipboard
+   */
+  init() {
+    document.addEventListener('click', (e) => {
+      const button = e.target.closest('[data-copy]');
+      if (button) {
+        const text = button.dataset.copy;
+        this.copy(text, button);
+      }
+    });
+  },
+};
+
+const EnhancedPageTransition = {
+  overlay: null,
+  spinner: null,
+
+  /**
+   * Create transition elements
+   */
+  createElements() {
+    if (!this.overlay) {
+      this.overlay = document.createElement('div');
+      this.overlay.className = 'page-transition';
+      document.body.appendChild(this.overlay);
+    }
+
+    if (!this.spinner) {
+      this.spinner = document.createElement('div');
+      this.spinner.className = 'loading-spinner';
+      document.body.appendChild(this.spinner);
+    }
+  },
+
+  /**
+   * Show transition
+   */
+  show() {
+    this.createElements();
+    requestAnimationFrame(() => {
+      this.overlay.classList.add('active');
+      this.spinner.classList.add('active');
+    });
+  },
+
+  /**
+   * Hide transition
+   */
+  hide() {
+    if (this.overlay) {
+      this.overlay.classList.remove('active');
+    }
+    if (this.spinner) {
+      this.spinner.classList.remove('active');
+    }
+  },
+};
+
+// =============================================================================
 // Application Initialization / アプリケーション初期化
 // =============================================================================
 
@@ -765,7 +1349,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   state.elements.container = query(CONFIG.SELECTORS.CONTAINER);
   state.elements.progressBar = query(CONFIG.SELECTORS.ROUTE_PROGRESS);
 
-  // Initialize all modules
+  // Initialize core modules
   Navigation.init();
   Navigation.setActive(location.href);
   Theme.init();
@@ -773,6 +1357,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   Animation.initObserver();
   Animation.animateNav();
   PJAX.init();
+
+  // Initialize enhanced UX/UI modules
+  CursorFollower.init();
+  RippleEffect.init();
+  ScrollProgress.init();
+  ParallaxEffect.init();
+  TextAnimation.init();
+  Tooltip.init();
+  Lightbox.init();
+  SmoothScroll.init();
+  ScrollToTop.init();
+  GradientMesh.init();
+  CopyToClipboard.init();
 
   // Register Service Worker for PWA
   ServiceWorkerManager.register();
