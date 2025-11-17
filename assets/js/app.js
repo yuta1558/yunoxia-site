@@ -690,6 +690,62 @@ const Partials = {
 };
 
 // =============================================================================
+// Service Worker / サービスワーカー (PWA)
+// =============================================================================
+
+const ServiceWorkerManager = {
+  /**
+   * Register Service Worker for PWA capabilities
+   */
+  async register() {
+    // Check if Service Worker is supported
+    if (!('serviceWorker' in navigator)) {
+      console.info('Service Worker not supported in this browser');
+      return;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+      });
+
+      console.log('[PWA] Service Worker registered successfully:', registration.scope);
+
+      // Handle updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('[PWA] New content available, please refresh');
+            // Optionally: Show update notification to user
+          }
+        });
+      });
+    } catch (error) {
+      console.warn('[PWA] Service Worker registration failed:', error);
+    }
+  },
+
+  /**
+   * Unregister Service Worker (for debugging)
+   */
+  async unregister() {
+    if (!('serviceWorker' in navigator)) return;
+
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+        console.log('[PWA] Service Worker unregistered');
+      }
+    } catch (error) {
+      console.warn('[PWA] Failed to unregister Service Worker:', error);
+    }
+  },
+};
+
+// =============================================================================
 // Application Initialization / アプリケーション初期化
 // =============================================================================
 
@@ -717,4 +773,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   Animation.initObserver();
   Animation.animateNav();
   PJAX.init();
+
+  // Register Service Worker for PWA
+  ServiceWorkerManager.register();
 });

@@ -1,0 +1,8 @@
+# Cloudflare Pages / Netlify redirects configuration
+# https://developers.cloudflare.com/pages/platform/redirects/
+
+# Redirect /index.html to /
+/index.html  /  301
+
+# SPA fallback (optional - use with caution)
+# /* /index.html 200

@@ -1,0 +1,23 @@
+{
+  "name": "yunoxia.one - ゆーのくしあの個人サイト",
+  "short_name": "yunoxia.one",
+  "description": "yunoxia.oneは、コード、音、言葉、映像が交差する、ゆーのくしあ（yunoxia）の個人サイトです。作品と思想の動的記憶の場所。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fc",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "lang": "ja",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["portfolio", "creative", "personal"],
+  "screenshots": []
+}
