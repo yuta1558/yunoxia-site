@@ -1,9 +1,43 @@
 <!DOCTYPE html>
 <html class="no-js" lang="ja" data-theme="light">
 <head>
+  <!-- Character Encoding & Viewport -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary Meta Tags -->
   <title>Home - yunoxia.one</title>
+  <meta name="title" content="yunoxia.one - ゆーのくしあの個人サイト" />
+  <meta name="description" content="yunoxia.oneは、コード、音、言葉、映像が交差する、ゆーのくしあ（yunoxia）の個人サイトです。作品と思想の動的記憶の場所。" />
+  <meta name="keywords" content="yunoxia, ゆーのくしあ, ポートフォリオ, クリエイティブ, プログラミング, アート" />
+  <meta name="author" content="yunoxia" />
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://yunoxia.one/" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://yunoxia.one/" />
+  <meta property="og:title" content="yunoxia.one - ゆーのくしあの個人サイト" />
+  <meta property="og:description" content="yunoxia.oneは、コード、音、言葉、映像が交差する、ゆーのくしあ（yunoxia）の個人サイトです。" />
+  <meta property="og:image" content="https://yunoxia.one/assets/ogp.png" />
+  <meta property="og:locale" content="ja_JP" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://yunoxia.one/" />
+  <meta name="twitter:title" content="yunoxia.one - ゆーのくしあの個人サイト" />
+  <meta name="twitter:description" content="yunoxia.oneは、コード、音、言葉、映像が交差する、ゆーのくしあ（yunoxia）の個人サイトです。" />
+  <meta name="twitter:image" content="https://yunoxia.one/assets/ogp.png" />
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#6366f1" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#8b95ff" media="(prefers-color-scheme: dark)" />
+
+  <!-- FOUC Prevention Script -->
   <script>
     (function () {
       try {
@@ -16,20 +50,31 @@
       }
     })();
   </script>
+
+  <!-- Stylesheet -->
   <link rel="stylesheet" href="assets/css/style.css" />
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Outfit:wght@200;400;700&display=swap" rel="stylesheet" />
 </head>
 <body>
+  <!-- Header (loaded via partial) -->
   <header data-include="partials/header.html"></header>
-  <main id="pjax-container">
+
+  <!-- Main Content -->
+  <main id="pjax-container" role="main">
     <section class="page fade-in">
       <h2>Home</h2>
       <p>Welcome to yunoxia.one</p>
     </section>
   </main>
+
+  <!-- Footer (loaded via partial) -->
   <footer data-include="partials/footer.html"></footer>
+
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
   <script src="assets/js/app.js" defer></script>
 </body>
