@@ -1,0 +1,70 @@
+# Netlify configuration for yunoxia.one
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # No build command needed - static site
+  publish = "."
+  command = "echo 'No build step required'"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Redirect rules
+[[redirects]]
+  # Redirect /index.html to /
+  from = "/index.html"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  # SPA fallback - redirect all 404s to index.html for PJAX
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+
+# Headers for performance and security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Security headers
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+
+    # Content Security Policy (adjust as needed)
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    # Cache static assets for 1 year
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    # Don't cache HTML files
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    # Don't cache service worker
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Plugin configuration (optional)
+# [[plugins]]
+#   package = "@netlify/plugin-lighthouse"
+
+# Context-specific settings
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+[context.deploy-preview]
+  environment = { NODE_ENV = "staging" }
+
+[context.branch-deploy]
+  environment = { NODE_ENV = "development" }
