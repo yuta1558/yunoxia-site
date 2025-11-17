@@ -690,6 +690,65 @@ const Partials = {
 };
 
 // =============================================================================
+// Service Worker Registration / Service Worker 登録
+// =============================================================================
+
+const ServiceWorkerManager = {
+  /**
+   * Register service worker
+   */
+  async register() {
+    // Check if service workers are supported
+    if (!('serviceWorker' in navigator)) {
+      console.log('[App] Service Workers not supported');
+      return;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+      });
+
+      console.log('[App] Service Worker registered:', registration.scope);
+
+      // Handle updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('[App] New Service Worker available');
+            // Optionally notify user about update
+            // You could show a notification here
+          }
+        });
+      });
+    } catch (error) {
+      console.error('[App] Service Worker registration failed:', error);
+    }
+  },
+
+  /**
+   * Unregister service worker (for development/debugging)
+   */
+  async unregister() {
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
+
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+        console.log('[App] Service Worker unregistered');
+      }
+    } catch (error) {
+      console.error('[App] Service Worker unregistration failed:', error);
+    }
+  },
+};
+
+// =============================================================================
 // Application Initialization / アプリケーション初期化
 // =============================================================================
 
@@ -717,4 +776,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   Animation.initObserver();
   Animation.animateNav();
   PJAX.init();
+
+  // Register Service Worker (after initial render)
+  ServiceWorkerManager.register();
 });

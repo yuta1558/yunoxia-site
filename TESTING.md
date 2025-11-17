@@ -303,12 +303,80 @@ Areas for improvement:
 - ⬜ Navigation underline position calculation
 - ⬜ E2E user journey tests
 
+## Manual Testing Checklist
+
+For environments without automated testing infrastructure, use this comprehensive manual testing checklist:
+
+### Quick Smoke Test (< 5 minutes)
+
+- [ ] All pages load without errors
+- [ ] Navigation works (click all links)
+- [ ] Theme toggle switches between light/dark
+- [ ] No console errors
+- [ ] Mobile view looks correct
+
+### Full Manual Test Suite (< 30 minutes)
+
+#### Navigation & PJAX
+- [ ] All navigation links work
+- [ ] Browser back/forward buttons work
+- [ ] Active link highlights correctly
+- [ ] Route progress bar animates
+- [ ] Underline follows hover and returns to active
+
+#### Theme System
+- [ ] Toggle switches themes
+- [ ] Theme persists after reload
+- [ ] System preference respected on first visit
+- [ ] No FOUC (flash of unstyled content)
+- [ ] All colors update correctly
+
+#### Accessibility
+- [ ] Tab through all interactive elements
+- [ ] Enter key activates links
+- [ ] Skip link appears on Tab
+- [ ] Focus states visible
+- [ ] Color contrast sufficient (use browser DevTools)
+
+#### Responsive Design
+- [ ] Desktop (> 1440px): Max width constraint works
+- [ ] Tablet (768px): Layout adjusts properly
+- [ ] Mobile (480px): No horizontal scroll, readable text
+- [ ] Test on real iOS/Android device if possible
+
+#### Performance
+- [ ] Page loads in < 3 seconds (Network tab)
+- [ ] Animations are smooth (60fps)
+- [ ] Run Lighthouse (target 90+ in all categories)
+
+#### Service Worker (if implemented)
+- [ ] SW registers successfully (Console)
+- [ ] Offline mode works (DevTools → Application → Offline)
+- [ ] Cache updates on version change
+
+### Browser Testing Matrix
+
+| Browser | Desktop | Mobile | Status |
+|---------|---------|--------|--------|
+| Chrome | ✓ | ✓ | |
+| Firefox | ✓ | - | |
+| Safari | ✓ | ✓ | |
+| Edge | ✓ | - | |
+
+### Tools for Manual Testing
+
+- **Lighthouse**: Chrome DevTools → Lighthouse
+- **Accessibility**: [WAVE](https://wave.webaim.org/) browser extension
+- **Contrast**: Chrome DevTools → Color Picker → Contrast Ratio
+- **Mobile**: Chrome DevTools → Device Toolbar (Cmd+Shift+M)
+
 ## Resources
 
 - [uvu Documentation](https://github.com/lukeed/uvu)
 - [Playwright Documentation](https://playwright.dev/docs/intro)
 - [axe-core Rules](https://github.com/dequelabs/axe-core/blob/develop/doc/rule-descriptions.md)
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [Web Vitals](https://web.dev/vitals/)
 
 ## Questions?
 

@@ -1,0 +1,15 @@
+# robots.txt for yunoxia.one
+# This file tells search engine crawlers which pages to crawl and which to ignore
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://yunoxia.one/sitemap.xml
+
+# Crawl-delay (optional, adjust as needed)
+# Crawl-delay: 1
+
+# Disallow specific directories if needed
+# Disallow: /private/
+# Disallow: /temp/
