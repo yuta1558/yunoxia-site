@@ -1,0 +1,26 @@
+{
+  "name": "yunoxia-site",
+  "version": "1.0.0",
+  "description": "Lightweight personal website - yunoxia.one",
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "uvu tests/unit",
+    "test:integration": "playwright test",
+    "test:a11y": "node tests/accessibility/a11y-audit.js",
+    "test:watch": "uvu tests/unit --watch",
+    "serve": "python3 -m http.server 8000"
+  },
+  "keywords": ["personal-site", "vanilla-js", "pjax", "dark-mode"],
+  "author": "yuta1558",
+  "license": "MIT",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "^1.48.0",
+    "jsdom": "^25.0.1",
+    "uvu": "^0.5.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
