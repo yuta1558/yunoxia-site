@@ -21,3 +21,22 @@ Because it is entirely static, the site can be deployed to any static hosting pr
 - A dark‑mode toggle (`theme-switch` element) remembers the user's preference and respects the system color scheme.
 - PJAX navigation in `assets/js/app.js` fetches page fragments and updates the history so navigation feels instant without full page reloads.
 
+## Testing
+
+The project includes a comprehensive test suite covering unit tests, integration tests, and accessibility validation. Tests are **optional** and not required for production deployment.
+
+```bash
+# Install dependencies (dev only)
+npm install
+
+# Run all tests
+npm test
+
+# Run specific test suites
+npm run test:unit          # Unit tests
+npm run test:integration   # Browser-based E2E tests
+npm run test:a11y          # Accessibility audit
+```
+
+For detailed testing documentation, see [TESTING.md](TESTING.md).
+
