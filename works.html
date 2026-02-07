@@ -1,27 +1,19 @@
 <!DOCTYPE html>
 <html class="no-js" lang="ja" data-theme="light">
 <head>
-  <!-- Character Encoding & Viewport -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Primary Meta Tags -->
   <title>Works - yunoxia.one</title>
   <meta name="title" content="Works - yunoxia.one" />
   <meta name="description" content="yunoxiaの制作物の紹介。コード、音、言葉、映像、機構などの作品と痕跡。" />
   <meta name="keywords" content="yunoxia, 作品, ポートフォリオ, works, プロジェクト" />
   <meta name="author" content="yunoxia" />
 
-  <!-- Canonical URL -->
   <link rel="canonical" href="https://yunoxia.one/works.html" />
-
-  <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
-
-  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
 
-  <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://yunoxia.one/works.html" />
   <meta property="og:title" content="Works - yunoxia.one" />
@@ -29,18 +21,15 @@
   <meta property="og:image" content="https://yunoxia.one/assets/ogp.png" />
   <meta property="og:locale" content="ja_JP" />
 
-  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://yunoxia.one/works.html" />
   <meta name="twitter:title" content="Works - yunoxia.one" />
   <meta name="twitter:description" content="yunoxiaの制作物の紹介。コード、音、言葉、映像、機構などの作品と痕跡。" />
   <meta name="twitter:image" content="https://yunoxia.one/assets/ogp.png" />
 
-  <!-- Theme Color -->
-  <meta name="theme-color" content="#6366f1" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#8b95ff" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#8b7ec8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#a599d4" media="(prefers-color-scheme: dark)" />
 
-  <!-- FOUC Prevention Script -->
   <script>
     (function () {
       try {
@@ -54,38 +43,31 @@
     })();
   </script>
 
-  <!-- Stylesheet -->
   <link rel="stylesheet" href="assets/css/style.css" />
-
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Outfit:wght@200;400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <!-- Header (loaded via partial) -->
   <header data-include="partials/header.html"></header>
 
-  <!-- Main Content -->
   <main id="pjax-container" role="main">
     <section class="page fade-in">
       <h2 class="text-gradient">Works</h2>
       <p>制作物の紹介 — コード、音、言葉、映像、機構</p>
 
-      <div style="margin-top: 3rem; text-align: center; padding: 4rem 2rem;">
-        <div style="font-size: 4rem; margin-bottom: 2rem;">🚧</div>
-        <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary);">準備中</h3>
-        <p style="color: var(--muted); font-size: 1rem;">
+      <div style="margin-top: 4rem; text-align: center; padding: 4rem 2rem;">
+        <div style="font-size: 2rem; margin-bottom: 1.5rem; opacity: 0.4;">⊘</div>
+        <h3 style="font-size: 1.125rem; font-weight: 400; margin-bottom: 0.75rem; color: var(--primary); letter-spacing: 0.08em;">準備中</h3>
+        <p style="color: var(--muted); font-size: 0.875rem; font-weight: 300;">
           コンテンツを準備しています。しばらくお待ちください。
         </p>
       </div>
     </section>
   </main>
 
-  <!-- Footer (loaded via partial) -->
   <footer data-include="partials/footer.html"></footer>
 
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
   <script type="module">
     import { onLCP, onFID, onCLS, onFCP, onTTFB, onINP } from 'https://cdn.jsdelivr.net/npm/web-vitals@3/dist/web-vitals.js';

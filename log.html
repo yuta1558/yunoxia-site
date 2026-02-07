@@ -1,27 +1,19 @@
 <!DOCTYPE html>
 <html class="no-js" lang="ja" data-theme="light">
 <head>
-  <!-- Character Encoding & Viewport -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Primary Meta Tags -->
   <title>Log - yunoxia.one</title>
   <meta name="title" content="Log - yunoxia.one" />
   <meta name="description" content="開発ログや思考メモ。yunoxiaの思考と感覚のエッジを記録する場所。" />
   <meta name="keywords" content="yunoxia, ログ, ブログ, 開発ログ, 思考メモ" />
   <meta name="author" content="yunoxia" />
 
-  <!-- Canonical URL -->
   <link rel="canonical" href="https://yunoxia.one/log.html" />
-
-  <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
-
-  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
 
-  <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://yunoxia.one/log.html" />
   <meta property="og:title" content="Log - yunoxia.one" />
@@ -29,18 +21,15 @@
   <meta property="og:image" content="https://yunoxia.one/assets/ogp.png" />
   <meta property="og:locale" content="ja_JP" />
 
-  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://yunoxia.one/log.html" />
   <meta name="twitter:title" content="Log - yunoxia.one" />
   <meta name="twitter:description" content="開発ログや思考メモ。yunoxiaの思考と感覚のエッジを記録する場所。" />
   <meta name="twitter:image" content="https://yunoxia.one/assets/ogp.png" />
 
-  <!-- Theme Color -->
-  <meta name="theme-color" content="#6366f1" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#8b95ff" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#8b7ec8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#a599d4" media="(prefers-color-scheme: dark)" />
 
-  <!-- FOUC Prevention Script -->
   <script>
     (function () {
       try {
@@ -54,69 +43,64 @@
     })();
   </script>
 
-  <!-- Stylesheet -->
   <link rel="stylesheet" href="assets/css/style.css" />
-
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Outfit:wght@200;400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <!-- Header (loaded via partial) -->
   <header data-include="partials/header.html"></header>
 
-  <!-- Main Content -->
   <main id="pjax-container" role="main">
     <section class="page fade-in">
       <h2 class="text-gradient">Log</h2>
       <p>開発ログや思考メモ — 思考と感覚のエッジを記録する</p>
 
-      <div style="margin-top: 3rem; display: flex; flex-direction: column; gap: 2rem;">
+      <div style="margin-top: 3rem; display: flex; flex-direction: column; gap: 1px; text-align: left;">
 
         <!-- Log Entry 1 -->
-        <article class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg);">
-          <time style="color: var(--muted); font-size: 0.875rem;" datetime="2025-11-17">2025.11.17</time>
-          <h3 style="margin: 0.5rem 0 1rem; font-size: 1.25rem;">UX/UI Enhancement Complete</h3>
-          <p style="color: var(--muted); line-height: 1.8;">
+        <article style="padding: 1.75rem 0; border-bottom: 1px solid var(--border);">
+          <time style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.1em; font-weight: 300;" datetime="2025-11-17">2025.11.17</time>
+          <h3 style="margin: 0.5rem 0 0.75rem; font-size: 1.0625rem; font-weight: 500; letter-spacing: -0.01em;">UX/UI Enhancement Complete</h3>
+          <p style="color: var(--muted); line-height: 1.9; font-size: 0.875rem; font-weight: 300;">
             サイト全体のUX/UIを大幅に強化。カーソルフォロワー、リップルエフェクト、スクロール進捗インジケーター、
             パララックス効果、テキストアニメーション、トースト通知、ツールチップ、ライトボックス、
             スムーズスクロール、戻るトップボタン、グラデーションメッシュ背景など、17の新機能を実装。
           </p>
-          <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <span style="padding: 0.25rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.75rem;">UX/UI</span>
-            <span style="padding: 0.25rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.75rem;">JavaScript</span>
-            <span style="padding: 0.25rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.75rem;">CSS</span>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.375rem; flex-wrap: wrap;">
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">UX/UI</span>
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">JavaScript</span>
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">CSS</span>
           </div>
         </article>
 
         <!-- Log Entry 2 -->
-        <article class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg);">
-          <time style="color: var(--muted); font-size: 0.875rem;" datetime="2025-11-15">2025.11.15</time>
-          <h3 style="margin: 0.5rem 0 1rem; font-size: 1.25rem;">Site Structure Established</h3>
-          <p style="color: var(--muted); line-height: 1.8;">
+        <article style="padding: 1.75rem 0; border-bottom: 1px solid var(--border);">
+          <time style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.1em; font-weight: 300;" datetime="2025-11-15">2025.11.15</time>
+          <h3 style="margin: 0.5rem 0 0.75rem; font-size: 1.0625rem; font-weight: 500; letter-spacing: -0.01em;">Site Structure Established</h3>
+          <p style="color: var(--muted); line-height: 1.9; font-size: 0.875rem; font-weight: 300;">
             バニラJavaScriptとCSSのみで構成されたシンプルな構造を確立。
             ビルドステップなし、フレームワークなし、依存関係最小限。
             PJAX、テーマ切り替え、3Dカードチルトなどの基本機能を実装。
           </p>
-          <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <span style="padding: 0.25rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.75rem;">Architecture</span>
-            <span style="padding: 0.25rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.75rem;">Vanilla JS</span>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.375rem; flex-wrap: wrap;">
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">Architecture</span>
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">Vanilla JS</span>
           </div>
         </article>
 
         <!-- Log Entry 3 -->
-        <article class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg);">
-          <time style="color: var(--muted); font-size: 0.875rem;" datetime="2025-11-10">2025.11.10</time>
-          <h3 style="margin: 0.5rem 0 1rem; font-size: 1.25rem;">Initial Concept</h3>
-          <p style="color: var(--muted); line-height: 1.8;">
+        <article style="padding: 1.75rem 0;">
+          <time style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.1em; font-weight: 300;" datetime="2025-11-10">2025.11.10</time>
+          <h3 style="margin: 0.5rem 0 0.75rem; font-size: 1.0625rem; font-weight: 500; letter-spacing: -0.01em;">Initial Concept</h3>
+          <p style="color: var(--muted); line-height: 1.9; font-size: 0.875rem; font-weight: 300;">
             「記録であり、余白であり、回路である」というコンセプトのもと、
             yunoxia.oneの構想を開始。シンプルさとパフォーマンス、
             アクセシビリティを重視した設計方針を決定。
           </p>
-          <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <span style="padding: 0.25rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.75rem;">Concept</span>
-            <span style="padding: 0.25rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.75rem;">Design</span>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.375rem; flex-wrap: wrap;">
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">Concept</span>
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">Design</span>
           </div>
         </article>
 
@@ -124,10 +108,8 @@
     </section>
   </main>
 
-  <!-- Footer (loaded via partial) -->
   <footer data-include="partials/footer.html"></footer>
 
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
   <script type="module">
     import { onLCP, onFID, onCLS, onFCP, onTTFB, onINP } from 'https://cdn.jsdelivr.net/npm/web-vitals@3/dist/web-vitals.js';
