@@ -27,8 +27,8 @@
   <meta name="twitter:description" content="開発ログや思考メモ。yunoxiaの思考と感覚のエッジを記録する場所。" />
   <meta name="twitter:image" content="https://yunoxia.one/assets/ogp.png" />
 
-  <meta name="theme-color" content="#6c5ce7" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#a29bfe" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#8b7ec8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#a599d4" media="(prefers-color-scheme: dark)" />
 
   <script>
     (function () {
@@ -37,7 +37,7 @@
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = stored || (prefersDark ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
-      } catch (e) {
+      } catch (error) {
         document.documentElement.setAttribute('data-theme', 'light');
       }
     })();
@@ -46,79 +46,64 @@
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
   <header data-include="partials/header.html"></header>
 
   <main id="pjax-container" role="main">
-    <section class="page">
-      <header class="page-header stagger">
-        <span class="page-index mono">03</span>
-        <h2 class="page-title">Log</h2>
-      </header>
+    <section class="page fade-in">
+      <h2 class="text-gradient">Log</h2>
+      <p>開発ログや思考メモ — 思考と感覚のエッジを記録する</p>
 
-      <div class="page-body">
-        <p class="stagger" style="text-align: center;">思考と感覚のエッジを記録する</p>
+      <div style="margin-top: 3rem; display: flex; flex-direction: column; gap: 1px; text-align: left;">
 
-        <div class="log-list">
+        <!-- Log Entry 1 -->
+        <article style="padding: 1.75rem 0; border-bottom: 1px solid var(--border);">
+          <time style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.1em; font-weight: 300;" datetime="2025-11-17">2025.11.17</time>
+          <h3 style="margin: 0.5rem 0 0.75rem; font-size: 1.0625rem; font-weight: 500; letter-spacing: -0.01em;">UX/UI Enhancement Complete</h3>
+          <p style="color: var(--muted); line-height: 1.9; font-size: 0.875rem; font-weight: 300;">
+            サイト全体のUX/UIを大幅に強化。カーソルフォロワー、リップルエフェクト、スクロール進捗インジケーター、
+            パララックス効果、テキストアニメーション、トースト通知、ツールチップ、ライトボックス、
+            スムーズスクロール、戻るトップボタン、グラデーションメッシュ背景など、17の新機能を実装。
+          </p>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.375rem; flex-wrap: wrap;">
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">UX/UI</span>
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">JavaScript</span>
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">CSS</span>
+          </div>
+        </article>
 
-          <!-- Entry 1 -->
-          <article class="entry stagger">
-            <div class="entry-meta">
-              <time class="entry-date" datetime="2025-11-17">2025.11.17</time>
-              <span class="entry-signal" aria-hidden="true"></span>
-            </div>
-            <h3 class="entry-title">UX/UI Enhancement Complete</h3>
-            <p class="entry-body">
-              サイト全体のUX/UIを大幅に強化。カーソルフォロワー、リップルエフェクト、スクロール進捗インジケーター、
-              パララックス効果、テキストアニメーション、トースト通知、ツールチップ、ライトボックス、
-              スムーズスクロール、戻るトップボタン、グラデーションメッシュ背景など、17の新機能を実装。
-            </p>
-            <div class="entry-tags">
-              <span class="tag">UX/UI</span>
-              <span class="tag">JavaScript</span>
-              <span class="tag">CSS</span>
-            </div>
-          </article>
+        <!-- Log Entry 2 -->
+        <article style="padding: 1.75rem 0; border-bottom: 1px solid var(--border);">
+          <time style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.1em; font-weight: 300;" datetime="2025-11-15">2025.11.15</time>
+          <h3 style="margin: 0.5rem 0 0.75rem; font-size: 1.0625rem; font-weight: 500; letter-spacing: -0.01em;">Site Structure Established</h3>
+          <p style="color: var(--muted); line-height: 1.9; font-size: 0.875rem; font-weight: 300;">
+            バニラJavaScriptとCSSのみで構成されたシンプルな構造を確立。
+            ビルドステップなし、フレームワークなし、依存関係最小限。
+            PJAX、テーマ切り替え、3Dカードチルトなどの基本機能を実装。
+          </p>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.375rem; flex-wrap: wrap;">
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">Architecture</span>
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">Vanilla JS</span>
+          </div>
+        </article>
 
-          <!-- Entry 2 -->
-          <article class="entry stagger">
-            <div class="entry-meta">
-              <time class="entry-date" datetime="2025-11-15">2025.11.15</time>
-              <span class="entry-signal" aria-hidden="true"></span>
-            </div>
-            <h3 class="entry-title">Site Structure Established</h3>
-            <p class="entry-body">
-              バニラJavaScriptとCSSのみで構成されたシンプルな構造を確立。
-              ビルドステップなし、フレームワークなし、依存関係最小限。
-              PJAX、テーマ切り替え、3Dカードチルトなどの基本機能を実装。
-            </p>
-            <div class="entry-tags">
-              <span class="tag">Architecture</span>
-              <span class="tag">Vanilla JS</span>
-            </div>
-          </article>
+        <!-- Log Entry 3 -->
+        <article style="padding: 1.75rem 0;">
+          <time style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.1em; font-weight: 300;" datetime="2025-11-10">2025.11.10</time>
+          <h3 style="margin: 0.5rem 0 0.75rem; font-size: 1.0625rem; font-weight: 500; letter-spacing: -0.01em;">Initial Concept</h3>
+          <p style="color: var(--muted); line-height: 1.9; font-size: 0.875rem; font-weight: 300;">
+            「記録であり、余白であり、回路である」というコンセプトのもと、
+            yunoxia.oneの構想を開始。シンプルさとパフォーマンス、
+            アクセシビリティを重視した設計方針を決定。
+          </p>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.375rem; flex-wrap: wrap;">
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">Concept</span>
+            <span style="padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.04em;">Design</span>
+          </div>
+        </article>
 
-          <!-- Entry 3 -->
-          <article class="entry stagger">
-            <div class="entry-meta">
-              <time class="entry-date" datetime="2025-11-10">2025.11.10</time>
-              <span class="entry-signal" aria-hidden="true"></span>
-            </div>
-            <h3 class="entry-title">Initial Concept</h3>
-            <p class="entry-body">
-              「記録であり、余白であり、回路である」というコンセプトのもと、
-              yunoxia.oneの構想を開始。シンプルさとパフォーマンス、
-              アクセシビリティを重視した設計方針を決定。
-            </p>
-            <div class="entry-tags">
-              <span class="tag">Concept</span>
-              <span class="tag">Design</span>
-            </div>
-          </article>
-
-        </div>
       </div>
     </section>
   </main>
