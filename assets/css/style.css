@@ -262,13 +262,19 @@ nav {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: var(--spacing-xs) 0;
-  transition: color var(--transition-base);
+  transition: color var(--transition-base),
+              transform var(--transition-fast);
 }
 
-.nav-link:hover,
+.nav-link:hover {
+  color: var(--primary);
+}
+
 .nav-link:focus-visible {
   color: var(--primary);
-  outline: none;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .nav-link.active {
@@ -421,8 +427,40 @@ nav {
   transform: translateY(0);
 }
 
+/* Fade-in Variants */
+.fade-in-left {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fade-in-right {
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fade-in-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fade-in-left.visible,
+.fade-in-right.visible,
+.fade-in-scale.visible {
+  opacity: 1;
+  transform: none;
+}
+
 /* Fallback for no-js */
-.no-js .fade-in {
+.no-js .fade-in,
+.no-js .fade-in-left,
+.no-js .fade-in-right,
+.no-js .fade-in-scale {
   opacity: 1;
   transform: none;
 }
@@ -491,6 +529,26 @@ nav {
   outline-offset: 2px;
 }
 
+/* Enhanced Focus States */
+.scroll-to-top:focus-visible,
+.lightbox-close:focus-visible,
+.copy-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.hover-glow:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.theme-toggle input:focus-visible + .toggle-track {
+  box-shadow: 0 0 0 2px var(--secondary), 0 0 0 4px var(--accent);
+}
+
 /* =============================================================================
    9. Accessibility
    ============================================================================= */
@@ -509,7 +567,10 @@ nav {
   #routeProgress,
   .card,
   .card::after,
-  .fade-in {
+  .fade-in,
+  .fade-in-left,
+  .fade-in-right,
+  .fade-in-scale {
     transition: none !important;
     animation: none !important;
   }
@@ -521,9 +582,13 @@ nav {
   }
 
   .nav-link:focus-visible,
-  .skip-link:focus {
+  .skip-link:focus,
+  .hover-glow:focus-visible,
+  .scroll-to-top:focus-visible,
+  .copy-button:focus-visible,
+  .lightbox-close:focus-visible {
     outline: 3px solid currentColor;
-    outline-offset: 3px;
+    outline-offset: 4px;
   }
 }
 
@@ -787,13 +852,34 @@ nav {
   position: relative;
   transition: transform var(--transition-base),
               box-shadow var(--transition-base),
-              border-color var(--transition-base);
+              border-color var(--transition-base),
+              background-color var(--transition-base);
 }
 
 .hover-glow:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
-  border-color: var(--accent) !important;
+  border-color: var(--accent);
+  background-color: var(--accent-light);
+}
+
+.hover-glow:active {
+  transform: translateY(0);
+  transition-duration: 80ms;
+}
+
+/* Log Entry Hover */
+.log-entry {
+  transition: background-color var(--transition-base),
+              transform var(--transition-base),
+              border-radius var(--transition-base);
+}
+
+.log-entry:hover {
+  background-color: var(--accent-light);
+  border-radius: var(--radius-md);
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 /* Toast Notification System */
