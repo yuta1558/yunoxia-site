@@ -1,39 +1,36 @@
 <a href="#pjax-container" class="skip-link">メインコンテンツへスキップ</a>
 
 <!-- Theme Toggle -->
-<button class="theme-toggle" id="theme-toggle" type="button" aria-label="テーマ切り替え">
-  <span class="sr-only">テーマを切り替える</span>
-  <span class="toggle-indicator" aria-hidden="true"></span>
-</button>
+<label class="theme-toggle" for="theme-toggle" aria-label="テーマ切り替え">
+  <span class="sr-only">テーマを切り替える（現在: ライト/ダーク）</span>
+  <input
+    type="checkbox"
+    id="theme-toggle"
+    role="switch"
+    aria-checked="false"
+    aria-label="ダークモード切り替え"
+  />
+  <span class="toggle-track" aria-hidden="true">
+    <span class="toggle-icon" data-icon="sun" aria-hidden="true">☀️</span>
+    <span class="toggle-thumb"></span>
+    <span class="toggle-icon" data-icon="moon" aria-hidden="true">🌙</span>
+  </span>
+</label>
 
-<!-- Route Progress -->
-<div id="routeProgress" role="progressbar" aria-label="読み込み進捗" aria-hidden="true"></div>
+<!-- Route Progress Bar -->
+<div id="routeProgress" role="progressbar" aria-label="ページ読み込み進捗" aria-hidden="true"></div>
 
-<!-- Site Header -->
-<div class="site-header">
-  <!-- Logo -->
-  <h1 class="logo" role="banner">
-    <span class="logo-text logo-gradient" aria-label="Yunoxia"><span class="logo-char">Y</span><span class="logo-char">U</span><span class="logo-char">N</span><span class="logo-char">O</span><span class="logo-char">X</span><span class="logo-char">I</span><span class="logo-char">A</span></span>
-  </h1>
+<!-- Logo -->
+<h1 class="logo parallax" role="banner" data-parallax-speed="-0.2">Yunoxia</h1>
 
-  <!-- Signal Line -->
-  <div class="signal-line" aria-hidden="true">
-    <span class="signal-dot"></span>
+<!-- Navigation -->
+<nav role="navigation" aria-label="メインナビゲーション">
+  <div class="nav">
+    <a href="index.html" class="nav-link ripple-container" aria-label="ホームページへ移動" data-tooltip="Home - ホーム">Home</a>
+    <a href="about.html" class="nav-link ripple-container" aria-label="プロフィールページへ移動" data-tooltip="About - プロフィール">About</a>
+    <a href="works.html" class="nav-link ripple-container" aria-label="作品ページへ移動" data-tooltip="Works - 作品">Works</a>
+    <a href="log.html" class="nav-link ripple-container" aria-label="ブログページへ移動" data-tooltip="Log - ブログ">Log</a>
+    <a href="links.html" class="nav-link ripple-container" aria-label="リンク集へ移動" data-tooltip="Links - リンク">Links</a>
   </div>
-
-  <!-- Navigation -->
-  <nav role="navigation" aria-label="メインナビゲーション">
-    <div class="nav">
-      <a href="index.html" class="nav-link" aria-label="ホーム" data-tooltip="Home">Home</a>
-      <span class="nav-sep" aria-hidden="true">&middot;</span>
-      <a href="about.html" class="nav-link" aria-label="プロフィール" data-tooltip="About">About</a>
-      <span class="nav-sep" aria-hidden="true">&middot;</span>
-      <a href="works.html" class="nav-link" aria-label="作品" data-tooltip="Works">Works</a>
-      <span class="nav-sep" aria-hidden="true">&middot;</span>
-      <a href="log.html" class="nav-link" aria-label="ログ" data-tooltip="Log">Log</a>
-      <span class="nav-sep" aria-hidden="true">&middot;</span>
-      <a href="links.html" class="nav-link" aria-label="リンク" data-tooltip="Links">Links</a>
-    </div>
-    <span class="nav-underline" aria-hidden="true"></span>
-  </nav>
-</div>
+  <span class="nav-underline" aria-hidden="true"></span>
+</nav>
