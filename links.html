@@ -27,8 +27,8 @@
   <meta name="twitter:description" content="yunoxiaの外部リンク集。SNS、プロジェクト、関連サイトへのリンク。" />
   <meta name="twitter:image" content="https://yunoxia.one/assets/ogp.png" />
 
-  <meta name="theme-color" content="#8b7ec8" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#a599d4" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#6c5ce7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#a29bfe" media="(prefers-color-scheme: dark)" />
 
   <script>
     (function () {
@@ -37,7 +37,7 @@
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = stored || (prefersDark ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
-      } catch (error) {
+      } catch (e) {
         document.documentElement.setAttribute('data-theme', 'light');
       }
     })();
@@ -46,65 +46,57 @@
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body>
   <header data-include="partials/header.html"></header>
 
   <main id="pjax-container" role="main">
-    <section class="page fade-in">
-      <h2 class="text-gradient">Links</h2>
-      <p>外部リンク集 — SNS、プロジェクト、関連サイト</p>
+    <section class="page">
+      <header class="page-header stagger">
+        <span class="page-index mono">04</span>
+        <h2 class="page-title">Links</h2>
+      </header>
 
-      <div style="margin-top: 3rem; display: flex; flex-direction: column; gap: 1px;">
+      <div class="page-body">
+        <p class="stagger" style="text-align: center;">外部リンク集 &mdash; SNS、プロジェクト、関連サイト</p>
 
-        <!-- Link Item - Twitter -->
-        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
-           class="hover-glow ripple-container"
-           style="padding: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius-md); display: block; text-decoration: none; margin-bottom: 0.75rem;">
-          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-            <span style="font-size: 1.25rem; opacity: 0.6;">𝕏</span>
-            <h3 style="margin: 0; font-size: 0.9375rem; font-weight: 500; color: var(--primary); letter-spacing: 0.02em;">Twitter</h3>
-            <span style="margin-left: auto; font-size: 0.75rem; color: var(--muted); opacity: 0.5;">↗</span>
+        <div class="link-list">
+
+          <!-- Twitter -->
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="link-card stagger">
+            <div class="link-card-header">
+              <span class="link-icon" aria-hidden="true">&#120143;</span>
+              <span class="link-title">Twitter</span>
+              <span class="link-arrow" aria-hidden="true">&nearr;</span>
+            </div>
+            <p class="link-desc">短い思考の断片とリアルタイムな記録</p>
+          </a>
+
+          <!-- Note -->
+          <a href="https://note.com" target="_blank" rel="noopener noreferrer" class="link-card stagger">
+            <div class="link-card-header">
+              <span class="link-icon" aria-hidden="true">&#9998;</span>
+              <span class="link-title">Note</span>
+              <span class="link-arrow" aria-hidden="true">&nearr;</span>
+            </div>
+            <p class="link-desc">長文の思考と深い探求</p>
+          </a>
+
+          <!-- Portfolio -->
+          <div class="link-card disabled stagger">
+            <div class="link-card-header">
+              <span class="link-icon" aria-hidden="true">&#9672;</span>
+              <span class="link-title">Portfolio</span>
+              <span class="link-badge">SOON</span>
+            </div>
+            <p class="link-desc">作品集とプロジェクトアーカイブ（準備中）</p>
           </div>
-          <p style="color: var(--muted); font-size: 0.8125rem; margin: 0; font-weight: 300; padding-left: 2rem;">
-            短い思考の断片とリアルタイムな記録
-          </p>
-        </a>
 
-        <!-- Link Item - Note -->
-        <a href="https://note.com" target="_blank" rel="noopener noreferrer"
-           class="hover-glow ripple-container"
-           style="padding: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius-md); display: block; text-decoration: none; margin-bottom: 0.75rem;">
-          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-            <span style="font-size: 1.25rem; opacity: 0.6;">✎</span>
-            <h3 style="margin: 0; font-size: 0.9375rem; font-weight: 500; color: var(--primary); letter-spacing: 0.02em;">Note</h3>
-            <span style="margin-left: auto; font-size: 0.75rem; color: var(--muted); opacity: 0.5;">↗</span>
-          </div>
-          <p style="color: var(--muted); font-size: 0.8125rem; margin: 0; font-weight: 300; padding-left: 2rem;">
-            長文の思考と深い探求
-          </p>
-        </a>
+        </div>
 
-        <!-- Link Item - Portfolio -->
-        <a href="#"
-           class="hover-glow ripple-container"
-           style="padding: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius-md); display: block; text-decoration: none; opacity: 0.5;">
-          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-            <span style="font-size: 1.25rem; opacity: 0.6;">◈</span>
-            <h3 style="margin: 0; font-size: 0.9375rem; font-weight: 500; color: var(--primary); letter-spacing: 0.02em;">Portfolio</h3>
-            <span style="margin-left: auto; font-size: 0.6875rem; color: var(--muted); opacity: 0.5; letter-spacing: 0.08em;">SOON</span>
-          </div>
-          <p style="color: var(--muted); font-size: 0.8125rem; margin: 0; font-weight: 300; padding-left: 2rem;">
-            作品集とプロジェクトアーカイブ（準備中）
-          </p>
-        </a>
-
+        <p class="link-note stagger">外部サイトへのリンクは新しいタブで開きます</p>
       </div>
-
-      <p style="margin-top: 3rem; text-align: center; color: var(--muted); font-size: 0.75rem; font-weight: 300; letter-spacing: 0.04em;">
-        外部サイトへのリンクは新しいタブで開きます
-      </p>
     </section>
   </main>
 

@@ -27,8 +27,8 @@
   <meta name="twitter:description" content="yunoxia（ゆーのくしあ）について。このサイトは、記録であり、余白であり、回路である。" />
   <meta name="twitter:image" content="https://yunoxia.one/assets/ogp.png" />
 
-  <meta name="theme-color" content="#8b7ec8" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#a599d4" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#6c5ce7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#a29bfe" media="(prefers-color-scheme: dark)" />
 
   <script>
     (function () {
@@ -37,7 +37,7 @@
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = stored || (prefersDark ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
-      } catch (error) {
+      } catch (e) {
         document.documentElement.setAttribute('data-theme', 'light');
       }
     })();
@@ -46,49 +46,55 @@
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body>
   <header data-include="partials/header.html"></header>
 
   <main id="pjax-container" role="main">
-    <article class="page fade-in">
-      <h2 class="text-gradient">About</h2>
-      <p>このサイトは、記録であり、余白であり、回路である。</p>
+    <article class="page">
+      <header class="page-header stagger">
+        <span class="page-index mono">01</span>
+        <h2 class="page-title">About</h2>
+      </header>
 
-      <p><strong>ゆーのくしあ（yunoxia）</strong> ——<br>
-        「ゆー（you / 優 / 遊）」＋「の」＋「quxia（くしあ）」によって構成された造語。<br>
-        「quxia」は存在しない言語から生成された"意図のない意味"を持つフラクタルな語。<br>
-        機械的な響きと、有機的な余白のあいだに漂う。<br>
-        アルファベットに置き換えられた瞬間に、意味が崩壊し、新たに生成される名前。</p>
+      <div class="page-body">
+        <blockquote class="pull-quote stagger">
+          記録であり、余白であり、回路である。
+        </blockquote>
 
-        <p>それは、名付けえぬ感覚のコードネーム。<br>
-        静かな叫び、沈黙する信号、反響する光子の記録。</p>
+        <p class="stagger"><strong>ゆーのくしあ（yunoxia）</strong> &mdash;&mdash;<br>
+          「ゆー（you / 優 / 遊）」＋「の」＋「quxia（くしあ）」によって構成された造語。<br>
+          「quxia」は存在しない言語から生成された"意図のない意味"を持つフラクタルな語。<br>
+          機械的な響きと、有機的な余白のあいだに漂う。<br>
+          アルファベットに置き換えられた瞬間に、意味が崩壊し、新たに生成される名前。</p>
 
-        <p>ノイズに満ちた世界の中で、<br>
-        沈黙と直感を拾い上げるための場所。</p>
+        <p class="stagger">それは、名付けえぬ感覚のコードネーム。<br>
+          静かな叫び、沈黙する信号、反響する光子の記録。</p>
 
-        <p>ここにあるものは、作品というより痕跡。<br>
-        計算された意図と、偶発的なひらめきが<br>
-        交差する点に浮かび上がる。</p>
+        <p class="stagger">ノイズに満ちた世界の中で、<br>
+          沈黙と直感を拾い上げるための場所。</p>
 
-        <p>コード、音、言葉、映像、機構。<br>
-        それぞれは異なる形式でも、<br>
-        根底に流れる"原理"はひとつ。</p>
+        <p class="stagger">ここにあるものは、作品というより痕跡。<br>
+          計算された意図と、偶発的なひらめきが<br>
+          交差する点に浮かび上がる。</p>
 
-        <p>この空間は、作品と思想の交差点。<br>
-        そして、それらが更新されつづける「動的記憶」。</p>
+        <p class="stagger">コード、音、言葉、映像、機構。<br>
+          それぞれは異なる形式でも、<br>
+          根底に流れる"原理"はひとつ。</p>
 
-        <p>ゆー自身の感覚と思考の"エッジ"を、<br>
-        この場所に残していく。</p>
+        <p class="stagger">この空間は、作品と思想の交差点。<br>
+          そして、それらが更新されつづける「動的記憶」。</p>
 
-        <p style="margin-top: 2.5rem; padding: 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);">
-          <strong>Contact:</strong>
-          <code class="copy-button ripple-container" data-copy="contact@yunoxia.one" style="cursor: pointer; padding: 0.2rem 0.5rem; background: var(--accent-light); border-radius: var(--radius-sm); user-select: all; font-size: 0.875rem; letter-spacing: 0.02em;">
-            contact@yunoxia.one
-          </code>
-          <small style="display: block; margin-top: 0.5rem; color: var(--muted); font-size: 0.75rem;">クリックでコピー</small>
-        </p>
+        <p class="stagger">ゆー自身の感覚と思考の"エッジ"を、<br>
+          この場所に残していく。</p>
+
+        <div class="contact-box stagger">
+          <p class="contact-label">Contact</p>
+          <code class="contact-value" data-copy="contact@yunoxia.one" style="position: relative;">contact@yunoxia.one</code>
+          <small class="contact-hint">クリックでコピー</small>
+        </div>
+      </div>
     </article>
   </main>
 
