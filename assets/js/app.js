@@ -22,6 +22,8 @@ const CONFIG = {
     NAV_DELAY: 0.2,
     MAIN_DURATION: 0.8,
     MAIN_Y_OFFSET: 30,
+    CONTENT_STAGGER: 0.08,
+    CONTENT_DURATION: 0.6,
     PROGRESS_DURATION: 400,
     PROGRESS_COMPLETE_DELAY: 480,
   },
@@ -41,6 +43,7 @@ const CONFIG = {
     THEME_TOGGLE: '#theme-toggle',
     ROUTE_PROGRESS: '#routeProgress',
     FADE_IN: '.fade-in',
+    FADE_IN_ALL: '.fade-in, .fade-in-left, .fade-in-right, .fade-in-scale',
     CARD: '.card',
     PARTIAL_INCLUDE: '[data-include]',
   },
@@ -307,6 +310,47 @@ const Navigation = {
 };
 
 // =============================================================================
+// Magnetic Nav Module / マグネットナビゲーション
+// =============================================================================
+
+const MagneticNav = {
+  MAX_PULL: 3,
+
+  /**
+   * Initialize magnetic hover effect on nav links
+   */
+  init() {
+    // Skip on touch devices or reduced motion
+    if (window.matchMedia('(hover: none)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const navLinks = queryAll(CONFIG.SELECTORS.NAV_LINKS);
+
+    navLinks.forEach((link) => {
+      if (link.dataset.magneticInit) return;
+      link.dataset.magneticInit = 'true';
+
+      link.addEventListener('mousemove', (e) => {
+        const rect = link.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const dx = e.clientX - centerX;
+        const dy = e.clientY - centerY;
+
+        const pullX = (dx / (rect.width / 2)) * MagneticNav.MAX_PULL;
+        const pullY = (dy / (rect.height / 2)) * MagneticNav.MAX_PULL;
+
+        link.style.transform = `translate(${pullX}px, ${pullY}px)`;
+      });
+
+      link.addEventListener('mouseleave', () => {
+        link.style.transform = '';
+      });
+    });
+  },
+};
+
+// =============================================================================
 // Theme Module / テーマ管理
 // =============================================================================
 
@@ -429,11 +473,28 @@ const PJAX = {
    */
   async loadContent(url, pushState = true) {
     this.showProgress();
-    EnhancedPageTransition.show();
     Navigation.setActive(url);
 
     try {
-      const response = await fetch(url);
+      // Run exit animation and fetch in parallel
+      const exitAnimation = (typeof gsap !== 'undefined' && state.elements.container)
+        ? new Promise((resolve) => {
+            const page = state.elements.container.querySelector('.page');
+            if (page) {
+              gsap.to(page, {
+                duration: 0.3,
+                y: -15,
+                opacity: 0,
+                ease: 'power2.in',
+                onComplete: resolve,
+              });
+            } else {
+              resolve();
+            }
+          })
+        : Promise.resolve();
+
+      const [, response] = await Promise.all([exitAnimation, fetch(url)]);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -448,8 +509,9 @@ const PJAX = {
         throw new Error('Main content container not found in response');
       }
 
-      // Delay for transition effect
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Brief overlay during content swap
+      EnhancedPageTransition.show();
+      await new Promise(resolve => setTimeout(resolve, 80));
 
       if (state.elements.container) {
         state.elements.container.innerHTML = newContent.innerHTML;
@@ -462,13 +524,13 @@ const PJAX = {
       // Scroll to top
       window.scrollTo(0, 0);
 
-      // Reinitialize dynamic features
+      // Reinitialize dynamic features (includes staggered entry animation)
       this.reinitialize();
 
       // Hide transition
       setTimeout(() => {
         EnhancedPageTransition.hide();
-      }, 100);
+      }, 80);
     } catch (error) {
       console.error('PJAX navigation failed:', error);
       EnhancedPageTransition.hide();
@@ -563,7 +625,7 @@ const Animation = {
       });
     });
 
-    const fadeElements = queryAll(CONFIG.SELECTORS.FADE_IN, state.elements.container);
+    const fadeElements = queryAll(CONFIG.SELECTORS.FADE_IN_ALL, state.elements.container);
     fadeElements.forEach((element) => {
       state.observers.intersection.observe(element);
     });
@@ -591,7 +653,7 @@ const Animation = {
   },
 
   /**
-   * Animate main content
+   * Animate main content with staggered children
    */
   animateMain() {
     if (typeof gsap === 'undefined') {
@@ -599,14 +661,28 @@ const Animation = {
       return;
     }
 
-    const { MAIN_DURATION, MAIN_Y_OFFSET } = CONFIG.ANIMATION;
+    const { CONTENT_STAGGER, CONTENT_DURATION } = CONFIG.ANIMATION;
+    const page = state.elements.container?.querySelector('.page');
 
-    gsap.from(state.elements.container, {
-      duration: MAIN_DURATION,
-      y: MAIN_Y_OFFSET,
-      opacity: 0,
-      ease: 'power2.out',
-    });
+    if (page && page.children.length) {
+      gsap.from(page.children, {
+        duration: CONTENT_DURATION,
+        y: 20,
+        opacity: 0,
+        stagger: CONTENT_STAGGER,
+        ease: 'power2.out',
+        clearProps: 'transform,opacity',
+      });
+    } else {
+      // Fallback: animate entire container
+      const { MAIN_DURATION, MAIN_Y_OFFSET } = CONFIG.ANIMATION;
+      gsap.from(state.elements.container, {
+        duration: MAIN_DURATION,
+        y: MAIN_Y_OFFSET,
+        opacity: 0,
+        ease: 'power2.out',
+      });
+    }
   },
 };
 
@@ -1352,10 +1428,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize core modules
   Navigation.init();
   Navigation.setActive(location.href);
+  MagneticNav.init();
   Theme.init();
   CardTilt.init();
   Animation.initObserver();
   Animation.animateNav();
+  Animation.animateMain();
   PJAX.init();
 
   // Initialize enhanced UX/UI modules
