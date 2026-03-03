@@ -1,27 +1,19 @@
 <!DOCTYPE html>
 <html class="no-js" lang="ja" data-theme="light">
 <head>
-  <!-- Character Encoding & Viewport -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Primary Meta Tags -->
-  <title>Home - yunoxia.one</title>
+  <title>yunoxia.one</title>
   <meta name="title" content="yunoxia.one - ゆーのくしあの個人サイト" />
   <meta name="description" content="yunoxia.oneは、コード、音、言葉、映像が交差する、ゆーのくしあ（yunoxia）の個人サイトです。作品と思想の動的記憶の場所。" />
   <meta name="keywords" content="yunoxia, ゆーのくしあ, ポートフォリオ, クリエイティブ, プログラミング, アート" />
   <meta name="author" content="yunoxia" />
 
-  <!-- Canonical URL -->
   <link rel="canonical" href="https://yunoxia.one/" />
-
-  <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
-
-  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
 
-  <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://yunoxia.one/" />
   <meta property="og:title" content="yunoxia.one - ゆーのくしあの個人サイト" />
@@ -29,18 +21,15 @@
   <meta property="og:image" content="https://yunoxia.one/assets/ogp.png" />
   <meta property="og:locale" content="ja_JP" />
 
-  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://yunoxia.one/" />
   <meta name="twitter:title" content="yunoxia.one - ゆーのくしあの個人サイト" />
   <meta name="twitter:description" content="yunoxia.oneは、コード、音、言葉、映像が交差する、ゆーのくしあ（yunoxia）の個人サイトです。" />
   <meta name="twitter:image" content="https://yunoxia.one/assets/ogp.png" />
 
-  <!-- Theme Color -->
-  <meta name="theme-color" content="#8b7ec8" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#a599d4" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#6c5ce7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#a29bfe" media="(prefers-color-scheme: dark)" />
 
-  <!-- FOUC Prevention Script -->
   <script>
     (function () {
       try {
@@ -48,37 +37,45 @@
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = stored || (prefersDark ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
-      } catch (error) {
+      } catch (e) {
         document.documentElement.setAttribute('data-theme', 'light');
       }
     })();
   </script>
 
-  <!-- Stylesheet -->
   <link rel="stylesheet" href="assets/css/style.css" />
-
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <!-- Header (loaded via partial) -->
   <header data-include="partials/header.html"></header>
 
-  <!-- Main Content -->
   <main id="pjax-container" role="main">
-    <section class="page fade-in">
-      <h2 class="text-gradient">Home</h2>
-      <p data-text-animation="typing" data-type-text="Welcome to yunoxia.one — コード、音、言葉、映像が交差する場所">Welcome to yunoxia.one — コード、音、言葉、映像が交差する場所</p>
-      <p style="margin-top: 2rem;">このサイトは、作品と思想の動的記憶の場所です。</p>
+    <section class="hero">
+      <div class="hero-inner">
+        <p class="hero-label mono stagger">// personal.space</p>
+        <h2 class="hero-title stagger">
+          コード、音、言葉、映像が<br>
+          交差する<em>場所</em>
+        </h2>
+        <div class="signal-line signal-line-wide stagger" aria-hidden="true">
+          <span class="signal-dot"></span>
+        </div>
+        <p class="hero-desc stagger">
+          作品と思想の動的記憶。<br>
+          静かな叫び、沈黙する信号、反響する光子の記録。
+        </p>
+        <div class="hero-scroll stagger" aria-hidden="true">
+          <span>scroll</span>
+          <span class="hero-scroll-line"></span>
+        </div>
+      </div>
     </section>
   </main>
 
-  <!-- Footer (loaded via partial) -->
   <footer data-include="partials/footer.html"></footer>
 
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
   <script type="module">
     import { onLCP, onFID, onCLS, onFCP, onTTFB, onINP } from 'https://cdn.jsdelivr.net/npm/web-vitals@3/dist/web-vitals.js';
