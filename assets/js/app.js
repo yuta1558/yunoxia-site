@@ -555,6 +555,10 @@ const PJAX = {
     ScrollToTop.update();
     StaggerIndexer.init();
     SectionDivider.init();
+    // Reinitialize blog if on blog page
+    if (typeof window.BlogInit === 'function') {
+      window.BlogInit();
+    }
   },
 
   /**

@@ -1,0 +1,419 @@
+/* Admin Panel Styles - yunoxia.one CMS */
+/* Uses existing theme variables from style.css */
+
+/* ===== Login Screen ===== */
+.admin-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background: var(--secondary);
+}
+
+.admin-login-box {
+  width: 100%;
+  max-width: 360px;
+  padding: 2.5rem 2rem;
+  background: var(--card-bg, var(--secondary));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px);
+}
+
+/* ===== Fields ===== */
+.admin-field {
+  margin-bottom: 1rem;
+}
+
+.admin-field label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 0.375rem;
+  letter-spacing: 0.04em;
+}
+
+.admin-field input[type="text"],
+.admin-field input[type="password"],
+.admin-field textarea,
+.admin-select {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  background: var(--secondary);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.admin-field input:focus,
+.admin-field textarea:focus,
+.admin-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.admin-field textarea {
+  resize: vertical;
+}
+
+.admin-error {
+  color: #e53e3e;
+  font-size: 0.8125rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(229, 62, 62, 0.1);
+  border-radius: var(--radius-sm, 4px);
+}
+
+/* ===== Buttons ===== */
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-sm, 4px);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.admin-btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.admin-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.admin-btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.admin-btn-ghost:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.admin-btn-danger {
+  background: #e53e3e;
+  color: #fff;
+}
+
+.admin-btn-danger:hover {
+  background: #c53030;
+}
+
+/* ===== Dashboard Layout ===== */
+.admin-dashboard {
+  min-height: 100vh;
+  background: var(--secondary);
+  color: var(--primary);
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--secondary);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-logo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.admin-badge {
+  padding: 0.125rem 0.5rem;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 600;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ===== Content ===== */
+.admin-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.admin-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ===== Filter Bar ===== */
+.admin-filter-bar {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-filter {
+  padding: 0.375rem 0.75rem;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-filter.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.admin-filter:hover:not(.active) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ===== Posts List ===== */
+.admin-posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.admin-post-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 0.5rem;
+}
+
+.admin-post-item:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+.admin-post-title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.admin-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.admin-post-status {
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.admin-post-status.published {
+  background: rgba(72, 187, 120, 0.15);
+  color: #48bb78;
+}
+
+.admin-post-status.draft {
+  background: rgba(237, 137, 54, 0.15);
+  color: #ed8936;
+}
+
+.admin-loading {
+  color: var(--muted);
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 3rem 0;
+}
+
+/* ===== Editor ===== */
+.admin-editor-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-select {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  width: auto;
+}
+
+/* ===== Image Upload ===== */
+.admin-image-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-image-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-image-preview img {
+  max-width: 200px;
+  max-height: 120px;
+  border-radius: var(--radius-sm, 4px);
+  object-fit: cover;
+}
+
+/* ===== Save Status ===== */
+.admin-save-status {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-sm, 4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 200;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== EasyMDE Overrides ===== */
+.EasyMDEContainer {
+  border-radius: var(--radius-sm, 4px) !important;
+}
+
+.EasyMDEContainer .CodeMirror {
+  background: var(--secondary) !important;
+  color: var(--primary) !important;
+  border-color: var(--border) !important;
+  font-family: 'Sora', 'Noto Sans JP', monospace !important;
+  font-size: 0.875rem !important;
+  min-height: 400px;
+}
+
+.EasyMDEContainer .editor-toolbar {
+  border-color: var(--border) !important;
+  background: var(--secondary) !important;
+}
+
+.EasyMDEContainer .editor-toolbar button {
+  color: var(--muted) !important;
+}
+
+.EasyMDEContainer .editor-toolbar button:hover,
+.EasyMDEContainer .editor-toolbar button.active {
+  color: var(--primary) !important;
+  background: var(--accent-light) !important;
+  border-color: var(--border) !important;
+}
+
+.EasyMDEContainer .editor-statusbar {
+  color: var(--muted) !important;
+  border-color: var(--border) !important;
+}
+
+.EasyMDEContainer .editor-preview {
+  background: var(--secondary) !important;
+  color: var(--primary) !important;
+}
+
+.EasyMDEContainer .CodeMirror-cursor {
+  border-color: var(--primary) !important;
+}
+
+.EasyMDEContainer .CodeMirror-selected {
+  background: var(--accent-light) !important;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .admin-header {
+    padding: 0.625rem 1rem;
+  }
+
+  .admin-content {
+    padding: 1.25rem 1rem;
+  }
+
+  .admin-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-toolbar-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .admin-post-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .EasyMDEContainer .CodeMirror {
+    min-height: 300px;
+  }
+}

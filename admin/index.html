@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html class="no-js" lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - yunoxia.one</title>
+  <meta name="robots" content="noindex, nofollow" />
+
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+
+  <script>
+    (function () {
+      try {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored || (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (error) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="../assets/css/admin.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Markdown Editor -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2/dist/easymde.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/easymde@2/dist/easymde.min.js"></script>
+
+  <!-- Markdown Preview -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+
+  <!-- Syntax Highlighting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/highlight.min.js"></script>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen" class="admin-login">
+    <div class="admin-login-box">
+      <h1 style="font-size: 1.25rem; font-weight: 500; margin-bottom: 1.5rem;">yunoxia.one Admin</h1>
+      <form id="login-form">
+        <div class="admin-field">
+          <label for="login-username">ユーザー名</label>
+          <input type="text" id="login-username" name="username" autocomplete="username" required />
+        </div>
+        <div class="admin-field">
+          <label for="login-password">パスワード</label>
+          <input type="password" id="login-password" name="password" autocomplete="current-password" required />
+        </div>
+        <div id="login-error" class="admin-error" hidden></div>
+        <button type="submit" class="admin-btn admin-btn-primary" style="width: 100%;">ログイン</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="admin-dashboard" class="admin-dashboard" hidden>
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="admin-header-left">
+        <a href="../index.html" class="admin-logo">yunoxia.one</a>
+        <span class="admin-badge">Admin</span>
+      </div>
+      <div class="admin-header-right">
+        <button id="theme-toggle-admin" class="admin-btn admin-btn-ghost" title="テーマ切替">
+          <span id="theme-icon">☀</span>
+        </button>
+        <button id="logout-btn" class="admin-btn admin-btn-ghost">ログアウト</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+      <!-- Post List View -->
+      <div id="view-list" class="admin-view">
+        <div class="admin-toolbar">
+          <h2 style="font-size: 1.125rem; font-weight: 500;">記事一覧</h2>
+          <button id="new-post-btn" class="admin-btn admin-btn-primary">+ 新規作成</button>
+        </div>
+
+        <div class="admin-filter-bar">
+          <button class="admin-filter active" data-filter="all">すべて</button>
+          <button class="admin-filter" data-filter="published">公開</button>
+          <button class="admin-filter" data-filter="draft">下書き</button>
+        </div>
+
+        <div id="posts-list" class="admin-posts-list">
+          <p class="admin-loading">読み込み中...</p>
+        </div>
+      </div>
+
+      <!-- Post Editor View -->
+      <div id="view-editor" class="admin-view" hidden>
+        <div class="admin-toolbar">
+          <button id="back-to-list" class="admin-btn admin-btn-ghost">← 一覧に戻る</button>
+          <div class="admin-toolbar-actions">
+            <select id="post-status" class="admin-select">
+              <option value="draft">下書き</option>
+              <option value="published">公開</option>
+            </select>
+            <button id="save-post-btn" class="admin-btn admin-btn-primary">保存</button>
+            <button id="delete-post-btn" class="admin-btn admin-btn-danger" hidden>削除</button>
+          </div>
+        </div>
+
+        <div class="admin-editor-fields">
+          <div class="admin-field">
+            <label for="post-title">タイトル</label>
+            <input type="text" id="post-title" placeholder="記事のタイトル" />
+          </div>
+
+          <div class="admin-field">
+            <label for="post-slug">スラッグ</label>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="text" id="post-slug" placeholder="url-friendly-slug" style="flex: 1;" />
+              <button id="generate-slug-btn" class="admin-btn admin-btn-ghost" style="white-space: nowrap;">自動生成</button>
+            </div>
+          </div>
+
+          <div class="admin-field">
+            <label for="post-excerpt">抜粋</label>
+            <textarea id="post-excerpt" rows="2" placeholder="記事の短い説明（一覧ページに表示）"></textarea>
+          </div>
+
+          <div class="admin-field">
+            <label for="post-tags">タグ（カンマ区切り）</label>
+            <input type="text" id="post-tags" placeholder="JavaScript, CSS, Design" />
+          </div>
+
+          <div class="admin-field">
+            <label>アイキャッチ画像</label>
+            <div class="admin-image-upload">
+              <input type="file" id="featured-image-input" accept="image/*" hidden />
+              <div id="featured-image-preview" class="admin-image-preview" hidden>
+                <img id="featured-image-img" src="" alt="アイキャッチ" />
+                <button id="remove-image-btn" class="admin-btn admin-btn-ghost" style="font-size: 0.75rem;">削除</button>
+              </div>
+              <button id="upload-image-btn" class="admin-btn admin-btn-ghost">画像をアップロード</button>
+            </div>
+          </div>
+
+          <div class="admin-field">
+            <label>本文（Markdown）</label>
+            <textarea id="post-content"></textarea>
+          </div>
+        </div>
+
+        <div id="save-status" class="admin-save-status" hidden></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/admin.js" defer></script>
+</body>
+</html>
