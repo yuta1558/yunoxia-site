@@ -17,13 +17,13 @@
 
 const CONFIG = {
   ANIMATION: {
-    NAV_DURATION: 0.5,
-    NAV_STAGGER: 0.1,
-    NAV_DELAY: 0.2,
-    MAIN_DURATION: 0.8,
+    NAV_DURATION: 0.6,
+    NAV_STAGGER: 0.08,
+    NAV_DELAY: 0.15,
+    MAIN_DURATION: 0.9,
     MAIN_Y_OFFSET: 30,
-    CONTENT_STAGGER: 0.08,
-    CONTENT_DURATION: 0.6,
+    CONTENT_STAGGER: 0.07,
+    CONTENT_DURATION: 0.7,
     PROGRESS_DURATION: 400,
     PROGRESS_COMPLETE_DELAY: 480,
   },
@@ -482,10 +482,11 @@ const PJAX = {
             const page = state.elements.container.querySelector('.page');
             if (page) {
               gsap.to(page, {
-                duration: 0.3,
-                y: -15,
+                duration: 0.35,
+                y: -18,
                 opacity: 0,
-                ease: 'power2.in',
+                scale: 0.98,
+                ease: 'power3.in',
                 onComplete: resolve,
               });
             } else {
@@ -646,11 +647,11 @@ const Animation = {
 
     gsap.from('nav a', {
       duration: NAV_DURATION,
-      y: -10,
+      y: -12,
       opacity: 0,
       stagger: NAV_STAGGER,
       delay: NAV_DELAY,
-      ease: 'power2.out',
+      ease: 'expo.out',
     });
   },
 
@@ -669,10 +670,10 @@ const Animation = {
     if (page && page.children.length) {
       gsap.from(page.children, {
         duration: CONTENT_DURATION,
-        y: 20,
+        y: 24,
         opacity: 0,
         stagger: CONTENT_STAGGER,
-        ease: 'power2.out',
+        ease: 'expo.out',
         clearProps: 'transform,opacity',
       });
     } else {
@@ -682,7 +683,7 @@ const Animation = {
         duration: MAIN_DURATION,
         y: MAIN_Y_OFFSET,
         opacity: 0,
-        ease: 'power2.out',
+        ease: 'expo.out',
       });
     }
   },
@@ -1501,10 +1502,10 @@ const LogoAnimation = {
       span.textContent = char;
       logo.appendChild(span);
 
-      // Staggered reveal
+      // Staggered reveal with gentle delay
       setTimeout(() => {
         span.classList.add('revealed');
-      }, 100 + index * 80);
+      }, 150 + index * 70);
     });
   },
 };

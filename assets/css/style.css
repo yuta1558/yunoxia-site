@@ -23,10 +23,13 @@
 :root {
   color-scheme: light dark;
 
-  /* Animation & Transition */
-  --transition-base: 320ms cubic-bezier(0.22, 1, 0.36, 1);
-  --transition-fast: 180ms cubic-bezier(0.22, 1, 0.36, 1);
-  --transition-slow: 560ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* Animation & Transition — elegant spring-inspired curves */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --transition-base: 360ms var(--ease-out-expo);
+  --transition-fast: 200ms var(--ease-out-expo);
+  --transition-slow: 600ms var(--ease-out-expo);
 
   /* Spacing Scale */
   --spacing-xs: 0.5rem;
@@ -76,6 +79,15 @@
   --accent-hover: #7a6cb8;
   --accent-light: rgba(139, 126, 200, 0.08);
   --accent-medium: rgba(139, 126, 200, 0.15);
+}
+
+/* Theme Transition — ensure smooth color changes on toggle */
+[data-theme="light"],
+[data-theme="dark"] {
+  transition: background-color var(--transition-slow),
+              color var(--transition-slow),
+              border-color var(--transition-slow),
+              box-shadow var(--transition-slow);
 }
 
 /* Dark Theme */
@@ -289,9 +301,9 @@ nav {
   height: 1px;
   width: 0;
   background: var(--primary);
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
-              width 260ms cubic-bezier(0.22, 1, 0.36, 1),
-              opacity 260ms ease;
+  transition: transform 320ms var(--ease-out-expo),
+              width 320ms var(--ease-out-expo),
+              opacity 320ms ease;
   opacity: 0.4;
   will-change: transform, width;
   pointer-events: none;
@@ -374,18 +386,18 @@ nav {
 .toggle-thumb {
   position: absolute;
   top: 3px;
-  left: 4px;
+  left: 3px;
   width: 20px;
   height: 20px;
   border-radius: var(--radius-full);
   background: var(--primary);
-  transition: transform var(--transition-base),
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1),
     background-color var(--transition-base);
 }
 
 /* Checked State */
 .theme-toggle input:checked + .toggle-track .toggle-thumb {
-  transform: translateX(26px);
+  transform: translateX(28px);
 }
 
 .theme-toggle input:checked + .toggle-track .toggle-icon[data-icon="moon"] {
@@ -417,9 +429,9 @@ nav {
 /* Fade-in Animation */
 .fade-in {
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(20px);
+  transition: opacity 0.8s var(--ease-out-expo),
+              transform 0.8s var(--ease-out-expo);
 }
 
 .fade-in.visible {
@@ -430,23 +442,23 @@ nav {
 /* Fade-in Variants */
 .fade-in-left {
   opacity: 0;
-  transform: translateX(-24px);
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateX(-28px);
+  transition: opacity 0.8s var(--ease-out-expo),
+              transform 0.8s var(--ease-out-expo);
 }
 
 .fade-in-right {
   opacity: 0;
-  transform: translateX(24px);
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateX(28px);
+  transition: opacity 0.8s var(--ease-out-expo),
+              transform 0.8s var(--ease-out-expo);
 }
 
 .fade-in-scale {
   opacity: 0;
-  transform: scale(0.95);
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: scale(0.92);
+  transition: opacity 0.8s var(--ease-out-expo),
+              transform 0.8s var(--ease-out-expo);
 }
 
 .fade-in-left.visible,
@@ -470,7 +482,7 @@ nav {
   position: relative;
   transform-style: preserve-3d;
   perspective: 800px;
-  transition: transform var(--transition-fast) ease-out;
+  transition: transform 300ms var(--ease-out-expo);
 }
 
 .card::after {
@@ -634,13 +646,19 @@ nav {
     height: 24px;
   }
 
+  .toggle-track {
+    padding: 0 6px;
+  }
+
   .toggle-thumb {
+    top: 3px;
+    left: 3px;
     width: 16px;
     height: 16px;
   }
 
   .theme-toggle input:checked + .toggle-track .toggle-thumb {
-    transform: translateX(22px);
+    transform: translateX(24px);
   }
 
   .toggle-icon {
@@ -821,7 +839,7 @@ nav {
 .text-fade-in-char {
   display: inline-block;
   opacity: 0;
-  animation: fade-in-char 0.5s ease forwards;
+  animation: fade-in-char 0.6s var(--ease-out-expo) forwards;
 }
 
 @keyframes fade-in-char {
@@ -850,29 +868,30 @@ nav {
 /* Enhanced Hover Effects */
 .hover-glow {
   position: relative;
-  transition: transform var(--transition-base),
+  transition: transform 400ms var(--ease-out-back),
               box-shadow var(--transition-base),
               border-color var(--transition-base),
               background-color var(--transition-base);
 }
 
 .hover-glow:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
   border-color: var(--accent);
   background-color: var(--accent-light);
 }
 
 .hover-glow:active {
-  transform: translateY(0);
-  transition-duration: 80ms;
+  transform: translateY(0) scale(0.98);
+  transition-duration: 120ms;
 }
 
 /* Log Entry Hover */
 .log-entry {
   transition: background-color var(--transition-base),
-              transform var(--transition-base),
-              border-radius var(--transition-base);
+              transform 400ms var(--ease-out-back),
+              border-radius var(--transition-base),
+              padding var(--transition-base);
 }
 
 .log-entry:hover {
@@ -908,12 +927,12 @@ nav {
   pointer-events: auto;
   transform: translateX(calc(100% + 2rem));
   opacity: 0;
-  animation: toast-slide-in var(--transition-base) forwards;
+  animation: toast-slide-in 400ms var(--ease-out-back) forwards;
   font-size: 0.8125rem;
 }
 
 .toast.removing {
-  animation: toast-slide-out var(--transition-base) forwards;
+  animation: toast-slide-out 360ms var(--ease-in-out-quart) forwards;
 }
 
 @keyframes toast-slide-in {
@@ -1066,9 +1085,9 @@ nav {
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(0.5rem);
-  transition: opacity var(--transition-base),
-              transform var(--transition-base),
+  transform: translateY(1rem);
+  transition: opacity 400ms var(--ease-out-expo),
+              transform 400ms var(--ease-out-back),
               border-color var(--transition-fast);
   z-index: var(--z-dropdown);
 }
@@ -1222,6 +1241,27 @@ nav {
     display: none;
   }
 
+  /* Disable heavy blur effects on mobile to prevent rendering glitches on theme switch */
+  .gradient-mesh {
+    opacity: 0.08;
+  }
+
+  .gradient-mesh::before {
+    width: 300px;
+    height: 300px;
+    filter: blur(80px);
+  }
+
+  .gradient-mesh::after {
+    width: 200px;
+    height: 200px;
+    filter: blur(80px);
+  }
+
+  .particle-canvas {
+    display: none;
+  }
+
   .toast-container {
     right: 1rem;
     left: 1rem;
@@ -1258,19 +1298,19 @@ nav {
 /* Logo Letter Animation */
 .logo-letter {
   display: inline-block;
-  transition: transform var(--transition-base),
-              opacity var(--transition-base);
+  transition: transform 500ms var(--ease-out-back),
+              opacity 500ms var(--ease-out-expo);
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(14px) scale(0.9);
 }
 
 .logo-letter.revealed {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .logo:hover .logo-letter {
-  animation: logo-float 2s ease-in-out infinite;
+  animation: logo-float 2.4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
 }
 
 .logo-letter:nth-child(1) { animation-delay: 0s; }
@@ -1282,8 +1322,8 @@ nav {
 .logo-letter:nth-child(7) { animation-delay: 0.48s; }
 
 @keyframes logo-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.02); }
 }
 
 /* Animated Gradient Border */
@@ -1361,7 +1401,7 @@ nav {
 .page-transition.clip-reveal {
   clip-path: circle(0% at 50% 50%);
   opacity: 1;
-  transition: clip-path 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: clip-path 0.7s var(--ease-in-out-quart);
 }
 
 .page-transition.clip-reveal.active {
@@ -1395,7 +1435,7 @@ nav {
 }
 
 .shimmer:hover::after {
-  animation: shimmer-sweep 0.8s ease-out;
+  animation: shimmer-sweep 0.9s var(--ease-out-expo);
 }
 
 @keyframes shimmer-sweep {
@@ -1409,7 +1449,7 @@ nav {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
   margin: var(--spacing-xl) auto;
-  transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 1.2s var(--ease-in-out-quart);
 }
 
 .section-divider.visible {
