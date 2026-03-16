@@ -17,13 +17,13 @@
 
 const CONFIG = {
   ANIMATION: {
-    NAV_DURATION: 0.5,
-    NAV_STAGGER: 0.1,
-    NAV_DELAY: 0.2,
-    MAIN_DURATION: 0.8,
+    NAV_DURATION: 0.6,
+    NAV_STAGGER: 0.08,
+    NAV_DELAY: 0.15,
+    MAIN_DURATION: 0.9,
     MAIN_Y_OFFSET: 30,
-    CONTENT_STAGGER: 0.08,
-    CONTENT_DURATION: 0.6,
+    CONTENT_STAGGER: 0.07,
+    CONTENT_DURATION: 0.7,
     PROGRESS_DURATION: 400,
     PROGRESS_COMPLETE_DELAY: 480,
   },
@@ -482,10 +482,11 @@ const PJAX = {
             const page = state.elements.container.querySelector('.page');
             if (page) {
               gsap.to(page, {
-                duration: 0.3,
-                y: -15,
+                duration: 0.35,
+                y: -18,
                 opacity: 0,
-                ease: 'power2.in',
+                scale: 0.98,
+                ease: 'power3.in',
                 onComplete: resolve,
               });
             } else {
@@ -552,6 +553,8 @@ const PJAX = {
     ParallaxEffect.update();
     ScrollProgress.update();
     ScrollToTop.update();
+    StaggerIndexer.init();
+    SectionDivider.init();
   },
 
   /**
@@ -644,11 +647,11 @@ const Animation = {
 
     gsap.from('nav a', {
       duration: NAV_DURATION,
-      y: -10,
+      y: -12,
       opacity: 0,
       stagger: NAV_STAGGER,
       delay: NAV_DELAY,
-      ease: 'power2.out',
+      ease: 'expo.out',
     });
   },
 
@@ -667,10 +670,10 @@ const Animation = {
     if (page && page.children.length) {
       gsap.from(page.children, {
         duration: CONTENT_DURATION,
-        y: 20,
+        y: 24,
         opacity: 0,
         stagger: CONTENT_STAGGER,
-        ease: 'power2.out',
+        ease: 'expo.out',
         clearProps: 'transform,opacity',
       });
     } else {
@@ -680,7 +683,7 @@ const Animation = {
         duration: MAIN_DURATION,
         y: MAIN_Y_OFFSET,
         opacity: 0,
-        ease: 'power2.out',
+        ease: 'expo.out',
       });
     }
   },
@@ -1360,6 +1363,204 @@ const CopyToClipboard = {
   },
 };
 
+// =============================================================================
+// Particle Background / パーティクル背景
+// =============================================================================
+
+const ParticleBackground = {
+  canvas: null,
+  ctx: null,
+  particles: [],
+  rafId: null,
+  PARTICLE_COUNT: 40,
+  MAX_SPEED: 0.3,
+  CONNECT_DISTANCE: 120,
+
+  /**
+   * Create a single particle
+   */
+  createParticle() {
+    return {
+      x: Math.random() * this.canvas.width,
+      y: Math.random() * this.canvas.height,
+      vx: (Math.random() - 0.5) * this.MAX_SPEED,
+      vy: (Math.random() - 0.5) * this.MAX_SPEED,
+      radius: Math.random() * 1.5 + 0.5,
+    };
+  },
+
+  /**
+   * Resize canvas to viewport
+   */
+  resize() {
+    if (!this.canvas) return;
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  },
+
+  /**
+   * Draw and animate particles
+   */
+  draw() {
+    if (!this.ctx || !this.canvas) return;
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    const theme = document.documentElement.getAttribute('data-theme');
+    const dotColor = theme === 'dark' ? 'rgba(165, 153, 212,' : 'rgba(139, 126, 200,';
+    const lineColor = dotColor;
+
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
+
+      // Move
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Wrap around edges
+      if (p.x < 0) p.x = this.canvas.width;
+      if (p.x > this.canvas.width) p.x = 0;
+      if (p.y < 0) p.y = this.canvas.height;
+      if (p.y > this.canvas.height) p.y = 0;
+
+      // Draw dot
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      this.ctx.fillStyle = `${dotColor} 0.6)`;
+      this.ctx.fill();
+
+      // Draw connections
+      for (let j = i + 1; j < this.particles.length; j++) {
+        const p2 = this.particles[j];
+        const dx = p.x - p2.x;
+        const dy = p.y - p2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < this.CONNECT_DISTANCE) {
+          const alpha = (1 - dist / this.CONNECT_DISTANCE) * 0.15;
+          this.ctx.beginPath();
+          this.ctx.moveTo(p.x, p.y);
+          this.ctx.lineTo(p2.x, p2.y);
+          this.ctx.strokeStyle = `${lineColor} ${alpha})`;
+          this.ctx.lineWidth = 0.5;
+          this.ctx.stroke();
+        }
+      }
+    }
+
+    this.rafId = requestAnimationFrame(() => this.draw());
+  },
+
+  /**
+   * Initialize particle background
+   */
+  init() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(hover: none)').matches) return;
+
+    this.canvas = document.createElement('canvas');
+    this.canvas.className = 'particle-canvas';
+    this.canvas.setAttribute('aria-hidden', 'true');
+    document.body.insertBefore(this.canvas, document.body.firstChild);
+
+    this.ctx = this.canvas.getContext('2d');
+    this.resize();
+
+    // Create particles
+    this.particles = [];
+    for (let i = 0; i < this.PARTICLE_COUNT; i++) {
+      this.particles.push(this.createParticle());
+    }
+
+    // Resize handler
+    const throttledResize = throttle(() => this.resize(), 200);
+    window.addEventListener('resize', throttledResize);
+
+    this.draw();
+  },
+};
+
+// =============================================================================
+// Logo Letter Animation / ロゴ文字アニメーション
+// =============================================================================
+
+const LogoAnimation = {
+  /**
+   * Split logo text into individual letter spans and animate them
+   */
+  init() {
+    const logo = query('.logo');
+    if (!logo || logo.dataset.logoInit) return;
+    logo.dataset.logoInit = 'true';
+
+    const text = logo.textContent.trim();
+    logo.textContent = '';
+
+    Array.from(text).forEach((char, index) => {
+      const span = document.createElement('span');
+      span.className = 'logo-letter';
+      span.textContent = char;
+      logo.appendChild(span);
+
+      // Staggered reveal with gentle delay
+      setTimeout(() => {
+        span.classList.add('revealed');
+      }, 150 + index * 70);
+    });
+  },
+};
+
+// =============================================================================
+// Stagger Indexer / スタガーインデクサー
+// =============================================================================
+
+const StaggerIndexer = {
+  /**
+   * Auto-assign stagger indices to fade-in elements within containers
+   */
+  init() {
+    const containers = queryAll('.page, .stagger-container');
+    containers.forEach((container) => {
+      const fadeElements = queryAll(
+        '.fade-in:not([data-stagger]), .fade-in-left:not([data-stagger]), .fade-in-right:not([data-stagger]), .fade-in-scale:not([data-stagger])',
+        container
+      );
+
+      fadeElements.forEach((el, index) => {
+        if (index > 0 && index <= 5) {
+          el.setAttribute('data-stagger', String(index));
+        }
+      });
+    });
+  },
+};
+
+// =============================================================================
+// Section Divider / セクションディバイダー
+// =============================================================================
+
+const SectionDivider = {
+  /**
+   * Auto-insert animated dividers between page sections
+   */
+  init() {
+    const dividers = queryAll('.section-divider');
+    if (dividers.length === 0) return;
+
+    // Observe dividers for viewport entry
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add(CONFIG.CLASSES.VISIBLE);
+          observer.unobserve(entry.target);
+        }
+      });
+    });
+
+    dividers.forEach((d) => observer.observe(d));
+  },
+};
+
 const EnhancedPageTransition = {
   overlay: null,
   spinner: null,
@@ -1370,7 +1571,7 @@ const EnhancedPageTransition = {
   createElements() {
     if (!this.overlay) {
       this.overlay = document.createElement('div');
-      this.overlay.className = 'page-transition';
+      this.overlay.className = 'page-transition clip-reveal';
       document.body.appendChild(this.overlay);
     }
 
@@ -1448,6 +1649,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   ScrollToTop.init();
   GradientMesh.init();
   CopyToClipboard.init();
+
+  // Initialize new animation modules
+  ParticleBackground.init();
+  LogoAnimation.init();
+  StaggerIndexer.init();
+  SectionDivider.init();
 
   // Register Service Worker for PWA
   ServiceWorkerManager.register();
