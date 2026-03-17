@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html class="no-js" lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Blog - yunoxia.one</title>
+  <meta name="title" content="Blog - yunoxia.one" />
+  <meta name="description" content="yunoxiaのブログ。開発、デザイン、思考の記録。" />
+  <meta name="keywords" content="yunoxia, ブログ, 開発, デザイン, 思考" />
+  <meta name="author" content="yunoxia" />
+
+  <link rel="canonical" href="https://yunoxia.one/blog.html" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="manifest" href="manifest.json" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://yunoxia.one/blog.html" />
+  <meta property="og:title" content="Blog - yunoxia.one" />
+  <meta property="og:description" content="yunoxiaのブログ。開発、デザイン、思考の記録。" />
+  <meta property="og:image" content="https://yunoxia.one/assets/ogp.png" />
+  <meta property="og:locale" content="ja_JP" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://yunoxia.one/blog.html" />
+  <meta name="twitter:title" content="Blog - yunoxia.one" />
+  <meta name="twitter:description" content="yunoxiaのブログ。開発、デザイン、思考の記録。" />
+  <meta name="twitter:image" content="https://yunoxia.one/assets/ogp.png" />
+
+  <meta name="theme-color" content="#8b7ec8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#a599d4" media="(prefers-color-scheme: dark)" />
+
+  <script>
+    (function () {
+      try {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored || (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (error) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Sora:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header data-include="partials/header.html"></header>
+
+  <main id="pjax-container" role="main">
+    <section class="page fade-in">
+      <h2 class="text-gradient">Blog</h2>
+      <p>開発、デザイン、思考の記録</p>
+
+      <!-- Tag Filter -->
+      <div id="blog-tags" class="blog-tags" style="margin-top: 1.5rem;"></div>
+
+      <!-- Blog Post List -->
+      <div id="blog-list" class="blog-list" style="margin-top: 2rem;">
+        <div class="blog-loading">
+          <p style="color: var(--muted); font-size: 0.875rem;">読み込み中...</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <nav id="blog-pagination" class="blog-pagination" aria-label="ページナビゲーション"></nav>
+    </section>
+  </main>
+
+  <footer data-include="partials/footer.html"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+  <script type="module">
+    import { onLCP, onFID, onCLS, onFCP, onTTFB, onINP } from 'https://cdn.jsdelivr.net/npm/web-vitals@3/dist/web-vitals.js';
+    window.webVitals = { onLCP, onFID, onCLS, onFCP, onTTFB, onINP };
+  </script>
+  <script src="assets/js/web-vitals.js" defer></script>
+  <script src="assets/js/blog.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>

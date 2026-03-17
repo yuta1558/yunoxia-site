@@ -1514,3 +1514,206 @@ nav {
     scroll-behavior: auto;
   }
 }
+
+/* =============================================================================
+   Blog Styles
+   ============================================================================= */
+
+/* Blog Tags */
+.blog-tags {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.blog-tag {
+  padding: 0.3rem 0.75rem;
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.blog-tag:hover,
+.blog-tag.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.blog-tag-inline {
+  padding: 0.2rem 0.5rem;
+  background: var(--accent-light);
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+/* Blog Entry */
+.blog-entry {
+  transition: background-color var(--transition-base),
+              transform 400ms var(--ease-out-back, ease),
+              border-radius var(--transition-base),
+              padding var(--transition-base);
+}
+
+.blog-entry:hover {
+  background-color: var(--accent-light);
+  border-radius: var(--radius-md, 8px);
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.blog-entry h3 a {
+  transition: color 0.2s;
+}
+
+.blog-entry h3 a:hover {
+  color: var(--accent) !important;
+}
+
+/* Blog Back Link */
+.blog-back-link:hover {
+  color: var(--accent) !important;
+}
+
+/* Blog Pagination */
+.blog-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.blog-page-link {
+  color: var(--accent);
+  font-size: 0.8125rem;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.blog-page-link:hover {
+  opacity: 0.8;
+}
+
+.blog-page-info {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* Blog Post Content - Prose Styles */
+.blog-post-content.prose {
+  line-height: 1.9;
+  font-size: 0.9375rem;
+  color: var(--primary);
+}
+
+.blog-post-content.prose h1,
+.blog-post-content.prose h2,
+.blog-post-content.prose h3,
+.blog-post-content.prose h4 {
+  margin: 2rem 0 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.blog-post-content.prose h1 { font-size: 1.75rem; }
+.blog-post-content.prose h2 { font-size: 1.375rem; }
+.blog-post-content.prose h3 { font-size: 1.125rem; }
+.blog-post-content.prose h4 { font-size: 1rem; }
+
+.blog-post-content.prose p {
+  margin: 1rem 0;
+}
+
+.blog-post-content.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.blog-post-content.prose a:hover {
+  opacity: 0.8;
+}
+
+.blog-post-content.prose ul,
+.blog-post-content.prose ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.blog-post-content.prose li {
+  margin: 0.375rem 0;
+}
+
+.blog-post-content.prose blockquote {
+  margin: 1.5rem 0;
+  padding: 0.75rem 1.25rem;
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  border-radius: 0 var(--radius-sm, 4px) var(--radius-sm, 4px) 0;
+  color: var(--muted);
+}
+
+.blog-post-content.prose pre {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.blog-post-content.prose code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.85em;
+}
+
+.blog-post-content.prose p code,
+.blog-post-content.prose li code {
+  padding: 0.125rem 0.375rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.blog-post-content.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm, 4px);
+  margin: 1.5rem 0;
+}
+
+.blog-post-content.prose hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.blog-post-content.prose table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.blog-post-content.prose th,
+.blog-post-content.prose td {
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.blog-post-content.prose th {
+  background: var(--surface);
+  font-weight: 600;
+}

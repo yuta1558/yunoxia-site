@@ -555,6 +555,18 @@ const PJAX = {
     ScrollToTop.update();
     StaggerIndexer.init();
     SectionDivider.init();
+    // Reinitialize blog if on blog page
+    if (typeof window.BlogInit === 'function') {
+      window.BlogInit();
+    } else if (location.pathname.includes('blog')) {
+      // blog.js not yet loaded (PJAX doesn't execute script tags from fetched pages)
+      const script = document.createElement('script');
+      script.src = 'assets/js/blog.js';
+      script.onload = () => {
+        if (typeof window.BlogInit === 'function') window.BlogInit();
+      };
+      document.head.appendChild(script);
+    }
   },
 
   /**
