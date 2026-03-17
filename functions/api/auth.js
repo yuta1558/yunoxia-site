@@ -35,6 +35,45 @@ async function createJWT(payload, secret) {
   return `${headerB64}.${payloadB64}.${signatureB64}`;
 }
 
+async function verifyJWT(token, secret) {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['verify']
+  );
+
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+
+  const [headerB64, payloadB64, signatureB64] = parts;
+  const data = encoder.encode(`${headerB64}.${payloadB64}`);
+
+  try {
+    const signature = Uint8Array.from(
+      atob(signatureB64.replace(/-/g, '+').replace(/_/g, '/')),
+      (c) => c.charCodeAt(0)
+    );
+
+    const valid = await crypto.subtle.verify('HMAC', key, signature, data);
+    if (!valid) return null;
+
+    const payload = JSON.parse(
+      atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/'))
+    );
+
+    if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 async function hashPassword(password) {
   const encoder = new TextEncoder();
   const data = encoder.encode(password);
@@ -109,10 +148,8 @@ export async function onRequestPost(context) {
         );
       }
 
-      // Middleware already handles JWT verification for protected routes
-      // This endpoint is for client-side token validation
-      const parts = token.split('.');
-      if (parts.length !== 3) {
+      const jwtSecret = env.JWT_SECRET;
+      if (!jwtSecret) {
         return new Response(
           JSON.stringify({ valid: false }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -120,12 +157,15 @@ export async function onRequestPost(context) {
       }
 
       try {
-        const payload = JSON.parse(
-          atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
-        );
-        const isExpired = payload.exp && Date.now() / 1000 > payload.exp;
+        const payload = await verifyJWT(token, jwtSecret);
+        if (!payload) {
+          return new Response(
+            JSON.stringify({ valid: false }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
         return new Response(
-          JSON.stringify({ valid: !isExpired, user: payload.sub }),
+          JSON.stringify({ valid: true, user: payload.sub }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }
         );
       } catch {

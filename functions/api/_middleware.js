@@ -19,22 +19,27 @@ async function verifyJWT(token, secret) {
   const [headerB64, payloadB64, signatureB64] = parts;
   const data = encoder.encode(`${headerB64}.${payloadB64}`);
 
-  const signature = Uint8Array.from(
-    atob(signatureB64.replace(/-/g, '+').replace(/_/g, '/')),
-    (c) => c.charCodeAt(0)
-  );
+  try {
+    const signature = Uint8Array.from(
+      atob(signatureB64.replace(/-/g, '+').replace(/_/g, '/')),
+      (c) => c.charCodeAt(0)
+    );
 
-  const valid = await crypto.subtle.verify('HMAC', key, signature, data);
-  if (!valid) return null;
+    const valid = await crypto.subtle.verify('HMAC', key, signature, data);
+    if (!valid) return null;
 
-  const payload = JSON.parse(
-    atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/'))
-  );
+    const payload = JSON.parse(
+      atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/'))
+    );
 
-  // Check expiration
-  if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+    // Check expiration
+    if (payload.exp && Date.now() / 1000 > payload.exp) return null;
 
-  return payload;
+    return payload;
+  } catch {
+    // Malformed token (invalid base64, invalid JSON, etc.)
+    return null;
+  }
 }
 
 function corsHeaders(origin) {
