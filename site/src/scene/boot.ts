@@ -30,6 +30,8 @@ const afterEngagement = (fn: () => void) => {
   const events = ['scroll', 'wheel', 'pointerdown', 'pointermove', 'touchstart', 'keydown'] as const;
   const go = () => {
     events.forEach((e) => removeEventListener(e, go));
+    // Read by the ?fps=1 meter: the start-up cost lands on the first scroll, not on load
+    (window as unknown as { __yxEngagedAt?: number }).__yxEngagedAt = performance.now();
     afterFirstPaint(fn);
   };
   events.forEach((e) => addEventListener(e, go, { once: true, passive: true }));

@@ -226,6 +226,7 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   let meterFrames = 0;
   let meterTime = 0;
   let meterWorst = 0;
+  let meterInit = '';
 
   const frame = (now: number) => {
     raf = requestAnimationFrame(frame);
@@ -267,13 +268,17 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
     renderer.render(scene, camera);
 
     if (meter) {
+      if (!meterInit) {
+        const engagedAt = (window as unknown as { __yxEngagedAt?: number }).__yxEngagedAt;
+        meterInit = engagedAt === undefined ? '-' : `${(performance.now() - engagedAt).toFixed(0)} ms`;
+      }
       meterFrames++;
       meterTime += dt;
       meterWorst = Math.max(meterWorst, dt);
       if (meterTime >= 1) {
         meter.textContent =
           `${(meterFrames / meterTime).toFixed(0)} fps  worst ${(meterWorst * 1000).toFixed(0)} ms\n` +
-          `dpr ${renderer.getPixelRatio()}  quality -${downgraded}`;
+          `dpr ${renderer.getPixelRatio()}  quality -${downgraded}  init ${meterInit}`;
         meterFrames = 0;
         meterTime = 0;
         meterWorst = 0;
