@@ -1,0 +1,587 @@
+---
+// Direction D — C's paper, pen and toolpath, with Even Realities' restraint: light-weight headlines in sentence-case
+// with a full stop, a three-part section head (title / short text / action), square cards with the label top-left,
+// a dark "technology" band with x-ray linework, and big light numerals for specs.
+// Only two things are heavy: the wordmark, and the top h1 as the page's one claim.
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import '@fontsource/zen-kaku-gothic-new/300.css';
+import '@fontsource/zen-kaku-gothic-new/400.css';
+import '@fontsource/zen-kaku-gothic-new/700.css';
+import Lab from './_LabLayout.astro';
+
+const works = [
+  { n: '01', title: 'LPD8 DMX Kit', line: 'ノブを一つずつ回していた照明を、パッド一押しに。', status: 'Done', date: '2026.10.18', fresh: true },
+  { n: '02', title: 'このサイトの作り直し', line: '分解して、理解して、作り替える を、このサイトで。', status: 'WIP', date: '2026.10.18', fresh: true },
+  { n: '03', title: 'BLTouch トラブル|シューティング', line: '展開しない原因を三つに切り分け、日韓に訳した。', status: 'WIP', date: '2026.09.01', fresh: false },
+];
+const specs = [
+  { v: '0.20', u: 'mm', l: 'Layer height', t: '一層の高さ。ここから全部が積み上がる。' },
+  { v: '21', u: 'mm³/s', l: 'Max flow', t: '溶かして押し出せる量の上限。' },
+  { v: '215', u: '°C', l: 'Nozzle', t: 'PLA を流すときの温度。' },
+  { v: '14,486', u: '', l: 'Profiles', t: '数えた公開プロファイルの数。' },
+];
+const layers = 24;
+const contour = (i: number, cx: number, base: number, step: number, amp: number) => {
+  const y = base - i * step;
+  const w = amp + Math.sin(i / 3.2) * amp * 0.28;
+  return `M ${cx - w} ${y} C ${cx - w / 2} ${y - 14}, ${cx + w / 2} ${y + 14}, ${cx + w} ${y}`;
+};
+---
+
+<Lab title="Lab D — Drafting paper × Even Realities">
+  <div class="d">
+    <header class="bar">
+      <a class="mark" href="#" aria-label="yunoxia">yunoxia</a>
+      <nav>
+        <a href="#" aria-current="page">Works</a><a href="#">Research</a><a href="#">Log</a><a href="#">About</a>
+      </nav>
+      <span class="readout" aria-hidden="true">Z 0.20 · 215°C</span>
+    </header>
+
+    <!-- Hero: a full-bleed panel where the toolpath plays the part of the product shot -->
+    <section class="hero">
+      <svg class="hero__art" viewBox="0 0 600 420" aria-hidden="true">
+        {Array.from({ length: layers }, (_, i) => (
+          <path d={contour(i, 300, 360, 12, 190)} class={i >= layers - 3 ? 'tp new' : 'tp'} style={`opacity:${0.2 + (i / layers) * 0.8}`} />
+        ))}
+        <line x1="560" y1="84" x2="560" y2="360" class="dim" />
+        <line x1="552" y1="84" x2="568" y2="84" class="dim" />
+        <line x1="552" y1="360" x2="568" y2="360" class="dim" />
+        <text x="548" y="226" class="dimt" text-anchor="end">24 × 0.20</text>
+      </svg>
+      <div class="hero__copy">
+        <h1>分解して、<br />理解して、<br /><span class="pen">作り替える。</span></h1>
+        <a class="btn light" href="#">作ったものを見る</a>
+      </div>
+      <p class="hero__sheet small">Sheet 01 / 04 — yunoxia, ゆーの制作と研究</p>
+    </section>
+
+    <!-- Section head in three parts, as Even Realities sets it -->
+    <section class="sec">
+      <div class="sec__head">
+        <h2>作ったもの。<br />直したもの。</h2>
+        <p>既製品や仕組みを開けて中を見て、物理量に分けて理解し、他の人も使える道具にする。その記録。</p>
+        <a class="btn dark" href="#">Works 一覧</a>
+      </div>
+      <ul class="cards">
+        {works.map((w, k) => (
+          <li>
+            <a href="#" class="card">
+              <span class="card__top">
+                <span class="card__t">{w.title.split('|').map((t) => <span>{t}</span>)}</span>
+                <span class="card__plus" aria-hidden="true">+</span>
+              </span>
+              <svg class="card__art" viewBox="0 0 300 220" aria-hidden="true">
+                {Array.from({ length: 10 + k * 4 }, (_, i) => (
+                  <path d={contour(i, 150, 190, 9 - k, 90 - k * 12)} class="tp" style={`opacity:${0.25 + i / (14 + k * 4)}`} />
+                ))}
+              </svg>
+              <span class="card__foot">
+                <span class="card__l">{w.line}</span>
+                <span class={w.fresh ? 'small fresh' : 'small'}>{w.status} · {w.date}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <!-- Dark band: the technology page's x-ray linework, in blueprint -->
+    <section class="band">
+      <div class="band__inner">
+        <p class="statement"><span>公開プロファイルを&nbsp;</span><span>14,486 件数えた。</span><span>同じ温度でも、</span><span>流量の設定は</span><span>大きく散らばる。</span></p>
+        <svg class="xray" viewBox="0 0 600 260" aria-hidden="true">
+          {Array.from({ length: 30 }, (_, i) => (
+            <path d={contour(i, 300, 240, 7, 230 - i * 3)} class="xr" style={`opacity:${0.12 + (i / 30) * 0.6}`} />
+          ))}
+          {Array.from({ length: 30 }, (_, i) => (
+            <path d={contour(i, 300, 240, 7, 120 + i * 2)} class="xr b" style={`opacity:${0.08 + (i / 30) * 0.4}`} />
+          ))}
+        </svg>
+        <div class="sec__head on-dark">
+          <h2>Research.</h2>
+          <p>温度 × 最大体積流量で、OrcaSlicer と PrusaSlicer のプロファイルを数えた分布。</p>
+          <a class="btn outline" href="#">分布を見る</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Specs as big light numerals -->
+    <section class="sec">
+      <div class="sec__head">
+        <h2>数字で見る。</h2>
+        <p>手を動かした結果は、単位の付いた数字で残す。</p>
+        <span></span>
+      </div>
+      <dl class="specs">
+        {specs.map((s) => (
+          <div>
+            <dt class="small">{s.l}</dt>
+            <dd><span class="num">{s.v}</span>{s.u && <span class="unit">{s.u}</span>}</dd>
+            <p>{s.t}</p>
+          </div>
+        ))}
+      </dl>
+    </section>
+
+    <footer class="foot small">
+      <span>© yunoxia</span><span>Scale 1:1</span>
+    </footer>
+  </div>
+</Lab>
+
+<style>
+  .d {
+    --paper: #efece5;
+    --surface: #e4e0d6;
+    --panel: #d9d4c8;
+    --ink: #121211;
+    --muted: #5e5b54;
+    --line: #d2cdc1;
+    --pen: #1f3dff;
+    --bp: #0d1430;
+    --bp-ink: #e8ebf4;
+    --bp-muted: #8e97b3;
+    --bp-pen: #8fa2ff;
+    --sans: 'Geist Variable', 'Zen Kaku Gothic New', sans-serif;
+    --jp: 'Zen Kaku Gothic New', 'Geist Variable', sans-serif;
+    --mono: 'Geist Mono Variable', ui-monospace, monospace;
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+    --gutter: clamp(1rem, 3vw, 2rem);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--jp);
+    overflow-x: clip;
+  }
+
+  :global(body) {
+    margin: 0;
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--pen);
+    outline-offset: 2px;
+  }
+
+  .small {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Header: one hairline, light nav, the current page underlined at the bar's edge */
+  .bar {
+    display: flex;
+    align-items: stretch;
+    gap: 2rem;
+    padding-inline: var(--gutter);
+    border-bottom: 1px solid var(--line);
+    height: 3.25rem;
+  }
+
+  .mark {
+    align-self: center;
+    margin-right: auto;
+    color: var(--ink);
+    text-decoration: none;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 1.45rem;
+    letter-spacing: -0.05em;
+    -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 0.1034em, transparent 0.1034em 0.1422em);
+    mask-image: repeating-linear-gradient(to bottom, #000 0 0.1034em, transparent 0.1034em 0.1422em);
+  }
+
+  nav {
+    display: flex;
+    gap: 2.5rem;
+  }
+
+  nav a {
+    display: flex;
+    align-items: center;
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 1rem;
+    letter-spacing: -0.03em;
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1.5px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+  }
+
+  nav a:hover,
+  nav a[aria-current='page'] {
+    color: var(--ink);
+  }
+
+  nav a[aria-current='page'] {
+    border-bottom-color: var(--ink);
+  }
+
+  .readout {
+    align-self: center;
+  }
+
+  /* Light, tight headlines; sentence case, ending in a full stop */
+  /* Geist sets the Latin, Zen Kaku Gothic New fills in the Japanese */
+  h1,
+  h2,
+  .statement {
+    font-family: var(--sans);
+  }
+
+  h1,
+  h2 {
+    font-weight: 300;
+    font-feature-settings: 'palt' 1;
+    margin: 0;
+  }
+
+  /* The one heavy statement on the page; every other heading stays light */
+  h1 {
+    font-weight: 700;
+    font-size: clamp(2.6rem, 5.6vw, 5rem);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+  }
+
+  h2 {
+    font-size: clamp(1.8rem, 3.2vw, 2.9rem);
+    line-height: 1.1;
+    letter-spacing: -0.045em;
+  }
+
+  .pen {
+    color: var(--pen);
+  }
+
+  /* Buttons: square, solid or outlined, no shadow */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-family: var(--jp);
+    font-weight: 400;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    transition: background 0.2s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
+  }
+
+  .btn.light {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .btn.dark {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .btn.outline {
+    border-color: var(--bp-ink);
+    color: var(--bp-ink);
+  }
+
+  .btn:hover {
+    background: var(--pen);
+    border-color: var(--pen);
+    color: var(--paper);
+  }
+
+  .btn.outline:hover {
+    background: var(--bp-pen);
+    border-color: var(--bp-pen);
+    color: var(--bp);
+  }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    margin: var(--gutter);
+    min-height: min(78vh, 46rem);
+    background: var(--panel);
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .hero__art {
+    width: 100%;
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+
+  .hero__copy {
+    display: grid;
+    gap: 2rem;
+    justify-items: start;
+    padding: 2rem var(--gutter) 2rem 0;
+  }
+
+  .hero__sheet {
+    position: absolute;
+    left: 1.25rem;
+    bottom: 1rem;
+    margin: 0;
+  }
+
+  .tp {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .tp.new {
+    stroke: var(--pen);
+    stroke-width: 1.6;
+  }
+
+  .dim {
+    stroke: var(--pen);
+    stroke-width: 1;
+  }
+
+  .dimt {
+    font-family: var(--mono);
+    font-size: 10px;
+    fill: var(--pen);
+  }
+
+  /* Sections */
+  .sec {
+    padding: clamp(3rem, 10vw, 6rem) var(--gutter);
+  }
+
+  .sec__head {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr auto;
+    gap: 2rem;
+    align-items: end;
+    margin-bottom: 2.5rem;
+  }
+
+  .sec__head p {
+    margin: 0;
+    max-width: 26rem;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  .card {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    aspect-ratio: 4 / 5;
+    padding: 1rem;
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: none;
+    transition: background 0.2s var(--ease);
+  }
+
+  .card:hover {
+    background: var(--panel);
+  }
+
+  .card__top {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .card__t {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 1.35rem;
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+    transition: color 0.15s var(--ease);
+  }
+
+  .card:hover .card__t,
+  .card:focus-visible .card__t {
+    color: var(--pen);
+  }
+
+  .card__plus {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--muted);
+  }
+
+  .card__art {
+    align-self: center;
+    width: 100%;
+  }
+
+  .card__foot {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .card__l {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .fresh {
+    color: var(--pen);
+  }
+
+  /* Dark band */
+  .band {
+    background: var(--bp);
+    color: var(--bp-ink);
+    padding: clamp(3rem, 10vw, 6rem) var(--gutter);
+  }
+
+  /* Break only between phrases, never inside one */
+  .statement span,
+  .card__t span {
+    display: inline-block;
+  }
+
+  .statement {
+    margin: 0;
+    max-width: 22em;
+    font-weight: 300;
+    font-size: clamp(1.8rem, 4vw, 3.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.045em;
+    font-feature-settings: 'palt' 1;
+  }
+
+  .xray {
+    display: block;
+    width: 100%;
+    margin: clamp(2rem, 6vw, 4rem) 0;
+  }
+
+  .xr {
+    fill: none;
+    stroke: var(--bp-ink);
+    stroke-width: 0.8;
+  }
+
+  .xr.b {
+    stroke: var(--bp-pen);
+  }
+
+  .on-dark p {
+    color: var(--bp-muted);
+  }
+
+  .on-dark {
+    margin-bottom: 0;
+  }
+
+  /* Specs */
+  .specs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 0;
+  }
+
+  .specs > div {
+    border-top: 1px solid var(--ink);
+    padding-top: 1rem;
+  }
+
+  .specs dd {
+    margin: 1.5rem 0 0.75rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .num {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: clamp(2.4rem, 4.5vw, 4rem);
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+
+  .unit {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .specs p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    padding: 1.25rem var(--gutter);
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 48rem) {
+    nav,
+    .readout {
+      display: none;
+    }
+
+    .hero {
+      grid-template-columns: 1fr;
+      align-content: end;
+    }
+
+    .hero__copy {
+      padding: 0 1.25rem 3.5rem;
+    }
+
+    .sec__head {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      justify-items: start;
+    }
+
+    .cards {
+      grid-template-columns: 1fr;
+    }
+
+    .card {
+      aspect-ratio: auto;
+      gap: 1rem;
+    }
+
+    .card__art {
+      height: 9rem;
+    }
+
+    .specs {
+      grid-template-columns: 1fr 1fr;
+      row-gap: 2rem;
+    }
+  }
+</style>
