@@ -10,6 +10,9 @@ const works = defineCollection({
     status: z.enum(['進行中', '完了', '構想']),
     updated: z.coerce.date(),
     tags: z.array(z.string()).default([]),
+    // Card picture: a photo, screenshot or drawing under /assets/works/ (new file name on change)
+    cover: z.string().optional(),
+    coverAlt: z.string().optional(),
   }),
 });
 
@@ -22,6 +25,8 @@ const worksEn = defineCollection({
     status: z.enum(['In progress', 'Done', 'Planned']),
     updated: z.coerce.date(),
     tags: z.array(z.string()).default([]),
+    cover: z.string().optional(),
+    coverAlt: z.string().optional(),
   }),
 });
 

@@ -1,7 +1,7 @@
 ---
-title: Site Structure Established
+title: サイトの構成を決めた
 date: 2025-11-15
-tags: [Architecture]
+tags: [構成]
 ---
 
 素の JavaScript と CSS だけで構成する形を固めました。ビルドなし、フレームワークなし、依存は最小限です。PJAX、テーマ切り替え、カードの傾き演出などの基本機能を入れました。
