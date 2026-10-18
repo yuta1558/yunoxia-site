@@ -87,7 +87,13 @@
     show('list');
     $('list-status').textContent = '読み込み中…';
     try {
-      posts = (await api('/posts?status=all&limit=50')).posts;
+      // The API caps a page at 50 posts, so walk every page
+      posts = [];
+      for (let page = 1; ; page++) {
+        const res = await api(`/posts?status=all&limit=50&page=${page}`);
+        posts.push(...res.posts);
+        if (!res.pagination || !res.pagination.hasNext) break;
+      }
       renderList();
     } catch (e) {
       $('list-status').textContent = `読み込みに失敗しました（${e.message}）`;

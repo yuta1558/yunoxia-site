@@ -12,7 +12,8 @@ export async function onRequestGet(context) {
 
   let posts;
   try {
-    posts = await listPublished(context.env.DB);
+    // Every published post: /log/ has no pagination, and the static entries only cover the pre-CMS archive
+    posts = await listPublished(context.env.DB, 10000);
   } catch {
     return page;
   }
