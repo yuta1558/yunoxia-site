@@ -6,7 +6,7 @@ export type Lang = 'ja' | 'en';
 export const ui = {
   ja: {
     siteTagline: '分解して、理解して、作り替える。',
-    defaultDescription: '分解して、理解して、作り替える。yunoxia は、ゆーの制作と研究の記録です。',
+    defaultDescription: '分解して、理解して、作り替える。yunoxia は、ゆーの制作と研究の記録です。作ったものは Works に、研究は Research に、途中経過は Log にあります。',
     skip: '本文へ移動',
     home: 'yunoxia ホーム',
     nav: 'メイン',

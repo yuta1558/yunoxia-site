@@ -11,7 +11,7 @@
     <script src="/admin/admin.js" defer></script>
   </head>
   <body>
-    <section id="login" class="login" hidden>
+    <main id="login" class="login" hidden>
       <form id="login-form" class="card">
         <h1>yunoxia Admin</h1>
         <label>ユーザー名<input name="username" autocomplete="username" required /></label>
@@ -19,7 +19,7 @@
         <p id="login-error" class="error" role="alert" hidden></p>
         <button type="submit" class="primary">ログイン</button>
       </form>
-    </section>
+    </main>
 
     <section id="app" hidden>
       <header class="bar">
@@ -29,7 +29,8 @@
         <button id="logout" type="button">ログアウト</button>
       </header>
 
-      <main>
+      <main hidden>
+        <h1 class="visually-hidden">yunoxia Admin</h1>
         <div id="view-list">
           <div class="toolbar">
             <h2>記事</h2>
@@ -89,8 +90,8 @@
                 <button type="button" data-cmd="rule" title="区切り線（---）">区切り線</button>
               </div>
               <div class="tabs" role="tablist" aria-label="表示">
-                <button type="button" role="tab" id="tab-write" aria-selected="true" aria-controls="pane-write">編集</button>
-                <button type="button" role="tab" id="tab-preview" aria-selected="false" aria-controls="pane-preview">プレビュー</button>
+                <button type="button" role="tab" id="tab-write" aria-selected="true" aria-controls="pane-write" tabindex="0">編集</button>
+                <button type="button" role="tab" id="tab-preview" aria-selected="false" aria-controls="pane-preview" tabindex="-1">プレビュー</button>
               </div>
             </div>
             <div id="pane-write" role="tabpanel" aria-labelledby="tab-write">

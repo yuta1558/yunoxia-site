@@ -1,10 +1,11 @@
 // Minimal Markdown renderer for CMS posts.
 // Safe by construction: every piece of text is HTML-escaped, raw HTML is never passed
 // through, and link/image URLs are limited to http(s), mailto and same-site paths.
-// Supported: headings, paragraphs, lists (one level), fenced code, blockquotes, rules,
+// Supported: headings, paragraphs, lists (one level: a nested list is flattened), fenced code, blockquotes, rules,
 // tables are not supported (rendered as text). Inline: `code`, **strong**, *em*, links, images.
 
 import { escapeHtml } from './http.js';
+import { sizeFromKey } from './imagesize.js';
 
 function safeUrl(raw) {
   const url = raw.trim();
@@ -15,8 +16,15 @@ function safeUrl(raw) {
   return null;
 }
 
-const emphasis = (s) =>
-  s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+// A single * opens or closes emphasis only at a word edge, so 2*3*4 stays literal (as in excerpt.mjs).
+// A finished <strong> is held as a placeholder, so em can contain it but never cross it.
+const em = (s) => s.replace(/(^|[^\w*])\*([^*\s](?:[^*]*[^*\s])?)\*(?![\w*])/g, '$1<em>$2</em>');
+const emphasis = (s, hold) =>
+  em(
+    s
+      .replace(/\*\*\*(\S(?:.*?\S)?)\*\*\*/g, (_, inner) => hold(`<em><strong>${em(inner)}</strong></em>`))
+      .replace(/\*\*(\S(?:.*?\S)?)\*\*/g, (_, inner) => hold(`<strong>${em(inner)}</strong>`)),
+  );
 
 function inline(text) {
   // Placeholders: \u0000n\u0000 for code spans, \u0001n\u0001 for finished links and images.
@@ -31,21 +39,28 @@ function inline(text) {
   src = src.replace(/`([^`]+)`/g, (_, code) => `\u0000${codes.push(code) - 1}\u0000`);
   src = escapeHtml(src);
 
-  src = src.replace(/(!?)\[([^\]]*)\]\(([^)\s]+)\)/g, (match, bang, label, url) => {
+  src = src.replace(/(!?)\[([^\]]*)\]\(((?:[^()\s]|\([^()\s]*\))+)\)/g, (match, bang, label, url) => {
     if (/[\u0000\u0001]/.test(url)) return match;
     const safe = safeUrl(url.replaceAll('&amp;', '&'));
     if (!safe) return match;
-    if (bang) return hold(`<img src="${escapeHtml(safe)}" alt="${codeText(label)}" loading="lazy" decoding="async">`);
+    if (bang) {
+      // Uploads carry their size in the key; width/height let the browser reserve the space
+      const size = sizeFromKey(safe);
+      const dims = size ? ` width="${size.width}" height="${size.height}"` : '';
+      return hold(`<img src="${escapeHtml(safe)}" alt="${codeText(label)}"${dims} loading="lazy" decoding="async">`);
+    }
     if (!label) return match;
     const external = /^https?:/i.test(safe);
-    return hold(`<a href="${escapeHtml(safe)}"${external ? ' rel="noopener"' : ''}>${emphasis(label)}</a>`);
+    return hold(`<a href="${escapeHtml(safe)}"${external ? ' rel="noopener"' : ''}>${emphasis(label, hold)}</a>`);
   });
-  src = emphasis(src);
+  src = emphasis(src, hold);
+  // Held markup can hold more placeholders (a link inside strong), so restore until none is left
+  while (/\u0001\d+\u0001/.test(src)) src = src.replace(/\u0001(\d+)\u0001/g, (_, i) => held[Number(i)]);
 
-  return src
-    .replace(/\u0001(\d+)\u0001/g, (_, i) => held[Number(i)])
-    .replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${escapeHtml(codes[Number(i)])}</code>`);
+  return src.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${escapeHtml(codes[Number(i)])}</code>`);
 }
+
+const HR = /^\s*([-*_])(\s*\1){2,}\s*$/;
 
 export function renderMarkdown(markdown) {
   const lines = String(markdown).replace(/\r\n?/g, '\n').split('\n');
@@ -81,7 +96,7 @@ export function renderMarkdown(markdown) {
       continue;
     }
 
-    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) {
+    if (HR.test(line)) {
       out.push('<hr>');
       i++;
       continue;
@@ -90,7 +105,9 @@ export function renderMarkdown(markdown) {
     if (/^>\s?/.test(line)) {
       const body = [];
       while (i < lines.length && /^>\s?/.test(lines[i])) body.push(lines[i++].replace(/^>\s?/, ''));
-      out.push(`<blockquote><p>${inline(body.join(' '))}</p></blockquote>`);
+      // An empty `>` line starts a new paragraph
+      const paras = body.join('\n').split(/\n\s*\n/).filter((b) => b.trim());
+      out.push(`<blockquote>${paras.map((b) => `<p>${inline(b.split('\n').join(' '))}</p>`).join('')}</blockquote>`);
       continue;
     }
 
@@ -106,13 +123,25 @@ export function renderMarkdown(markdown) {
     }
 
     const para = [];
+    let setext = false;
     while (
       i < lines.length &&
       !/^\s*$/.test(lines[i]) &&
       !/^(#{1,6}\s|```|>\s?)/.test(lines[i]) &&
       !/^\s*([-*+]|\d+\.)\s+/.test(lines[i])
     ) {
+      // As in CommonMark (and the editor's preview), === or --- under text makes it a heading
+      if (para.length && /^ {0,3}(=+|-+)[ \t]*$/.test(lines[i])) {
+        setext = true;
+        i++;
+        break;
+      }
+      if (HR.test(lines[i])) break;
       para.push(lines[i++].trim());
+    }
+    if (setext) {
+      out.push(`<h2>${inline(para.join(' '))}</h2>`);
+      continue;
     }
     out.push(`<p>${inline(para.join(' '))}</p>`);
   }

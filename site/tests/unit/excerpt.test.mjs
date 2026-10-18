@@ -31,3 +31,24 @@ test('double underscores inside words are not emphasis', () => {
   // __init__.py is strong "init" in CommonMark, so the text reads init.py, as on the page
   assert.equal(excerpt('a__b__c と a**b**c と __init__.py。'), 'a__b__c と abc と init.py。');
 });
+
+test('link and image URLs may hold one level of parentheses, as in markdown.js', () => {
+  assert.equal(excerpt('[Wiki](https://e.com/a_(b)) を読む。'), 'Wiki を読む。');
+  assert.equal(excerpt('![](/p_(1).png)\n\nBody.'), 'Body.');
+});
+
+test('a link or image title is part of the link, as in CommonMark', () => {
+  assert.equal(excerpt('[a](https://e.com "Title") を読む。'), 'a を読む。');
+  assert.equal(excerpt('![](a.jpg "Cover")\n\nBody.'), 'Body.');
+});
+
+test('a setext heading is skipped like a # heading, as markdown.js renders it', () => {
+  assert.equal(excerpt('はじめに\n---\n\n本文です。'), '本文です。');
+  assert.equal(excerpt('見出し\n---\n本文です。'), '本文です。');
+  assert.equal(excerpt('Title\n===\n\nBody.'), 'Body.');
+  assert.equal(excerpt('---\n\nBody.'), 'Body.');
+});
+
+test('a --- inside fenced code does not cut the code block', () => {
+  assert.equal(excerpt('```yaml\ntitle: a\n---\nfoo: bar\n```\n\nBody.'), 'Body.');
+});

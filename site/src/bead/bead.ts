@@ -49,8 +49,8 @@ export function startBead() {
 
   let cool: RGB, warm: RGB;
   const readColors = () => {
-    cool = cssColor('--muted', [107, 107, 114]);
-    warm = cssColor('--accent', [111, 95, 184]);
+    cool = cssColor('--muted', [94, 91, 84]);
+    warm = cssColor('--accent', [31, 61, 255]);
   };
   readColors();
   new MutationObserver(readColors).observe(document.documentElement, { attributeFilter: ['data-theme'] });

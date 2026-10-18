@@ -101,7 +101,10 @@ html[lang='en'] body {
 /* Headlines are light and tight; Geist sets the Latin, Zen Kaku Gothic New the Japanese */
 h1,
 h2,
-h3 {
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-sans);
   font-weight: 300;
   line-height: 1.1;
@@ -112,7 +115,10 @@ h3 {
   word-break: auto-phrase;
 }
 
-h3 {
+h3,
+h4,
+h5,
+h6 {
   line-height: 1.2;
   letter-spacing: -0.03em;
 }
@@ -310,7 +316,10 @@ a:hover {
   margin-top: 2.5em;
 }
 
-.prose h3 {
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
   font-size: 1.15rem;
   margin-top: 2em;
 }

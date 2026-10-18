@@ -5,7 +5,7 @@
 //   node scripts/cms.mjs list
 //   node scripts/cms.mjs get <slug>            # prints the post as a Markdown file
 //   node scripts/cms.mjs push <file.md>        # create, or update the post with that slug
-//   node scripts/cms.mjs push <file.md> --publish
+//   node scripts/cms.mjs push <file.md> --publish   (flags can go anywhere)
 //
 // The file is Markdown with a front matter block:
 //
@@ -20,7 +20,8 @@
 //   本文…
 //
 // Images given as local paths (in the body or featured_image) are uploaded first and replaced
-// with their URLs. JPEG metadata (EXIF, GPS) is stripped; files must be 5 MB or less.
+// with their URLs. JPEG, PNG and WebP metadata (EXIF, GPS, text, comments) is stripped; GIF and
+// AVIF are sent as they are, metadata included. Files must be 5 MB or less.
 // CMS_URL defaults to https://yunoxia.one.
 //
 // Authentication is the CMS_API_TOKEN secret of the Pages project (see DEPLOY.md 4-6), either
@@ -33,6 +34,7 @@ import { readFile } from 'node:fs/promises';
 import { basename, dirname, extname, resolve } from 'node:path';
 import { findForbidden } from './forbidden.mjs';
 import { parse, serialize } from './lib/frontmatter.mjs';
+import { headingsWithoutStop, isLocal, rewriteImages, stripMetadata } from './lib/images.mjs';
 
 // Node's fetch ignores HTTPS_PROXY unless NODE_USE_ENV_PROXY is set. Behind a proxy (where the
 // network secret is added), run again with it so requests go through the proxy.
@@ -53,10 +55,35 @@ function fail(message) {
   process.exit(1);
 }
 
+// Read a file the user named; a missing one is a message, not a stack trace
+async function readInput(path, encoding) {
+  try {
+    return await readFile(path, encoding);
+  } catch (err) {
+    return fail(`${path}: ${err.code === 'ENOENT' ? 'no such file' : err.message}`);
+  }
+}
+
+// The token (or the proxy's network secret) must not travel over plain HTTP
+{
+  let url;
+  try {
+    url = new URL(BASE);
+  } catch {
+    fail(`CMS_URL is not a valid URL (got ${BASE}); include the scheme, e.g. https://yunoxia.one.`);
+  }
+  const { protocol, hostname } = url;
+  if (protocol !== 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(hostname)) {
+    fail(`CMS_URL must be https (got ${BASE}); http is allowed only for localhost.`);
+  }
+}
+
 async function api(path, { method = 'GET', body, form } = {}) {
   const headers = TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
-  const res = await fetch(`${BASE}/api${path}`, { method, headers, body: form ?? (body !== undefined ? JSON.stringify(body) : undefined) });
+  const res = await fetch(`${BASE}/api${path}`, { method, headers, body: form ?? (body !== undefined ? JSON.stringify(body) : undefined) }).catch((err) =>
+    fail(`${method} /api${path}: cannot reach ${BASE} (${err.cause?.code || err.message}).`),
+  );
   const data = await res.json().catch(() => ({}));
   if (res.status === 401) {
     fail(`${method} /api${path}: not authorised. Set the CMS_API_TOKEN value as a network secret for ${new URL(BASE).host} (Authorization: Bearer …) or as CMS_TOKEN.`);
@@ -76,35 +103,14 @@ async function allPosts() {
 
 // ---- Images -------------------------------------------------------------------------
 
-const isLocal = (src) => src && !/^(https?:)?\/\//.test(src) && !src.startsWith('/') && !src.startsWith('data:');
-
 const uploaded = new Map(); // path → URL, so a file used twice is uploaded once
 const MAX_BYTES = 5 * 1024 * 1024; // the API's limit
-
-// Drop a JPEG's APP1 segments (EXIF and XMP: camera data, GPS position) and keep the image data.
-// The admin UI re-encodes and shrinks images in the browser; Node has no image encoder, so the CLI
-// only strips metadata and leaves resizing to whoever prepares the file.
-function stripJpegMetadata(buf) {
-  if (buf[0] !== 0xff || buf[1] !== 0xd8) return buf;
-  const parts = [buf.subarray(0, 2)];
-  let i = 2;
-  while (i + 4 <= buf.length && buf[i] === 0xff) {
-    const marker = buf[i + 1];
-    if (marker === 0xda) break; // start of scan: the rest is image data
-    const len = buf.readUInt16BE(i + 2);
-    if (marker !== 0xe1) parts.push(buf.subarray(i, i + 2 + len));
-    i += 2 + len;
-  }
-  parts.push(buf.subarray(i));
-  return Buffer.concat(parts);
-}
 
 async function upload(path) {
   if (uploaded.has(path)) return uploaded.get(path);
   const type = TYPES[extname(path).toLowerCase()];
   if (!type) fail(`${path}: only jpg, png, gif, webp and avif can be uploaded`);
-  let data = await readFile(path);
-  if (type === 'image/jpeg') data = stripJpegMetadata(data);
+  const data = stripMetadata(await readInput(path), type);
   if (data.length > MAX_BYTES) fail(`${path}: ${(data.length / 1048576).toFixed(1)} MB is over the 5 MB limit; shrink it first (long side 2000 px is plenty).`);
   const form = new FormData();
   form.append('file', new Blob([data], { type }), basename(path));
@@ -114,14 +120,7 @@ async function upload(path) {
   return url;
 }
 
-async function uploadLocalImages(content, dir) {
-  const re = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
-  const done = new Map();
-  for (const [, , src] of content.matchAll(re)) {
-    if (isLocal(src)) done.set(src, await upload(resolve(dir, src)));
-  }
-  return content.replace(re, (all, alt, src) => (done.has(src) ? `![${alt}](${done.get(src)})` : all));
-}
+const uploadLocalImages = (content, dir) => rewriteImages(content, (src) => upload(resolve(dir, src)));
 
 // ---- Commands -------------------------------------------------------------------------
 
@@ -141,7 +140,7 @@ async function get(slug) {
 }
 
 async function push(file, publish) {
-  const text = await readFile(file, 'utf8');
+  const text = await readInput(file, 'utf8');
   const parsed = parse(text);
   if (!parsed) fail('The file needs a front matter block (--- title: … ---).');
   const { meta, content } = parsed;
@@ -151,6 +150,10 @@ async function push(file, publish) {
   if (hits.length) fail(`${file} contains forbidden string ${hits.map((n) => `#${n}`).join(', ')} (scripts/forbidden.mjs). Nothing was sent.`);
   if (!meta.title) fail('title is required in the front matter.');
   const dir = dirname(resolve(file));
+
+  // Warnings only: the post is still sent
+  if (!meta.slug) console.error('warning: no slug in the front matter. Pushing this file again creates a new post each time; add an ASCII slug (e.g. slug: my-post) to update the same one.');
+  for (const heading of headingsWithoutStop(content)) console.error(`warning: heading without a full stop: ${heading}`);
 
   // An update sends only what the file says: a key left out keeps its stored value, so a
   // file without `status:` does not take a published post down.
@@ -174,8 +177,13 @@ async function push(file, publish) {
   else console.log(`${verb} as a draft (slug: ${result.slug}). Publish with --publish or from ${BASE}/admin/.`);
 }
 
-const [cmd, arg, ...flags] = process.argv.slice(2);
+// Flags can come before or after the arguments
+const args = process.argv.slice(2);
+const flags = args.filter((a) => a.startsWith('--'));
+const [cmd, arg] = args.filter((a) => !a.startsWith('--'));
+const usage = 'Usage: node scripts/cms.mjs list | get <slug> | push <file.md> [--publish]';
+if (flags.some((f) => f !== '--publish')) fail(`Unknown option ${flags.find((f) => f !== '--publish')}\n${usage}`);
 if (cmd === 'list') await list();
 else if (cmd === 'get' && arg) await get(arg);
 else if (cmd === 'push' && arg) await push(arg, flags.includes('--publish'));
-else fail('Usage: node scripts/cms.mjs list | get <slug> | push <file.md> [--publish]');
+else fail(usage);

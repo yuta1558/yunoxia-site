@@ -100,7 +100,7 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   let ink = new Color();
   let pen = new Color();
   const readColors = () => {
-    paper = new Color(css('--panel') || css('--bg') || '#d9d4c8');
+    paper = new Color(css('--panel') || css('--bg') || '#efece5');
     ink = new Color(css('--fg') || '#121211');
     pen = new Color(css('--accent') || '#1f3dff');
     profMat.color.copy(pen);

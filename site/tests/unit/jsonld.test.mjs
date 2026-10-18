@@ -16,6 +16,16 @@ test('a missing or invalid date is left out', () => {
   assert.equal('datePublished' in blogPosting({ title: 't', date: 'nope', url }), false);
 });
 
+test('dateModified and image are optional, and invalid ones are dropped', () => {
+  const full = blogPosting({ title: 't', date: '2026-10-18T01:00:00.000Z', modified: '2026-10-19T02:00:00.000Z', image: 'https://yunoxia.one/a.jpg', url });
+  assert.equal(full.dateModified, '2026-10-19T02:00:00.000Z');
+  assert.equal(full.image, 'https://yunoxia.one/a.jpg');
+  const bare = blogPosting({ title: 't', date: '2026-10-18', modified: 'nope', url });
+  assert.equal('dateModified' in bare, false);
+  assert.equal('image' in bare, false);
+  assert.equal('dateModified' in blogPosting({ title: 't', date: '2026-10-18', modified: null, url }), false);
+});
+
 test('no author or person, and < cannot close the script tag', () => {
   const s = jsonLdString(blogPosting({ title: '</script><b>', date: '2026-10-18', url }));
   assert.doesNotMatch(s, /author|Person|publisher/);

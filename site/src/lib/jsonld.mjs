@@ -20,19 +20,23 @@ export function webSite({ url, lang, description }) {
 /**
  * BlogPosting for a Log post; pass the result to Base as `jsonLd`. `date` is a Date from date-only
  * front matter (written as YYYY-MM-DD) or a CMS timestamp string (written as is, so the instant
- * and its day in JST stay right). An invalid or missing date is left out rather than throwing.
+ * and its day in JST stay right). An invalid or missing date is left out rather than throwing, and so
+ * is `modified` (dateModified, same rules); `image` is an absolute URL.
  */
-export function blogPosting({ title, date, url, description, lang = 'ja' }) {
-  const valid = date != null && !Number.isNaN(+new Date(date));
+export function blogPosting({ title, date, modified, image, url, description, lang = 'ja' }) {
+  const stamp = (d) => (d instanceof Date ? d.toISOString().slice(0, 10) : String(d));
+  const ok = (d) => d != null && !Number.isNaN(+new Date(d));
   const data = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: title,
-    ...(valid && { datePublished: date instanceof Date ? date.toISOString().slice(0, 10) : String(date) }),
+    ...(ok(date) && { datePublished: stamp(date) }),
+    ...(ok(modified) && { dateModified: stamp(modified) }),
     inLanguage: lang,
     url: String(url),
     mainEntityOfPage: String(url),
   };
   if (description) data.description = description;
+  if (image) data.image = String(image);
   return data;
 }

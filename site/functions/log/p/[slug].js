@@ -1,7 +1,9 @@
 // GET /log/p/<slug> — a published CMS post, rendered inside the static /log/ page's shell.
 
+import { postDescription } from '../../_lib/feed.js';
 import { escapeHtml } from '../../_lib/http.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
+import { sizeFromKey } from '../../_lib/imagesize.js';
 import { getPublishedBySlug } from '../../_lib/posts.js';
 import { fetchAsset, formatDate, withHtmlHeaders } from '../../_lib/shell.js';
 import { withFullStop } from '../../../src/lib/headline.mjs';
@@ -29,10 +31,12 @@ export async function onRequestGet(context) {
 
   const canonical = new URL(`/log/p/${post.slug}/`, context.request.url).href;
   const title = `${post.title} — yunoxia`;
-  const description = post.excerpt || post.title;
+  const description = postDescription(post) || post.title;
   const tags = post.tags.length ? ` · ${post.tags.map(escapeHtml).join(' / ')}` : '';
+  const size = post.featured_image ? sizeFromKey(post.featured_image) : null;
+  const dims = size ? ` width="${size.width}" height="${size.height}"` : '';
   const image = post.featured_image
-    ? `<p><img src="${escapeHtml(post.featured_image)}" alt="" loading="lazy" decoding="async"></p>`
+    ? `<p><img src="${escapeHtml(post.featured_image)}" alt=""${dims} loading="lazy" decoding="async"></p>`
     : '';
   // Same page head as the static reading pages: label, light title, mono meta, prose (global.css)
   const article = `
@@ -43,8 +47,16 @@ export async function onRequestGet(context) {
       <div class="prose">${image}${renderMarkdown(post.content)}</div>
     </article>`;
 
+  const ogImage = post.featured_image ? new URL(post.featured_image, context.request.url).href : undefined;
   const structured = jsonLdString(
-    blogPosting({ title: post.title, date: post.published_at, url: canonical, description: post.excerpt }),
+    blogPosting({
+      title: post.title,
+      date: post.published_at,
+      modified: post.updated_at,
+      image: ogImage,
+      url: canonical,
+      description: postDescription(post),
+    }),
   );
 
   const setAttr = (attr, value) => ({ element: (el) => el.setAttribute(attr, value) });
@@ -57,8 +69,10 @@ export async function onRequestGet(context) {
     .on('meta[property="og:url"]', setAttr('content', canonical))
     .on('meta[property="og:type"]', setAttr('content', 'article'))
     .on('link[rel="canonical"]', setAttr('href', canonical))
-    .on('meta[property="og:image"]', post.featured_image ? setAttr('content', new URL(post.featured_image, context.request.url).href) : {})
-    .on('meta[property="og:image:width"], meta[property="og:image:height"]', post.featured_image ? { element: (el) => el.remove() } : {})
+    .on('meta[property="og:image"]', ogImage ? setAttr('content', ogImage) : {})
+    // The shell's width/height describe its own image: use the featured image's size, or drop them
+    .on('meta[property="og:image:width"]', post.featured_image ? (size ? setAttr('content', String(size.width)) : { element: (el) => el.remove() }) : {})
+    .on('meta[property="og:image:height"]', post.featured_image ? (size ? setAttr('content', String(size.height)) : { element: (el) => el.remove() }) : {})
     // The Log shell has no hreflang alternates for posts; drop any it carries
     .on('link[rel="alternate"][hreflang]', { element: (el) => el.remove() })
     .on('head', { element: (el) => el.append(`<script type="application/ld+json">${structured}</script>`, { html: true }) })

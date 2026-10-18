@@ -17,8 +17,10 @@ for (const [dir, base, key] of [
   }
 }
 
+const site = 'https://yunoxia.one';
+
 export default defineConfig({
-  site: 'https://yunoxia.one',
+  site,
   trailingSlash: 'ignore',
   build: { format: 'directory' },
   // Japanese at the root, English under /en/; the sitemap emits hreflang alternates for pages that exist in both
@@ -26,6 +28,8 @@ export default defineConfig({
     sitemap({
       // Design lab pages are for review only
       filter: (page) => !page.includes('/lab/'),
+      // CMS posts are served by a Function; list them in the index so crawlers find them without robots.txt
+      customSitemaps: [new URL('/sitemap-posts.xml', site).href],
       i18n: {
         defaultLocale: 'ja',
         // Same codes as <html lang> and the hreflang links in Base.astro
