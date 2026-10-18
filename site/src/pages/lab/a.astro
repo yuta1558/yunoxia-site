@@ -1,0 +1,364 @@
+---
+// Direction A — "Thermal": dark, engineering-grade, heat as the only colour.
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import '@fontsource/zen-kaku-gothic-new/400.css';
+import '@fontsource/zen-kaku-gothic-new/700.css';
+import Lab from './_LabLayout.astro';
+
+const works = [
+  { n: '01', title: 'LPD8 DMX Kit', line: 'ノブを一つずつ回していた照明を、パッド一押しに。', status: 'DONE', date: '2026.10.18', hot: true },
+  { n: '02', title: 'このサイトの作り直し', line: '分解して、理解して、作り替える を、このサイトで。', status: 'WIP', date: '2026.10.18', hot: true },
+  { n: '03', title: 'BLTouch トラブルシューティング', line: '展開しない原因を三つに切り分け、日韓に訳した。', status: 'WIP', date: '2026.09.01', hot: false },
+  { n: '04', title: 'HevORT-lite', line: '譲り受けた CoreXY 機に手を入れている。', status: 'WIP', date: '2026.09.01', hot: false },
+];
+---
+
+<Lab title="Lab A — Thermal">
+  <div class="a">
+    <header class="bar">
+      <a class="mark" href="#" aria-label="yunoxia">
+        <span class="mark__word">yunoxia</span>
+      </a>
+      <nav>
+        <a href="#">Works</a><a href="#">Research</a><a href="#">Log</a><a href="#">About</a>
+      </nav>
+      <span class="coord" aria-hidden="true">Z 0.20 · 215°C</span>
+    </header>
+
+    <section class="hero">
+      <p class="label"><span class="dot"></span>yunoxia / ゆー — 制作と研究の記録</p>
+      <h1>
+        <span>分解して、</span>
+        <span>理解して、</span>
+        <span class="hot">作り替える。</span>
+      </h1>
+      <div class="hero__foot">
+        <p>最も深く掘っている領域は、<br />産業用 3D プリンティング。</p>
+        <dl>
+          <div><dt>LAYER</dt><dd>0.20 mm</dd></div>
+          <div><dt>FLOW</dt><dd>21 mm³/s</dd></div>
+          <div><dt>FAN</dt><dd>100 %</dd></div>
+        </dl>
+      </div>
+      <!-- toolpath illustration: layered contour lines, top layer hot -->
+      <svg class="hero__art" viewBox="0 0 400 300" aria-hidden="true">
+        {Array.from({ length: 22 }, (_, i) => {
+          const y = 260 - i * 10;
+          const w = 150 + Math.sin(i / 3) * 40;
+          return <path d={`M ${200 - w} ${y} C ${200 - w / 2} ${y - 18}, ${200 + w / 2} ${y + 18}, ${200 + w} ${y}`} class={i > 18 ? 'p hot' : 'p'} style={`opacity:${0.15 + i / 26}`} />;
+        })}
+      </svg>
+    </section>
+
+    <section class="works">
+      <div class="works__head">
+        <h2>Works</h2>
+        <span class="label">04 ITEMS · SORTED BY LAST UPDATE</span>
+      </div>
+      <ol>
+        {works.map((w) => (
+          <li>
+            <a href="#">
+              <span class="n">{w.n}</span>
+              <span class="t">{w.title}</span>
+              <span class="l">{w.line}</span>
+              <span class={w.hot ? 'm hot' : 'm'}>{w.status} · {w.date}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="tokens">
+      <h2 class="label">Color system</h2>
+      <div class="sw">
+        <div style="--c:#0A0A0B"><b>bg</b>#0A0A0B</div>
+        <div style="--c:#141416"><b>surface</b>#141416</div>
+        <div style="--c:#EDEBE6"><b>ink</b>#EDEBE6</div>
+        <div style="--c:#8B8A86"><b>muted</b>#8B8A86</div>
+        <div style="--c:#FF5A1F"><b>heat</b>#FF5A1F 新しい・熱い・今</div>
+      </div>
+      <div class="ramp" aria-hidden="true"></div>
+      <p class="label">data ramp: cool → hot（温度・新しさを表すときだけ使う）</p>
+    </section>
+  </div>
+</Lab>
+
+<style>
+  .a {
+    --bg: #0a0a0b;
+    --surface: #141416;
+    --ink: #edebe6;
+    --muted: #8b8a86;
+    --line: #232326;
+    --heat: #ff5a1f;
+    --sans: 'Geist Variable', 'Zen Kaku Gothic New', sans-serif;
+    --jp: 'Zen Kaku Gothic New', 'Geist Variable', sans-serif;
+    --mono: 'Geist Mono Variable', ui-monospace, monospace;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--jp);
+    min-height: 100vh;
+    padding: 0 clamp(1rem, 4vw, 3rem) 6rem;
+    background-image: linear-gradient(to right, var(--line) 1px, transparent 1px);
+    background-size: calc((100% - 0px) / 12) 100%;
+    background-position: center;
+  }
+
+  :global(body) {
+    margin: 0;
+  }
+
+  .label,
+  .coord,
+  dt,
+  .n,
+  .m {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mark {
+    margin-right: auto;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  /* Wordmark: set in Geist, cut into layer lines like a sliced part */
+  .mark__word {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.04em;
+    -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 2.2px, transparent 2.2px 3.2px);
+    mask-image: repeating-linear-gradient(to bottom, #000 0 2.2px, transparent 2.2px 3.2px);
+  }
+
+  nav {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  nav a {
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--ink);
+  }
+
+  .hero {
+    position: relative;
+    padding-block: clamp(4rem, 14vh, 9rem) 4rem;
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--heat);
+    margin-right: 0.6rem;
+    vertical-align: 0.1em;
+    box-shadow: 0 0 12px var(--heat);
+  }
+
+  h1 {
+    position: relative;
+    z-index: 1;
+    font-family: var(--jp);
+    font-weight: 700;
+    font-size: clamp(2.8rem, 9vw, 8.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    font-feature-settings: 'palt' 1;
+    margin: 1.5rem 0 3rem;
+  }
+
+  h1 span {
+    display: block;
+  }
+
+  .hot {
+    color: var(--heat);
+  }
+
+  .hero .label {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__foot {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 2rem;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+
+  dl {
+    display: flex;
+    gap: 2rem;
+    margin: 0;
+  }
+
+  dd {
+    margin: 0.2rem 0 0;
+    font-family: var(--mono);
+    color: var(--ink);
+  }
+
+  .hero__art {
+    position: absolute;
+    right: -4%;
+    top: 12%;
+    width: min(60vw, 46rem);
+    pointer-events: none;
+  }
+
+  .p {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .p.hot {
+    stroke: var(--heat);
+    stroke-width: 1.5;
+  }
+
+  .works {
+    padding-top: 4rem;
+  }
+
+  .works__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1.5rem;
+  }
+
+  h2 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  li a {
+    display: grid;
+    grid-template-columns: 3rem minmax(10rem, 1.2fr) 2fr auto;
+    gap: 1rem 2rem;
+    align-items: baseline;
+    padding-block: 1.4rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    transition: background 0.3s, padding 0.3s;
+  }
+
+  li a:hover {
+    background: var(--surface);
+    padding-inline: 1rem;
+  }
+
+  .t {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .l {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .m.hot {
+    color: var(--heat);
+  }
+
+  .tokens {
+    padding-top: 5rem;
+  }
+
+  .sw {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .sw div {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 4.5rem 0.75rem 0.75rem;
+    border: 1px solid var(--line);
+    background: linear-gradient(var(--c), var(--c)) top / 100% 60% no-repeat;
+    color: var(--muted);
+  }
+
+  .sw b {
+    display: block;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .ramp {
+    height: 10px;
+    background: linear-gradient(90deg, #3d5a80, #8b8a86, #ff9f1c, #ff5a1f);
+  }
+
+  @media (max-width: 48rem) {
+    nav {
+      display: none;
+    }
+
+    .hero__art {
+      width: 120vw;
+      right: -40%;
+      top: 4%;
+      opacity: 0.35;
+    }
+
+    li a {
+      grid-template-columns: 2.2rem 1fr;
+    }
+
+    .l,
+    .m {
+      grid-column: 2;
+    }
+  }
+</style>

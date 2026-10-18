@@ -1,0 +1,353 @@
+---
+// Direction B — "Drafting paper": light, editorial, one ink-blue signal like a drafting pen.
+import '@fontsource/instrument-serif/400.css';
+import '@fontsource/instrument-serif/400-italic.css';
+import '@fontsource-variable/geist-mono';
+import '@fontsource/zen-kaku-gothic-new/400.css';
+import '@fontsource/zen-kaku-gothic-new/700.css';
+import Lab from './_LabLayout.astro';
+
+const works = [
+  { n: '01', title: 'LPD8 DMX Kit', line: 'ノブを一つずつ回していた照明を、パッド一押しに。', status: 'Done', date: '2026.10.18' },
+  { n: '02', title: 'このサイトの作り直し', line: '分解して、理解して、作り替える を、このサイトで。', status: 'In progress', date: '2026.10.18' },
+  { n: '03', title: 'BLTouch トラブルシューティング', line: '展開しない原因を三つに切り分け、日韓に訳した。', status: 'In progress', date: '2026.09.01' },
+  { n: '04', title: 'HevORT-lite', line: '譲り受けた CoreXY 機に手を入れている。', status: 'In progress', date: '2026.09.01' },
+];
+---
+
+<Lab title="Lab B — Drafting paper">
+  <div class="b">
+    <header class="bar">
+      <a class="mark" href="#" aria-label="yunoxia"><em>yunoxia</em><span class="tick" aria-hidden="true"></span></a>
+      <nav>
+        <a href="#">Works</a><a href="#">Research</a><a href="#">Log</a><a href="#">About</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero__meta">
+        <span>Sheet 01 / 04</span>
+        <span>yunoxia — ゆーの制作と研究</span>
+        <span>Scale 1:1</span>
+      </div>
+      <h1><span>分解して、</span><span>理解して、</span><br /><span>作り替える。</span></h1>
+      <p class="en"><em>Take it apart, understand it, remake it.</em></p>
+      <div class="hero__row">
+        <p class="lead">既製品や仕組みを開けて中を見て、物理量に分けて理解し、他の人も使える道具にする。最も深く掘っている領域は、産業用 3D プリンティング。</p>
+        <!-- drafting illustration: a section view of printed layers with a dimension line -->
+        <svg class="draw" viewBox="0 0 360 200" aria-hidden="true">
+          {Array.from({ length: 12 }, (_, i) => (
+            <rect x={40 + (i % 2) * 3} y={30 + i * 11} width={200 - Math.abs(6 - i) * 8} height="9" rx="4.5" class="bead" />
+          ))}
+          <line x1="270" y1="30" x2="270" y2="162" class="dim" />
+          <line x1="262" y1="30" x2="278" y2="30" class="dim" />
+          <line x1="262" y1="162" x2="278" y2="162" class="dim" />
+          <text x="284" y="100" class="dimt">12 × 0.20</text>
+        </svg>
+      </div>
+    </section>
+
+    <section class="works">
+      <h2><em>Works</em></h2>
+      <ol>
+        {works.map((w) => (
+          <li>
+            <a href="#">
+              <span class="n">{w.n}</span>
+              <span class="t">{w.title}</span>
+              <span class="l">{w.line}</span>
+              <span class="m">{w.status} — {w.date}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="tokens">
+      <h2 class="small">Color system</h2>
+      <div class="sw">
+        <div style="--c:#EFECE5"><b>paper</b>#EFECE5</div>
+        <div style="--c:#E4E0D6"><b>surface</b>#E4E0D6</div>
+        <div style="--c:#141412"><b>ink</b>#141412</div>
+        <div style="--c:#6E6B64"><b>muted</b>#6E6B64</div>
+        <div style="--c:#1F3DFF"><b>pen</b>#1F3DFF 寸法・注記・リンク</div>
+      </div>
+      <p class="small">dark theme: ink-on-blueprint (#0E1530 / #E9ECF5 / pen #8FA2FF)</p>
+    </section>
+  </div>
+</Lab>
+
+<style>
+  .b {
+    --paper: #efece5;
+    --surface: #e4e0d6;
+    --ink: #141412;
+    --muted: #6e6b64;
+    --line: #cfcabe;
+    --pen: #1f3dff;
+    --serif: 'Instrument Serif', 'Zen Kaku Gothic New', serif;
+    --jp: 'Zen Kaku Gothic New', sans-serif;
+    --mono: 'Geist Mono Variable', ui-monospace, monospace;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--jp);
+    min-height: 100vh;
+    padding: 0 clamp(1rem, 5vw, 4rem) 6rem;
+    /* faint drafting grid */
+    background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-position: -1px -1px;
+    background-blend-mode: multiply;
+  }
+
+  :global(body) {
+    margin: 0;
+  }
+
+  .b::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .b > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .bar {
+    display: flex;
+    align-items: baseline;
+    gap: 2rem;
+    padding-block: 1.5rem;
+  }
+
+  .mark {
+    margin-right: auto;
+    color: var(--ink);
+    text-decoration: none;
+    font-family: var(--serif);
+    font-size: 1.9rem;
+    letter-spacing: -0.02em;
+    position: relative;
+  }
+
+  .tick {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 2px;
+    height: 1px;
+    background: var(--pen);
+  }
+
+  nav {
+    display: flex;
+    gap: 1.75rem;
+  }
+
+  nav a {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--pen);
+  }
+
+  .hero {
+    padding-block: clamp(3rem, 10vh, 7rem) 4rem;
+  }
+
+  .hero__meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--line);
+    padding-block: 0.6rem;
+  }
+
+  h1 {
+    font-family: var(--jp);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 7.2vw, 6.6rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    font-feature-settings: 'palt' 1;
+    margin: 3rem 0 0.5rem;
+  }
+
+  /* Break only between phrases, never inside one */
+  h1 span {
+    display: inline-block;
+  }
+
+  .en {
+    font-family: var(--serif);
+    font-size: clamp(1.4rem, 3vw, 2.4rem);
+    color: var(--pen);
+    margin: 0 0 3rem;
+  }
+
+  .hero__row {
+    display: grid;
+    grid-template-columns: minmax(0, 28rem) minmax(0, 1fr);
+    gap: 3rem;
+    align-items: end;
+  }
+
+  .lead {
+    font-size: 1rem;
+    line-height: 2;
+    margin: 0;
+  }
+
+  .draw {
+    width: 100%;
+    max-width: 26rem;
+    justify-self: end;
+  }
+
+  .bead {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .dim {
+    stroke: var(--pen);
+    stroke-width: 1;
+  }
+
+  .dimt {
+    font-family: var(--mono);
+    font-size: 10px;
+    fill: var(--pen);
+  }
+
+  .works {
+    padding-top: 4rem;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+  }
+
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--ink);
+  }
+
+  li a {
+    display: grid;
+    grid-template-columns: 3rem minmax(10rem, 1.1fr) 2fr auto;
+    gap: 0.5rem 2rem;
+    align-items: baseline;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  li a:hover .t {
+    color: var(--pen);
+  }
+
+  .n,
+  .m {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .t {
+    font-weight: 700;
+    font-size: 1.05rem;
+    transition: color 0.2s;
+  }
+
+  .l {
+    color: var(--muted);
+    line-height: 1.8;
+    font-size: 0.95rem;
+  }
+
+  .tokens {
+    padding-top: 5rem;
+  }
+
+  .small {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .sw {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .sw div {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 4.5rem 0.75rem 0.75rem;
+    border: 1px solid var(--line);
+    background: linear-gradient(var(--c), var(--c)) top / 100% 60% no-repeat, var(--paper);
+    color: var(--muted);
+  }
+
+  .sw b {
+    display: block;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  @media (max-width: 48rem) {
+    nav {
+      display: none;
+    }
+
+    .hero__meta span:last-child {
+      display: none;
+    }
+
+    .hero__row {
+      grid-template-columns: 1fr;
+    }
+
+    .draw {
+      justify-self: start;
+    }
+
+    li a {
+      grid-template-columns: 2.2rem 1fr;
+    }
+
+    .l,
+    .m {
+      grid-column: 2;
+    }
+  }
+</style>
