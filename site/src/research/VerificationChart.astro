@@ -51,17 +51,19 @@ const pct = (m: number) => (m / scaleMax) * barW;
     ))}
   </ol>
 
-  <table class="sr-only">
-    <caption>{t.tableCaption}</caption>
-    <thead>
-      <tr><th scope="col">{t.colProfile}</th><th scope="col">{t.colTime}</th></tr>
-    </thead>
-    <tbody>
-      {rows.map((r) => (
-        <tr><th scope="row">{r.label}</th><td>{r.minutes.toFixed(1)} {t.unit}</td></tr>
-      ))}
-    </tbody>
-  </table>
+  <div class="sr-only">
+    <table>
+      <caption>{t.tableCaption}</caption>
+      <thead>
+        <tr><th scope="col">{t.colProfile}</th><th scope="col">{t.colTime}</th></tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr><th scope="row">{r.label}</th><td>{r.minutes.toFixed(1)} {t.unit}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
 </figure>
 
 <style>
