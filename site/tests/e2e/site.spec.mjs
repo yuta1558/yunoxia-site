@@ -91,3 +91,33 @@ test('items updated since the last visit are marked', async ({ page }) => {
   await page.goto('/works/');
   await expect(page.locator('a[data-updated="true"]').first()).toBeVisible({ timeout: 10_000 });
 });
+
+test('the bead follows the pointer, also after the page was hidden and shown again', async ({ page }) => {
+  await page.goto('/about/');
+  await page.waitForSelector('canvas.yx-bead', { timeout: 10_000 });
+  const transform = () => page.$eval('canvas.yx-bead', (c) => c.style.transform);
+  const sweep = async (x0) => {
+    for (let i = 0; i < 15; i++) {
+      await page.mouse.move(x0 + i * 12, 400);
+      await page.waitForTimeout(16);
+    }
+    await page.waitForTimeout(400);
+  };
+  await sweep(200);
+  const before = await transform();
+  expect(before).toMatch(/^translate3d\(/);
+
+  // A window switch makes Chrome report the page hidden, then visible again
+  for (const hidden of [true, false]) {
+    await page.evaluate((h) => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => h });
+      document.dispatchEvent(new Event('visibilitychange'));
+    }, hidden);
+    await page.waitForTimeout(100);
+  }
+  await sweep(700);
+  const after = await transform();
+  expect(after).toMatch(/^translate3d\(/);
+  expect(after).not.toContain('NaN');
+  expect(after).not.toBe(before);
+});
