@@ -31,3 +31,8 @@ test('double underscores inside words are not emphasis', () => {
   // __init__.py is strong "init" in CommonMark, so the text reads init.py, as on the page
   assert.equal(excerpt('a__b__c と a**b**c と __init__.py。'), 'a__b__c と abc と init.py。');
 });
+
+test('link and image URLs may hold one level of parentheses, as in markdown.js', () => {
+  assert.equal(excerpt('[Wiki](https://e.com/a_(b)) を読む。'), 'Wiki を読む。');
+  assert.equal(excerpt('![](/p_(1).png)\n\nBody.'), 'Body.');
+});
