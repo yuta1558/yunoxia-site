@@ -66,8 +66,9 @@ export function renderMarkdown(markdown) {
 
     const heading = line.match(/^(#{1,6})\s+(.*)$/);
     if (heading) {
-      // Post titles are the page's h1, so body headings start at h2.
-      const level = Math.min(6, heading[1].length + 1);
+      // Post titles are the page's h1, so body headings start at h2. `##` is h2 as in the
+      // site's Markdown pages; a stray `#` is lifted to h2 rather than becoming a second h1.
+      const level = Math.max(2, heading[1].length);
       out.push(`<h${level}>${inline(heading[2].trim())}</h${level}>`);
       i++;
       continue;

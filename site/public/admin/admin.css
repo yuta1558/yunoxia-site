@@ -1,22 +1,29 @@
+/* CMS admin — design system v3 (paper / blueprint, pen blue, square corners, mono labels).
+   Self-contained: the admin's CSP allows same-origin styles only, so the site's fonts are not loaded;
+   system fonts stand in. The theme follows the site's stored choice (admin.js), then the system. */
+
 :root {
-  --bg: #f6f6f4;
-  --fg: #141416;
-  --muted: #6b6b72;
-  --line: #dcdcd8;
-  --accent: #6f5fb8;
+  --paper: #efece5;
+  --surface: #e4e0d6;
+  --ink: #121211;
+  --muted: #5e5b54;
+  --line: #d2cdc1;
+  --pen: #1f3dff;
   --danger: #b3261e;
-  color-scheme: light dark;
+  --sans: system-ui, -apple-system, 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
+  --mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0c0c0e;
-    --fg: #ececee;
-    --muted: #9a9aa3;
-    --line: #2c2c31;
-    --accent: #a99be0;
-    --danger: #f2b8b5;
-  }
+:root[data-theme='dark'] {
+  --paper: #0d1430;
+  --surface: #141c3d;
+  --ink: #e8ebf4;
+  --muted: #8e97b3;
+  --line: #2a335a;
+  --pen: #8fa2ff;
+  --danger: #ffb4ab;
+  color-scheme: dark;
 }
 
 * {
@@ -25,9 +32,10 @@
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font: 15px/1.6 system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.7 var(--sans);
+  font-feature-settings: 'palt' 1;
 }
 
 [hidden] {
@@ -40,16 +48,22 @@ select,
 button {
   font: inherit;
   color: inherit;
+  border-radius: 0;
 }
 
 input,
 textarea,
 select {
   width: 100%;
-  padding: 0.5rem 0.6rem;
+  padding: 0.55rem 0.65rem;
   border: 1px solid var(--line);
-  border-radius: 4px;
-  background: transparent;
+  background: var(--paper);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--ink);
 }
 
 textarea {
@@ -57,31 +71,59 @@ textarea {
 }
 
 #content {
-  font-family: ui-monospace, Menlo, monospace;
+  font-family: var(--mono);
   font-size: 13px;
-  min-height: 28rem;
+  line-height: 1.7;
+  min-height: 30rem;
+}
+
+/* Labels: mono, upper case for the Latin part, muted */
+label,
+.pane-head,
+.image-row > span,
+.muted,
+.badge {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
 }
 
 label {
   display: grid;
-  gap: 0.25rem;
-  margin-top: 1rem;
-  font-size: 13px;
-  color: var(--muted);
+  gap: 0.3rem;
+  margin-top: 1.1rem;
+}
+
+label input,
+label textarea {
+  font-family: var(--sans);
+  font-size: 15px;
+  letter-spacing: 0;
+  color: var(--ink);
 }
 
 button {
-  padding: 0.45rem 0.9rem;
+  padding: 0.5rem 1rem;
   border: 1px solid var(--line);
-  border-radius: 4px;
   background: transparent;
   cursor: pointer;
+  transition: background 0.2s, border-color 0.15s, color 0.15s;
+}
+
+button:hover {
+  border-color: var(--ink);
 }
 
 button.primary {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+button.primary:hover {
+  background: var(--pen);
+  border-color: var(--pen);
 }
 
 button.danger {
@@ -90,15 +132,17 @@ button.danger {
 }
 
 button[aria-pressed='true'] {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--pen);
   outline-offset: 2px;
 }
 
+/* Login */
 .login {
   min-height: 100vh;
   display: grid;
@@ -113,13 +157,14 @@ button[aria-pressed='true'] {
 }
 
 .card h1 {
-  font-size: 1.15rem;
-  font-weight: 500;
-  margin: 0 0 0.5rem;
+  font-size: 1.6rem;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.75rem;
 }
 
 .card button {
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
 }
 
 .error {
@@ -127,30 +172,26 @@ button[aria-pressed='true'] {
   margin: 0.75rem 0 0;
 }
 
-.muted {
-  color: var(--muted);
-  font-size: 13px;
-}
-
+/* Bar */
 .bar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1.25rem;
+  gap: 1rem;
+  min-height: 3.25rem;
+  padding: 0 1.25rem;
   border-bottom: 1px solid var(--line);
 }
 
 .brand {
   color: inherit;
-  font-weight: 600;
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: -0.05em;
   text-decoration: none;
 }
 
 .badge {
-  font-size: 11px;
-  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
 }
 
 .spacer {
@@ -158,9 +199,9 @@ button[aria-pressed='true'] {
 }
 
 main {
-  max-width: 72rem;
+  max-width: 75rem;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 4rem;
+  padding: 2rem 1.25rem 5rem;
 }
 
 .toolbar {
@@ -171,9 +212,10 @@ main {
 }
 
 .toolbar h2 {
-  font-size: 1.05rem;
-  font-weight: 500;
-  margin: 0 1rem 0 0;
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  margin: 0 1.5rem 0 0;
 }
 
 .toolbar select {
@@ -186,11 +228,12 @@ main {
   margin-right: auto;
 }
 
+/* Post list: rows under a heavy rule, like the site's Log */
 .posts {
   list-style: none;
-  margin: 1rem 0 0;
+  margin: 1.25rem 0 0;
   padding: 0;
-  border-top: 1px solid var(--line);
+  border-top: 1.5px solid var(--ink);
 }
 
 .posts li {
@@ -201,64 +244,108 @@ main {
   width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: 1rem;
   text-align: left;
   border: 0;
-  border-radius: 0;
-  padding: 0.85rem 0.25rem;
+  padding: 1rem 0.25rem;
+  font-size: 1.1rem;
+  font-weight: 300;
 }
 
-.posts .meta {
-  color: var(--muted);
-  font-size: 12px;
+.posts button:hover {
+  background: var(--surface);
+  color: var(--pen);
 }
 
+.posts .meta,
 .state {
-  font-size: 12px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
   white-space: nowrap;
 }
 
 .state.published {
-  color: var(--accent);
+  color: var(--pen);
+}
+
+/* Editor */
+#save-status {
+  min-height: 1.4em;
+  margin: 0.5rem 0 0;
 }
 
 .image-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-top: 1rem;
-  font-size: 13px;
-  color: var(--muted);
+  margin-top: 1.1rem;
 }
 
 #featured-preview {
   height: 3rem;
-  border-radius: 3px;
 }
 
 .editor {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
 }
 
 .pane-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
 }
 
+.pane-head button {
+  padding: 0.2rem 0.6rem;
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+
+/* Preview: the site's prose rules (global.css .prose), kept in step by hand */
 .preview {
   border: 1px solid var(--line);
-  border-radius: 4px;
-  padding: 0.75rem 1rem;
-  min-height: 28rem;
+  padding: 1rem 1.25rem;
+  min-height: 30rem;
   overflow: auto;
-  line-height: 1.8;
+  line-height: 1.9;
+}
+
+.preview > * + * {
+  margin-top: 1.25em;
+}
+
+.preview > :first-child {
+  margin-top: 0;
+}
+
+.preview h2,
+.preview h3 {
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.preview h2 {
+  font-size: 1.5rem;
+  margin-top: 2.5em;
+}
+
+.preview h3 {
+  font-size: 1.15rem;
+  margin-top: 2em;
+}
+
+.preview a {
+  color: inherit;
+  text-decoration-color: var(--line);
+  text-underline-offset: 0.2em;
 }
 
 .preview img {
@@ -266,11 +353,32 @@ main {
   height: auto;
 }
 
+.preview code {
+  font-family: var(--mono);
+  font-size: 0.875em;
+  background: var(--surface);
+  padding: 0.1em 0.35em;
+}
+
 .preview pre {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  background: var(--surface);
+  padding: 1rem;
   overflow: auto;
-  padding: 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: 4px;
+}
+
+.preview pre code {
+  background: none;
+  padding: 0;
+}
+
+.preview blockquote {
+  margin-inline: 0;
+  padding-left: 1rem;
+  border-left: 1.5px solid var(--ink);
+  color: var(--muted);
 }
 
 @media (max-width: 52rem) {

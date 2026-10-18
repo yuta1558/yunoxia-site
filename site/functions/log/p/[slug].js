@@ -30,15 +30,15 @@ export async function onRequestGet(context) {
   const description = post.excerpt || post.title;
   const tags = post.tags.length ? ` · ${post.tags.map(escapeHtml).join(' / ')}` : '';
   const image = post.featured_image
-    ? `<p><img src="${escapeHtml(post.featured_image)}" alt="" loading="lazy" decoding="async" style="max-width:100%;height:auto"></p>`
+    ? `<p><img src="${escapeHtml(post.featured_image)}" alt="" loading="lazy" decoding="async"></p>`
     : '';
-
+  // Same page head as the static reading pages: label, light title, mono meta, prose (global.css)
   const article = `
-    <article class="wrap" style="padding-block:3rem">
-      <p class="eyebrow"><a href="/log/" style="text-decoration:none">Log</a></p>
-      <h1 style="font-size:var(--step-2);margin-block:0.5rem 0.75rem">${escapeHtml(post.title)}</h1>
+    <article class="wrap page">
+      <p class="eyebrow"><a href="/log/">Log</a></p>
+      <h1 class="page-title">${escapeHtml(post.title)}</h1>
       <p class="meta"><time datetime="${escapeHtml(post.published_at || '')}">${formatDate(post.published_at)}</time>${tags}</p>
-      <div class="prose" style="margin-top:2rem">${image}${renderMarkdown(post.content)}</div>
+      <div class="prose">${image}${renderMarkdown(post.content)}</div>
     </article>`;
 
   const setAttr = (attr, value) => ({ element: (el) => el.setAttribute(attr, value) });
@@ -51,6 +51,10 @@ export async function onRequestGet(context) {
     .on('meta[property="og:url"]', setAttr('content', canonical))
     .on('meta[property="og:type"]', setAttr('content', 'article'))
     .on('link[rel="canonical"]', setAttr('href', canonical))
+    .on('meta[property="og:image"]', post.featured_image ? setAttr('content', new URL(post.featured_image, context.request.url).href) : {})
+    .on('meta[property="og:image:width"], meta[property="og:image:height"]', post.featured_image ? { element: (el) => el.remove() } : {})
+    // The Log shell has no hreflang alternates for posts; drop any it carries
+    .on('link[rel="alternate"][hreflang]', { element: (el) => el.remove() })
     .on('main', { element: (el) => el.setInnerContent(article, { html: true }) })
     .transform(shell);
 

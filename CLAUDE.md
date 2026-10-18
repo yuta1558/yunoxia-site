@@ -22,7 +22,7 @@ site/
 │   ├── assets/             # immutable images (ogp-v3.png …)
 │   ├── favicon.svg/.ico, apple-touch-icon.png
 │   └── sw.js               # kill switch for the old site's service worker
-├── functions/              # Pages Functions: CMS API, /log/p/<slug>/, Log + RSS + sitemap injection
+├── functions/              # Pages Functions: CMS API, /log/p/<slug>/, CMS posts into /log/, the top pages, RSS, sitemap and updates.json
 ├── migrations/             # D1 schema
 ├── scripts/
 │   ├── font-subsets.mjs    # writes src/styles/fonts.generated.css (runs before every build)

@@ -308,6 +308,11 @@ a:hover {
   margin-top: 0.4em;
 }
 
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
+
 .prose code {
   font-family: var(--font-mono);
   font-size: 0.875em;
