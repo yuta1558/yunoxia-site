@@ -1,7 +1,7 @@
 // Service Worker for yunoxia.one PWA
 // Version: 1.0.0
 
-const CACHE_VERSION = 'yunoxia-v1';
+const CACHE_VERSION = 'yunoxia-v2';
 const OFFLINE_URL = '/';
 
 // Assets to cache on install
@@ -12,8 +12,8 @@ const PRECACHE_ASSETS = [
   '/works.html',
   '/log.html',
   '/links.html',
-  '/assets/css/style.css',
-  '/assets/js/app.js',
+  '/assets/css/style.css?v=2',
+  '/assets/js/app.js?v=2',
   '/assets/favicon.svg',
   '/assets/logo.svg',
   '/partials/header.html',
@@ -69,13 +69,13 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clone response before caching
-        const responseToCache = response.clone();
-
-        // Update cache with fresh content
-        caches.open(CACHE_VERSION).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+        // Only cache successful responses (never cache 404 pages or errors)
+        if (response.ok) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_VERSION).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
 
         return response;
       })
