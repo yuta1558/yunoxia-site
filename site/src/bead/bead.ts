@@ -71,7 +71,9 @@ export function startBead() {
 
   const wake = () => {
     if (!raf && !document.hidden) {
-      last = performance.now();
+      // The first frame only takes its timestamp: a rAF timestamp can trail performance.now(),
+      // and a zero or negative step would divide by zero and leave the bead at NaN (frozen)
+      last = 0;
       raf = requestAnimationFrame(frame);
     }
   };
@@ -117,7 +119,11 @@ export function startBead() {
     if (document.hidden) {
       cancelAnimationFrame(raf);
       raf = 0;
-    } else wake();
+    } else {
+      // Coming back (tab or window switch): resume from rest instead of carrying stale motion
+      vx = vy = ax = ay = 0;
+      wake();
+    }
   });
 
   function step(dt: number) {
@@ -202,8 +208,19 @@ export function startBead() {
 
   function frame(now: number) {
     const dt = Math.min((now - last) / 1000, 1 / 30);
+    const first = !last;
     last = now;
+    if (first || !(dt > 0)) {
+      raf = requestAnimationFrame(frame);
+      return;
+    }
     step(dt);
+    // Last line of defence: never stay stuck on a broken state
+    if (!Number.isFinite(x + y + vx + vy + ax + ay)) {
+      x = mx;
+      y = my;
+      vx = vy = ax = ay = 0;
+    }
     draw(now);
     // Stop the loop once the bead has set and nothing moves
     const still = Math.hypot(vx, vy) < 1 && gap < 0.5 && temp < 0.02 && !parts.length;
