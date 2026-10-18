@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import { withFullStop } from '../../lib/headline.mjs';
 
 export async function getStaticPaths() {
   const works = await getCollection('works');
@@ -15,7 +16,7 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 <Base title={work.data.title} description={work.data.summary}>
   <article class="wrap page">
     <p class="eyebrow"><a href="/works/">Works</a></p>
-    <h1 class="page-title">{work.data.title}</h1>
+    <h1 class="page-title">{withFullStop(work.data.title, 'ja')}</h1>
     <p class="summary">{work.data.summary}</p>
     <p class="meta">
       {work.data.status} · <time datetime={work.data.updated.toISOString()}>{fmt(work.data.updated)}</time> 更新

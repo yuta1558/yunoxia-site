@@ -6,14 +6,14 @@ updated: 2026-09-01
 tags: [3D printer, CoreXY, Klipper]
 ---
 
-## Take it apart
+## Take it apart.
 
-A friend built this CoreXY machine (around 180 mm cubed, with a parts budget of about 500 USD) and passed it on to me. The design and build are theirs; my part is modifying it.
+A friend built this CoreXY machine (a 180 mm-class build, aiming for under 500 USD in parts) and passed it on to me. The design and build are theirs; my part is modifying it.
 
-## Understand it
+## Understand it.
 
 I am starting by running it as it is, to learn how it behaves.
 
-## Remake it
+## Remake it.
 
-I am adjusting it for my own use. I will write up the changes in the [Log](/log/) once they come together.
+I am adjusting it for my own use. I will write up the changes in the [Log](/log/) (in Japanese) once they come together.

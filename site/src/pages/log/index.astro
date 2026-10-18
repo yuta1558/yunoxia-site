@@ -6,7 +6,7 @@ const logs = (await getCollection('log')).sort((a, b) => +b.data.date - +a.data.
 const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 ---
 
-<Base title="Log" description="制作と研究の進み具合の記録。">
+<Base title="Log" description="制作と研究の進み具合の記録。作っているものの途中経過と、そのとき考えたことを日付の新しい順に残しています。RSS でも読めます。">
   <section class="wrap page">
     <p class="eyebrow">Log</p>
     <h1 class="page-title">進み具合の記録。</h1>
