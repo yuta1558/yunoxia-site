@@ -44,7 +44,7 @@ export async function onRequestGet(context) {
     </article>`;
 
   const structured = jsonLdString(
-    blogPosting({ title: post.title, date: new Date(post.published_at), url: canonical, description: post.excerpt }),
+    blogPosting({ title: post.title, date: post.published_at, url: canonical, description: post.excerpt }),
   );
 
   const setAttr = (attr, value) => ({ element: (el) => el.setAttribute(attr, value) });

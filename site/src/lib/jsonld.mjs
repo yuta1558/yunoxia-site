@@ -17,13 +17,18 @@ export function webSite({ url, lang, description }) {
   };
 }
 
-/** BlogPosting for a Log post; pass the result to Base as `jsonLd`. `date` is a Date (written as YYYY-MM-DD). */
+/**
+ * BlogPosting for a Log post; pass the result to Base as `jsonLd`. `date` is a Date from date-only
+ * front matter (written as YYYY-MM-DD) or a CMS timestamp string (written as is, so the instant
+ * and its day in JST stay right). An invalid or missing date is left out rather than throwing.
+ */
 export function blogPosting({ title, date, url, description, lang = 'ja' }) {
+  const valid = date != null && !Number.isNaN(+new Date(date));
   const data = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: title,
-    datePublished: date.toISOString().slice(0, 10),
+    ...(valid && { datePublished: date instanceof Date ? date.toISOString().slice(0, 10) : String(date) }),
     inLanguage: lang,
     url: String(url),
     mainEntityOfPage: String(url),
