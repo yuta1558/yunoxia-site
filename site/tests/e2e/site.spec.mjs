@@ -237,7 +237,7 @@ test('full Zen Kaku Gothic New stylesheet for CMS posts: every url() is a copied
   // The /log/ shell names it for the post Function (functions/log/p/[slug].js)
   const shell = await (await request.get('/log/')).text();
   const href = /<template data-cms-font="([^"]+)"/.exec(shell)?.[1];
-  expect(href).toMatch(/^\/assets\/fonts\/zen-[\d.]+\/full\.css$/);
+  expect(href).toMatch(/^\/assets\/fonts\/zen-[0-9a-f]{10}\/full\.css$/);
   const res = await request.get(href);
   expect(res.ok()).toBe(true);
   const css = await res.text();

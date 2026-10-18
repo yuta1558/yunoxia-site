@@ -4,6 +4,6 @@
 
 // Non-blocking: media=print loads the sheet without holding the first paint, onload switches it on.
 export function fontLinks(href) {
-  if (!href || !/^\/assets\/fonts\/zen-[\w.-]+\/full\.css$/.test(href)) return '';
+  if (!href || !/^\/assets\/fonts\/zen-[0-9a-f]{10}\/full\.css$/.test(href)) return '';
   return `<link rel="stylesheet" href="${href}" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="${href}"></noscript>`;
 }

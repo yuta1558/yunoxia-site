@@ -4,6 +4,7 @@
 // subsets a page uses anyway, so dropping the rules for characters the site never shows costs nothing.
 // Characters come from the source and content files; weight 700 is used only by the top h1.
 // Runs before every build (package.json "build"); a character missing here falls back to the system gothic.
+import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -60,26 +61,33 @@ writeFileSync(OUT, out + '\n');
 console.log(`${OUT}: ${out.match(/@font-face/g).length} @font-face rules`);
 
 // Full-coverage stylesheet (300, 400, 500) for CMS post pages, whose characters the build never sees.
-// Loaded non-blocking by functions/log/p/[slug].js. /assets/* is immutable, so the path carries the
-// package version; src/pages/log/index.astro puts the same path in the shell for the Function.
-const { version } = JSON.parse(readFileSync(`${PKG}/package.json`, 'utf8'));
-const FULL_DIR = `public/assets/fonts/zen-${version}`;
-rmSync('public/assets/fonts', { recursive: true, force: true });
-mkdirSync(`${FULL_DIR}/files`, { recursive: true });
+// It leaves out the faces the subset above already declares, so a post never fetches a slice twice.
+// /assets/* is immutable, so the directory is named by a hash of the stylesheet: a new subset or a new
+// package version gives a new path. src/pages/log/index.astro reads it from fonts.generated.json.
+const inSubset = new Set(
+  (out.match(/@font-face\s*\{[^}]*\}/g) ?? []).map((f) => `${/font-weight:\s*(\d+)/.exec(f)[1]}|${/unicode-range:\s*([^;]+);/.exec(f)[1]}`),
+);
 const copied = new Set();
 const full = [300, 400, 500].flatMap((w) =>
-  (readFileSync(`${PKG}/${w}.css`, 'utf8').match(/@font-face\s*\{[^}]*\}/g) ?? []).map((face) =>
-    face
-      .replace(/src:[^;]*;/, (src) => {
+  (readFileSync(`${PKG}/${w}.css`, 'utf8').match(/@font-face\s*\{[^}]*\}/g) ?? [])
+    .filter((face) => !inSubset.has(`${w}|${/unicode-range:\s*([^;]+);/.exec(face)[1]}`))
+    .map((face) =>
+      face.replace(/src:[^;]*;/, (src) => {
         // woff2 only: every browser that matters supports it, and the woff twin doubles the copy
         const m = /url\(\.\/files\/([^)]+\.woff2)\)\s*format\('woff2'\)/.exec(src);
         if (!m) throw new Error(`no woff2 source in ${w}.css`);
         copied.add(m[1]);
         return `src: url(./files/${m[1]}) format('woff2');`;
       }),
-  ),
+    ),
 );
+const fullCss = full.join('\n') + '\n';
+const hash = createHash('sha256').update(fullCss).digest('hex').slice(0, 10);
+const FULL_DIR = `public/assets/fonts/zen-${hash}`;
+rmSync('public/assets/fonts', { recursive: true, force: true });
+mkdirSync(`${FULL_DIR}/files`, { recursive: true });
 for (const f of copied) copyFileSync(`${PKG}/files/${f}`, `${FULL_DIR}/files/${f}`);
-writeFileSync(`${FULL_DIR}/full.css`, full.join('\n') + '\n');
+writeFileSync(`${FULL_DIR}/full.css`, fullCss);
+writeFileSync('src/styles/fonts.generated.json', JSON.stringify({ cmsFont: `/assets/fonts/zen-${hash}/full.css` }) + '\n');
 const bytes = [...copied].reduce((n, f) => n + statSync(`${FULL_DIR}/files/${f}`).size, 0);
 console.log(`${FULL_DIR}/full.css: ${full.length} @font-face rules, ${copied.size} woff2 files, ${bytes} bytes`);

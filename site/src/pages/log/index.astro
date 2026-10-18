@@ -1,12 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
-import { readFileSync } from 'node:fs';
 import Base from '../../layouts/Base.astro';
+// Where scripts/font-subsets.mjs put the full font for CMS posts (the post Function reads this marker)
+import { cmsFont } from '../../styles/fonts.generated.json';
 
 const logs = (await getCollection('log')).sort((a, b) => +b.data.date - +a.data.date);
-// Where scripts/font-subsets.mjs put the full font for CMS posts (the post Function reads this marker)
-const { version } = JSON.parse(readFileSync('node_modules/@fontsource/zen-kaku-gothic-new/package.json', 'utf8'));
-const cmsFont = `/assets/fonts/zen-${version}/full.css`;
 const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 ---
 
