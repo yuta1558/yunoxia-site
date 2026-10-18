@@ -18,7 +18,12 @@ function safeUrl(raw) {
 // A single * opens or closes emphasis only at a word edge, so 2*3*4 stays literal (as in excerpt.mjs).
 // A finished <strong> is held as a placeholder, so em can contain it but never cross it.
 const em = (s) => s.replace(/(^|[^\w*])\*([^*\s](?:[^*]*[^*\s])?)\*(?![\w*])/g, '$1<em>$2</em>');
-const emphasis = (s, hold) => em(s.replace(/\*\*(\S(?:.*?\S)?)\*\*/g, (_, inner) => hold(`<strong>${em(inner)}</strong>`)));
+const emphasis = (s, hold) =>
+  em(
+    s
+      .replace(/\*\*\*(\S(?:.*?\S)?)\*\*\*/g, (_, inner) => hold(`<em><strong>${em(inner)}</strong></em>`))
+      .replace(/\*\*(\S(?:.*?\S)?)\*\*/g, (_, inner) => hold(`<strong>${em(inner)}</strong>`)),
+  );
 
 function inline(text) {
   // Placeholders: \u0000n\u0000 for code spans, \u0001n\u0001 for finished links and images.
