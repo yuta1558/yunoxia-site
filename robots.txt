@@ -8,5 +8,3 @@ Sitemap: https://yunoxia.one/sitemap.xml
 # Crawl-delay (optional, adjust if needed)
 # Crawl-delay: 1
 
-# Disallow specific paths if needed
-Disallow: /assets/
