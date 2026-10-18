@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import WorkList from '../components/WorkList.astro';
+import TopScene from '../scene/TopScene.astro';
 
 const works = (await getCollection('works')).sort((a, b) => +b.data.updated - +a.data.updated);
 const logs = (await getCollection('log')).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
@@ -15,14 +16,15 @@ const acts = [
 ---
 
 <Base>
-  <section class="hero wrap">
+  <TopScene />
+  <section class="hero wrap" data-scene="hero">
     <h1>分解して、<br />理解して、<br />作り替える。</h1>
     <p class="lead">最も深く掘っている領域は、産業用 3D プリンティング。</p>
   </section>
 
-  <section class="acts wrap" aria-label="進め方">
-    {acts.map((a) => (
-      <div class="act">
+  <section class="acts wrap" aria-label="進め方" data-scene="acts">
+    {acts.map((a, i) => (
+      <div class="act" data-act={i + 1}>
         <p class="eyebrow">{a.n}</p>
         <h2>{a.verb}</h2>
         <p>{a.line}</p>
@@ -30,7 +32,7 @@ const acts = [
     ))}
   </section>
 
-  <section class="wrap block">
+  <section class="wrap block" data-scene="after">
     <div class="block-head">
       <h2>Works</h2>
       <a class="meta" href="/works/">すべて見る</a>
@@ -74,9 +76,17 @@ const acts = [
 
   .acts {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    gap: 0;
     padding-block: 2rem 5rem;
+  }
+
+  /* Each act gets most of a screen so the scroll-driven scene has room to play out */
+  .act {
+    min-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 28rem;
   }
 
   .act h2 {
@@ -116,9 +126,4 @@ const acts = [
     padding-block: 0.6rem;
   }
 
-  @media (max-width: 48rem) {
-    .acts {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>

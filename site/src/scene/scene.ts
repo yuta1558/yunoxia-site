@@ -215,6 +215,18 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   const easeInOut = (x: number) => x * x * (3 - 2 * x);
   const target = new Vector3();
 
+  // ?fps=1 shows a frame meter for on-device checks (no PC needed)
+  const meter = new URLSearchParams(location.search).has('fps') ? document.createElement('output') : null;
+  if (meter) {
+    meter.style.cssText =
+      'position:fixed;right:8px;bottom:8px;z-index:99;padding:4px 8px;font:12px/1.4 ui-monospace,monospace;' +
+      'background:rgb(0 0 0 / 0.7);color:#fff;border-radius:4px;pointer-events:none;white-space:pre';
+    document.body.append(meter);
+  }
+  let meterFrames = 0;
+  let meterTime = 0;
+  let meterWorst = 0;
+
   const frame = (now: number) => {
     raf = requestAnimationFrame(frame);
     timer.update(now);
@@ -253,6 +265,20 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
     (nozzle.material as MeshBasicMaterial).opacity = (p2 > 0 && p3 < 1 ? 1 : 0) * state.fade;
 
     renderer.render(scene, camera);
+
+    if (meter) {
+      meterFrames++;
+      meterTime += dt;
+      meterWorst = Math.max(meterWorst, dt);
+      if (meterTime >= 1) {
+        meter.textContent =
+          `${(meterFrames / meterTime).toFixed(0)} fps  worst ${(meterWorst * 1000).toFixed(0)} ms\n` +
+          `dpr ${renderer.getPixelRatio()}  quality -${downgraded}`;
+        meterFrames = 0;
+        meterTime = 0;
+        meterWorst = 0;
+      }
+    }
 
     // Quality downgrade: if frames stay slow, lower pixel ratio, then halve the particles
     frames++;
