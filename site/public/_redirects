@@ -1,0 +1,7 @@
+# Old static-site URLs -> new paths (301). No catch-all fallback: missing URLs must 404.
+/index.html  /         301
+/about.html  /about/   301
+/works.html  /works/   301
+/log.html    /log/     301
+/links.html  /about/   301
+/blog.html   /log/     301

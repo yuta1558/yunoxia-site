@@ -1,0 +1,129 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import WorkList from '../components/WorkList.astro';
+import TopScene from '../scene/TopScene.astro';
+
+const works = (await getCollection('works')).sort((a, b) => +b.data.updated - +a.data.updated);
+const logs = (await getCollection('log')).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
+const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
+
+const acts = [
+  { n: '01', verb: '分解', line: '既製品も、仕組みも、まず開けて中を見る。' },
+  { n: '02', verb: '理解', line: '現象を、流量・温度・冷却のような物理量に分けて捉える。' },
+  { n: '03', verb: '作り替え', line: '分かったことを、他の人も使える道具にする。' },
+];
+---
+
+<Base>
+  <TopScene />
+  <section class="hero wrap" data-scene="hero">
+    <h1>分解して、<br />理解して、<br />作り替える。</h1>
+    <p class="lead">最も深く掘っている領域は、産業用 3D プリンティング。</p>
+  </section>
+
+  <section class="acts wrap" aria-label="進め方" data-scene="acts">
+    {acts.map((a, i) => (
+      <div class="act" data-act={i + 1}>
+        <p class="eyebrow">{a.n}</p>
+        <h2>{a.verb}</h2>
+        <p>{a.line}</p>
+      </div>
+    ))}
+  </section>
+
+  <section class="wrap block" data-scene="after">
+    <div class="block-head">
+      <h2>Works</h2>
+      <a class="meta" href="/works/">すべて見る</a>
+    </div>
+    <WorkList works={works} />
+  </section>
+
+  <section class="wrap block">
+    <div class="block-head">
+      <h2>Log</h2>
+      <a class="meta" href="/log/">すべて見る</a>
+    </div>
+    <ul class="logs">
+      {logs.map((l) => (
+        <li>
+          <time class="meta" datetime={l.data.date.toISOString()}>{fmt(l.data.date)}</time>
+          <a href={`/log/${l.id}/`}>{l.data.title}</a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding-block: clamp(4rem, 14vh, 9rem) clamp(3rem, 10vh, 6rem);
+  }
+
+  h1 {
+    font-family: var(--font-jp);
+    font-size: var(--step-4);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+  }
+
+  .lead {
+    margin-top: 2rem;
+    color: var(--muted);
+  }
+
+  .acts {
+    display: grid;
+    gap: 0;
+    padding-block: 2rem 5rem;
+  }
+
+  /* Each act gets most of a screen so the scroll-driven scene has room to play out */
+  .act {
+    min-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 28rem;
+  }
+
+  .act h2 {
+    font-family: var(--font-jp);
+    font-size: var(--step-2);
+    margin-block: 0.25rem 0.75rem;
+  }
+
+  .act p:last-child {
+    color: var(--muted);
+  }
+
+  .block {
+    padding-block: 2.5rem;
+  }
+
+  .block-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1.25rem;
+  }
+
+  .block-head h2 {
+    font-size: var(--step-1);
+  }
+
+  .logs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .logs li {
+    display: flex;
+    gap: 1.5rem;
+    padding-block: 0.6rem;
+  }
+
+</style>

@@ -1,0 +1,269 @@
+---
+import '@fontsource-variable/noto-sans-jp';
+import '@fontsource-variable/sora';
+import '../styles/global.css';
+import Bead from '../bead/Bead.astro';
+import { counterpart, langOf, localPath, ui } from '../i18n/ui';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const lang = langOf(Astro.url.pathname);
+const t = ui[lang];
+
+const { title, description = t.defaultDescription, noindex = false } = Astro.props;
+
+const siteName = 'yunoxia';
+const fullTitle = title ? `${title} — ${siteName}` : `${siteName} — ${t.siteTagline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/assets/ogp-v2.png', Astro.site);
+
+// hreflang alternates only where the page exists in both languages
+const other = counterpart(Astro.url.pathname);
+const jaPath = lang === 'ja' ? Astro.url.pathname : other;
+const enPath = lang === 'en' ? Astro.url.pathname : other;
+const alternates = other
+  ? [
+      { hreflang: 'ja', href: new URL(jaPath!, Astro.site) },
+      { hreflang: 'en', href: new URL(enPath!, Astro.site) },
+      { hreflang: 'x-default', href: new URL(jaPath!, Astro.site) },
+    ]
+  : [];
+
+const nav = [
+  { href: localPath(lang, '/works/'), label: 'Works' },
+  { href: localPath(lang, '/research/'), label: 'Research' },
+  { href: '/log/', label: t.logLabel, hreflang: lang === 'en' ? 'ja' : undefined },
+  { href: localPath(lang, '/about/'), label: 'About' },
+];
+const current = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="alternate" type="application/rss+xml" title="yunoxia Log" href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={t.ogLocale} />
+    {other && <meta property="og:locale:alternate" content={ui[lang === 'ja' ? 'en' : 'ja'].ogLocale} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="theme-color" content="#f6f6f4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c0c0e" media="(prefers-color-scheme: dark)" />
+
+    <!-- Apply the theme before first paint (stored choice, then system preference) -->
+    <script is:inline>
+      (() => {
+        let theme;
+        try { theme = localStorage.getItem('theme'); } catch {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">{t.skip}</a>
+    <header class="site-header wrap">
+      <a class="brand" href={localPath(lang, '/')} aria-label={t.home}>yunoxia</a>
+      <nav aria-label={t.nav}>
+        <ul>
+          {nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                hreflang={item.hreflang}
+                aria-current={current.startsWith(item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      {other && (
+        <a class="lang" href={other} hreflang={lang === 'ja' ? 'en' : 'ja'} lang={lang === 'ja' ? 'en' : 'ja'}>
+          {t.langSwitch}<span class="sr-only"> — {t.langSwitchLabel}</span>
+        </a>
+      )}
+      <button class="theme" type="button" aria-label={t.theme} data-theme-toggle>
+        <span aria-hidden="true"></span>
+      </button>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer wrap">
+      <p class="meta">
+        <a href="mailto:contact@yunoxia.one">contact@yunoxia.one</a>
+        <span aria-hidden="true"> · </span>
+        <a href="/rss.xml">RSS</a>
+      </p>
+      <p class="meta">© {new Date().getFullYear()} yunoxia</p>
+    </footer>
+
+    <script is:inline>
+      document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem('theme', next); } catch {}
+      });
+    </script>
+    <Bead />
+  </body>
+</html>
+
+<style>
+  .skip {
+    position: absolute;
+    left: var(--gutter);
+    top: -3rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--fg);
+    color: var(--bg);
+    z-index: 10;
+  }
+
+  .skip:focus {
+    top: 0.75rem;
+  }
+
+  .site-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding-block: 1.5rem;
+  }
+
+  .brand {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    margin-right: auto;
+  }
+
+  nav ul {
+    display: flex;
+    gap: clamp(0.9rem, 3vw, 1.75rem);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  nav a {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    color: var(--muted);
+    padding-block: 0.5rem;
+  }
+
+  nav a:hover,
+  nav a[aria-current='page'] {
+    color: var(--fg);
+  }
+
+  nav a[aria-current='page'] {
+    text-decoration-line: underline;
+    text-decoration-color: var(--accent);
+  }
+
+  /* English pages read better in the Latin face; Japanese fragments still fall back to Noto Sans JP */
+  :global(html[lang='en'] body) {
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+    line-height: 1.7;
+  }
+
+  .lang {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 0.5rem 0.25rem;
+    min-width: 2.75rem;
+    text-align: center;
+  }
+
+  .lang:hover {
+    color: var(--fg);
+  }
+
+  .theme {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    margin-right: -0.75rem;
+  }
+
+  .theme span {
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+    transition: transform 0.4s var(--ease-out);
+  }
+
+  :global([data-theme='dark']) .theme span {
+    transform: rotate(180deg);
+  }
+
+  main {
+    min-height: 70vh;
+  }
+
+  .site-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    padding-block: 4rem 2.5rem;
+  }
+
+  @media (max-width: 34rem) {
+    .site-header {
+      flex-wrap: wrap;
+      row-gap: 0.25rem;
+    }
+
+    nav {
+      order: 3;
+      width: 100%;
+    }
+  }
+</style>

@@ -1,0 +1,61 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="About" description="ゆーについて。分解して、理解して、作り替える人。">
+  <article class="wrap page">
+    <p class="eyebrow">About</p>
+    <h1>ゆー</h1>
+    <div class="prose">
+      <p class="lede">既製品や既存の仕組みを分解して理解し、自分の用途に合わせて作り替えています。最も深く掘っている領域は、産業用 3D プリンティングです。</p>
+      <p>
+        材料・スライサー設定・ファームウェアを、熱・流量・冷却といった物理から詰めるのが好きです。
+        分かったことは、ツールや手順書にして、他の人も使える形にします。
+      </p>
+
+      <h2>やっていること</h2>
+      <ul>
+        <li>FDM / FFF の造形条件づくりと、不具合の原因の切り分け</li>
+        <li>スライサー設定とプロファイルの変換（<a href="/research/">Research</a>）</li>
+        <li>Klipper を中心にした 3D プリンターの改造と自作</li>
+        <li>作業を回すための道具づくり（MCP サーバ、自動化、AI エージェントの活用）</li>
+      </ul>
+
+      <h2>進め方</h2>
+      <ul>
+        <li>計測してから最適化する。まず素のまま使い、繰り返し出る摩擦を見つけてから仕組みにする。</li>
+        <li>変更は段階的に入れる。</li>
+        <li>動機はロマンや面白さが先で、実用は後からついてくる。</li>
+        <li>比べる相手は、過去の自分。</li>
+      </ul>
+
+      <h2>言語</h2>
+      <p>日本語、英語、韓国語。</p>
+
+      <h2>yunoxia という名前</h2>
+      <p>
+        このサイトと活動の名前です。「ゆー（you / 優 / 遊）」＋「の」＋「quxia（くしあ）」でできた造語で、
+        「quxia」は存在しない言語から生まれた、意図のない意味を持つ語です。
+      </p>
+
+      <h2>連絡先</h2>
+      <p><a href="mailto:contact@yunoxia.one">contact@yunoxia.one</a></p>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .page {
+    padding-block: 3rem;
+  }
+
+  h1 {
+    font-size: var(--step-2);
+    margin-block: 0.5rem 2rem;
+  }
+
+  .lede {
+    font-size: var(--step-1);
+    line-height: 1.7;
+  }
+</style>

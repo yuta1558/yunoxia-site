@@ -13,6 +13,17 @@
 - **Pages**: 5 content pages (index, about, works, log, links) + `404.html`
 - **Hosting**: Cloudflare Pages, auto-deployed from `main`. Every PR gets a preview deployment (`*.yunoxia-site.pages.dev`).
 
+## Site Renewal in Progress (`site/`)
+
+The next version of the site is being built in `site/` (Astro 7, static output, three.js only on the top and Research pages). It is deployed by a **separate** Cloudflare Pages project (root `site`, build `npm run build`, output `dist`); the files at the repository root keep serving yunoxia.one until the custom domain is moved. Everything below this section describes the current root site.
+
+- Work on the renewal happens in `site/` only. Do not mix root-site and `site/` changes in one PR.
+- `site/DEPLOY.md`: Pages project setup, preview checks, domain cutover and rollback (owner-only), blog CMS (Pages Functions + D1) setup.
+- `site/src/scene/README.md`, `site/src/research/README.md`: the top-page scene and the Research visualisation.
+- Every effect must have a row in the effects ledger (design doc): what it conveys, its reduced-motion / no-WebGL fallback, and its performance budget.
+- Privacy: the site never shows the owner's real name, employer, employer product names or location. Grep `site/` for these before committing.
+- Checks: `cd site && npm run build`; Lighthouse (mobile) ≥ 90 on reading pages and ≥ 80 on the top page; `?fps=1` on the top page shows a frame meter for real-device checks (headless Chromium renders WebGL in software, so fps measured here is meaningless).
+
 ## Directory Structure
 
 ```

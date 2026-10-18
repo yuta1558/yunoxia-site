@@ -1,0 +1,135 @@
+---
+// プロファイル空間の散布図。src/research/data/profiles.csv があるときだけ描く。
+// CSV がなければ何も出力しない（script も出ない）。合成データでは描かない。
+import { parseProfiles } from './profiles';
+
+const files = import.meta.glob<string>('./data/profiles.csv', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+const csv = Object.values(files)[0];
+const profiles = csv ? parseProfiles(csv) : [];
+
+const ecosystems = [...new Set(profiles.map((p) => p.ecosystem))].sort();
+
+// 2D fallback: x = cooling axis, y = max volumetric flow
+const extent = (vals: number[]) => [Math.min(...vals), Math.max(...vals)] as const;
+const [xMin, xMax] = profiles.length ? extent(profiles.map((p) => p.coolingAxis)) : [0, 1];
+const [yMin, yMax] = profiles.length ? extent(profiles.map((p) => p.volumetricFlow)) : [0, 1];
+const sx = (v: number) => 40 + ((v - xMin) / (xMax - xMin || 1)) * 540;
+const sy = (v: number) => 260 - ((v - yMin) / (yMax - yMin || 1)) * 230;
+const points = JSON.stringify(
+  profiles.map((p) => [p.coolingAxis, p.volumetricFlow, p.nozzleTemp, ecosystems.indexOf(p.ecosystem)]),
+);
+---
+
+{profiles.length > 0 && (
+  <figure class="space" data-profile-space data-points={points}>
+    <figcaption>
+      <span class="meta">プロファイル空間（{profiles.length.toLocaleString('ja-JP')} 件）</span>
+      <span>横軸は冷却戦略の軸、縦軸は最大体積流量。機械どうしのばらつきの多くが、横方向に並ぶ。</span>
+    </figcaption>
+
+    <svg class="fallback" viewBox="0 0 600 290" role="img" aria-label="冷却戦略の軸と最大体積流量の散布図">
+      <line x1="40" y1="260" x2="580" y2="260" class="axis" />
+      <line x1="40" y1="30" x2="40" y2="260" class="axis" />
+      <text x="580" y="282" text-anchor="end" class="axis-label">冷却戦略の軸</text>
+      <text x="44" y="22" class="axis-label">最大体積流量 (mm³/s)</text>
+      {profiles.map((p) => (
+        <circle cx={sx(p.coolingAxis)} cy={sy(p.volumetricFlow)} r="2" class={`g${ecosystems.indexOf(p.ecosystem) % 4}`} />
+      ))}
+    </svg>
+
+    <ul class="legend">
+      {ecosystems.map((e, i) => <li class={`g${i % 4}`}>{e}</li>)}
+    </ul>
+  </figure>
+)}
+
+{profiles.length > 0 && (
+  <script>
+    // Upgrade the 2D fallback to a 3D point cloud when WebGL is available and motion is allowed.
+    const root = document.querySelector<HTMLElement>('[data-profile-space]');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const canWebGL = (() => {
+      try {
+        return !!document.createElement('canvas').getContext('webgl2');
+      } catch {
+        return false;
+      }
+    })();
+
+    if (root && !reduced && canWebGL) {
+      const io = new IntersectionObserver(async (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        const { mountProfileSpace } = await import('./profile-space-3d');
+        mountProfileSpace(root);
+      });
+      io.observe(root);
+    }
+  </script>
+)}
+
+<style>
+  .space {
+    margin: 0;
+  }
+
+  figcaption {
+    display: grid;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .fallback {
+    width: 100%;
+    height: auto;
+  }
+
+  .axis {
+    stroke: var(--line);
+  }
+
+  .axis-label {
+    fill: var(--muted);
+    font-size: 16px;
+  }
+
+  circle {
+    fill-opacity: 0.55;
+  }
+
+  .g0 { fill: var(--accent); color: var(--accent); }
+  .g1 { fill: var(--fg); color: var(--fg); }
+  .g2 { fill: var(--muted); color: var(--muted); }
+  .g3 { fill: none; stroke: var(--accent); color: var(--accent); }
+
+  .legend {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    font-size: var(--step--1);
+  }
+
+  .legend li::before {
+    content: '';
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    border-radius: 50%;
+    margin-right: 0.4em;
+    background: currentColor;
+  }
+
+  :global([data-profile-space] canvas) {
+    display: block;
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    touch-action: pan-y;
+  }
+</style>

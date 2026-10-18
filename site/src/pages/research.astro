@@ -1,0 +1,87 @@
+---
+import Base from '../layouts/Base.astro';
+import ConversionDiagram from '../research/ConversionDiagram.astro';
+import VerificationChart from '../research/VerificationChart.astro';
+import ProfileSpace from '../research/ProfileSpace.astro';
+---
+
+<Base title="Research" description="スライサー方言のあいだでフィラメントプロファイルを変換する研究。物理量を中間表現にした 2 段変換。">
+  <article class="wrap page">
+    <p class="eyebrow">Research</p>
+    <h1>スライサー方言のあいだで、フィラメントプロファイルを変換する</h1>
+
+    <div class="prose">
+      <p>
+        Bambu Lab、Prusa、Polymaker、OrcaSlicer は、それぞれ独自の書き方（方言）でフィラメントの設定を公開しています。
+        これを別の機種の設定へ、体系的に変換できるかを調べています。調べた範囲では、先行研究のない課題です。
+      </p>
+
+      <h2>方法</h2>
+      <p>
+        公開されている 7,000 件を超えるプロファイルを分析しました。変換は 2 段で行います。
+        元の方言をいったん物理的な中間表現（体積流量、熱履歴、ビード形状、冷却速度）に直し、そこから目的の方言に書き出します。
+        パラメータは、材料に固有のもの、機械に固有のもの、両者の相互作用の 3 種類に分けて扱います。
+      </p>
+    </div>
+
+    <div class="figure">
+      <ConversionDiagram />
+    </div>
+
+    <div class="prose">
+      <h2>分かったこと</h2>
+      <ul>
+        <li>機械どうしのばらつきの 65% は、冷却戦略という一つの軸で説明できる。</li>
+        <li>同じフィラメントでも、公式設定はエコシステムによって最大 2.5 倍ずれる。</li>
+        <li>ガラス繊維入りから炭素繊維入りに替えたときの最大体積流量の減り方は 0.76〜0.85 倍で、ベンダーによらない。</li>
+      </ul>
+    </div>
+
+    <div class="figure">
+      <ProfileSpace />
+    </div>
+
+    <div class="prose">
+      <h2>実機での検証（2026 年 9 月、PLA）</h2>
+    </div>
+
+    <div class="figure">
+      <VerificationChart />
+    </div>
+
+    <div class="prose">
+      <p>
+        時間差の 8 割超は、冷却の閾値の違いから来ていました。品質はほぼ同等で、オーバーハングだけは既存プロファイルが上回りました。
+        原因は、補助ファンがある前提の値をそのまま写していたことです。そこで、ファンの値を「機械の条件つきの相互作用項」として扱うよう方針を改めました。
+      </p>
+
+      <h2>発表と今後</h2>
+      <p>ぎんなん学会 2026 で口頭発表しました。ASA、PETG、PPS-GF20 で検証を続けます。</p>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .page {
+    padding-block: 3rem;
+  }
+
+  h1 {
+    font-size: var(--step-2);
+    max-width: 40rem;
+    margin-block: 0.5rem 2rem;
+  }
+
+  .prose + .figure,
+  .figure + .prose {
+    margin-top: 2.5rem;
+  }
+
+  .figure {
+    max-width: 48rem;
+  }
+
+  .figure:empty {
+    display: none;
+  }
+</style>

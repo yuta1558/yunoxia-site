@@ -1,0 +1,90 @@
+---
+import Base from '../../layouts/Base.astro';
+import ConversionDiagram from '../../research/ConversionDiagram.astro';
+import VerificationChart from '../../research/VerificationChart.astro';
+import ProfileSpace from '../../research/ProfileSpace.astro';
+---
+
+<Base title="Research" description="Converting filament profiles between slicer dialects, through an intermediate representation made of physical quantities.">
+  <article class="wrap page">
+    <p class="eyebrow">Research</p>
+    <h1>Converting filament profiles between slicer dialects</h1>
+
+    <div class="prose">
+      <p>
+        Bambu Lab, Prusa, Polymaker and OrcaSlicer each publish filament settings in their own format — their own dialect.
+        I'm studying whether these can be converted systematically into settings for a different machine.
+        As far as I could find, there is no prior work on this problem.
+      </p>
+
+      <h2>Method</h2>
+      <p>
+        I analysed more than 7,000 published profiles. The conversion runs in two stages: the source dialect is first
+        rewritten as a physical intermediate representation (volumetric flow, thermal history, bead geometry, cooling rate),
+        and the target dialect is written out from that. Parameters are treated in three classes: material-specific,
+        machine-specific, and the interaction between the two.
+      </p>
+    </div>
+
+    <div class="figure">
+      <ConversionDiagram lang="en" />
+    </div>
+
+    <div class="prose">
+      <h2>Findings</h2>
+      <ul>
+        <li>65% of the variance between machines is explained by a single axis: cooling strategy.</li>
+        <li>For the same filament, official settings differ by up to 2.5× between ecosystems.</li>
+        <li>Moving from glass-fibre to carbon-fibre filled material reduces maximum volumetric flow by a factor of 0.76–0.85, regardless of vendor.</li>
+      </ul>
+    </div>
+
+    <div class="figure" lang="ja">
+      <ProfileSpace />
+    </div>
+
+    <div class="prose">
+      <h2>Hardware test (September 2026, PLA)</h2>
+    </div>
+
+    <div class="figure">
+      <VerificationChart lang="en" />
+    </div>
+
+    <div class="prose">
+      <p>
+        More than 80% of the time difference came from different cooling thresholds. Quality was about the same, except on
+        overhangs, where the existing profile did better. The cause was values that assume an auxiliary fan being copied
+        across as they were. I changed the approach to treat fan values as an interaction term that depends on the machine.
+      </p>
+
+      <h2>Presentation and next steps</h2>
+      <p>I gave an oral presentation at Ginnan Gakkai 2026. Testing continues with ASA, PETG and PPS-GF20.</p>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .page {
+    padding-block: 3rem;
+  }
+
+  h1 {
+    font-size: var(--step-2);
+    max-width: 40rem;
+    margin-block: 0.5rem 2rem;
+  }
+
+  .prose + .figure,
+  .figure + .prose {
+    margin-top: 2.5rem;
+  }
+
+  .figure {
+    max-width: 48rem;
+  }
+
+  .figure:empty {
+    display: none;
+  }
+</style>
