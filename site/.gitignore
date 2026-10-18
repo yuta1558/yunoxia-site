@@ -6,3 +6,4 @@ dist/
 .wrangler/
 wrangler.toml
 public/admin/editor.js
+public/assets/fonts/

@@ -5,6 +5,7 @@ import { escapeHtml } from '../../_lib/http.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { sizeFromKey } from '../../_lib/imagesize.js';
 import { getPublishedBySlug } from '../../_lib/posts.js';
+import { fontLinks } from '../../_lib/fonts.js';
 import { fetchAsset, formatDate, withHtmlHeaders } from '../../_lib/shell.js';
 import { withFullStop } from '../../../src/lib/headline.mjs';
 import { blogPosting, jsonLdString } from '../../../src/lib/jsonld.mjs';
@@ -76,6 +77,8 @@ export async function onRequestGet(context) {
     // The Log shell has no hreflang alternates for posts; drop any it carries
     .on('link[rel="alternate"][hreflang]', { element: (el) => el.remove() })
     .on('head', { element: (el) => el.append(`<script type="application/ld+json">${structured}</script>`, { html: true }) })
+    // The shell's font marker becomes the full-coverage stylesheet (CMS text is not in the subset)
+    .on('template[data-cms-font]', { element: (el) => el.replace(fontLinks(el.getAttribute('data-cms-font')), { html: true }) })
     .on('main', { element: (el) => el.setInnerContent(article, { html: true }) })
     .transform(shell);
 
