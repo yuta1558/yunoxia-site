@@ -20,8 +20,8 @@
 //   本文…
 //
 // Images given as local paths (in the body or featured_image) are uploaded first and replaced
-// with their URLs. JPEG metadata (EXIF, GPS) is stripped; PNG, WebP and other formats are sent
-// as they are, metadata included. Files must be 5 MB or less.
+// with their URLs. JPEG, PNG and WebP metadata (EXIF, GPS, text, comments) is stripped; GIF and
+// AVIF are sent as they are, metadata included. Files must be 5 MB or less.
 // CMS_URL defaults to https://yunoxia.one.
 //
 // Authentication is the CMS_API_TOKEN secret of the Pages project (see DEPLOY.md 4-6), either
@@ -34,7 +34,7 @@ import { readFile } from 'node:fs/promises';
 import { basename, dirname, extname, resolve } from 'node:path';
 import { findForbidden } from './forbidden.mjs';
 import { parse, serialize } from './lib/frontmatter.mjs';
-import { headingsWithoutStop, isLocal, rewriteImages, stripJpegMetadata } from './lib/images.mjs';
+import { headingsWithoutStop, isLocal, rewriteImages, stripMetadata } from './lib/images.mjs';
 
 // Node's fetch ignores HTTPS_PROXY unless NODE_USE_ENV_PROXY is set. Behind a proxy (where the
 // network secret is added), run again with it so requests go through the proxy.
@@ -110,8 +110,7 @@ async function upload(path) {
   if (uploaded.has(path)) return uploaded.get(path);
   const type = TYPES[extname(path).toLowerCase()];
   if (!type) fail(`${path}: only jpg, png, gif, webp and avif can be uploaded`);
-  let data = await readInput(path);
-  if (type === 'image/jpeg') data = stripJpegMetadata(data);
+  const data = stripMetadata(await readInput(path), type);
   if (data.length > MAX_BYTES) fail(`${path}: ${(data.length / 1048576).toFixed(1)} MB is over the 5 MB limit; shrink it first (long side 2000 px is plenty).`);
   const form = new FormData();
   form.append('file', new Blob([data], { type }), basename(path));

@@ -78,7 +78,7 @@ When asked to write or publish a Log post, use the CMS through `site/scripts/cms
 3. `node scripts/cms.mjs push <file>` saves a draft; add `--publish` only when the user asked to publish. Same slug = update.
 4. Report the URL it prints. `list` and `get <slug>` read existing posts.
 
-It authenticates with the `CMS_API_TOKEN` secret of the Pages project, set as a network secret of the Claude environment for `yunoxia.one` (the proxy adds the header; the script re-runs itself with `NODE_USE_ENV_PROXY=1` so Node's fetch goes through the proxy) or, failing that, as `CMS_TOKEN` (DEPLOY.md 4-6). If it answers "not authorised", say so and do not ask for the token in chat. Image upload needs the R2 binding `IMAGES`. The CLI strips JPEG metadata (EXIF, GPS) but cannot resize: shrink images to 2000 px on the long side first (e.g. `convert in.jpg -auto-orient -resize 2000x2000\> -strip -quality 85 out.jpg`). The admin UI shrinks and re-encodes uploads itself.
+It authenticates with the `CMS_API_TOKEN` secret of the Pages project, set as a network secret of the Claude environment for `yunoxia.one` (the proxy adds the header; the script re-runs itself with `NODE_USE_ENV_PROXY=1` so Node's fetch goes through the proxy) or, failing that, as `CMS_TOKEN` (DEPLOY.md 4-6). If it answers "not authorised", say so and do not ask for the token in chat. Image upload needs the R2 binding `IMAGES`. The CLI strips JPEG, PNG and WebP metadata (EXIF, GPS, text) but cannot resize: shrink images to 2000 px on the long side first (e.g. `convert in.jpg -auto-orient -resize 2000x2000\> -strip -quality 85 out.jpg`). The admin UI shrinks and re-encodes uploads itself.
 
 ## Caching (`public/_headers`)
 
