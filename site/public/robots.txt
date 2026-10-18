@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://yunoxia.one/sitemap-index.xml
+Sitemap: https://yunoxia.one/sitemap-posts.xml
