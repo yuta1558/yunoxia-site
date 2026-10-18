@@ -17,7 +17,12 @@ export function createDOM(html = '<!DOCTYPE html><html><body></body></html>') {
 
   global.window = dom.window;
   global.document = dom.window.document;
-  global.navigator = dom.window.navigator;
+  // Node 21+ defines a getter-only global navigator, so plain assignment throws
+  Object.defineProperty(global, 'navigator', {
+    value: dom.window.navigator,
+    configurable: true,
+    writable: true
+  });
   global.localStorage = createMockLocalStorage();
   global.location = dom.window.location;
   global.history = dom.window.history;
