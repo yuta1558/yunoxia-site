@@ -1,6 +1,7 @@
 ---
 // Direction C — B's drafting paper and colour, A's spirit: heavy type, machine readouts, sliced mark, toolpath art.
 // Latin is Geist / Geist Mono (no serif). Pen blue is the one signal colour; the heat ramp is for data only.
+// Values follow design system v2: 4px spacing steps, 150/200ms motion, pen-blue focus ring.
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '@fontsource/zen-kaku-gothic-new/400.css';
@@ -85,8 +86,8 @@ const layers = 20;
         <div style="--c:#EFECE5"><b>paper</b>#EFECE5</div>
         <div style="--c:#E4E0D6"><b>surface</b>#E4E0D6</div>
         <div style="--c:#121211"><b>ink</b>#121211</div>
-        <div style="--c:#66635C"><b>muted</b>#66635C</div>
-        <div style="--c:#1F3DFF"><b>pen</b>#1F3DFF 新しい・リンク・寸法</div>
+        <div style="--c:#5E5B54"><b>muted</b>#5E5B54</div>
+        <div style="--c:#1F3DFF"><b>pen</b>#1F3DFF 新しい・リンク・寸法・フォーカス</div>
       </div>
       <div class="ramp" aria-hidden="true"></div>
       <p class="small">data ramp: cool → hot（温度や新しさを図で表すときだけ）</p>
@@ -107,17 +108,20 @@ const layers = 20;
     --paper: #efece5;
     --surface: #e4e0d6;
     --ink: #121211;
-    --muted: #66635c;
+    --muted: #5e5b54;
     --line: #d2cdc1;
     --pen: #1f3dff;
     --sans: 'Geist Variable', 'Zen Kaku Gothic New', sans-serif;
     --jp: 'Zen Kaku Gothic New', 'Geist Variable', sans-serif;
     --mono: 'Geist Mono Variable', ui-monospace, monospace;
+    --ease: cubic-bezier(0.2, 0, 0, 1);
     background-color: var(--paper);
     color: var(--ink);
     font-family: var(--jp);
     min-height: 100vh;
-    padding: 0 clamp(1rem, 4vw, 3.5rem) 6rem;
+    /* the toolpath art bleeds past the right edge on phones */
+    overflow-x: clip;
+    padding: 0 clamp(1rem, 4vw, 3rem) 6rem;
     /* drafting grid, very faint */
     background-image: linear-gradient(rgb(18 18 17 / 0.045) 1px, transparent 1px), linear-gradient(90deg, rgb(18 18 17 / 0.045) 1px, transparent 1px);
     background-size: 40px 40px;
@@ -125,6 +129,16 @@ const layers = 20;
 
   :global(body) {
     margin: 0;
+  }
+
+  .c > * {
+    max-width: 75rem;
+    margin-inline: auto;
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--pen);
+    outline-offset: 2px;
   }
 
   .small,
@@ -157,13 +171,13 @@ const layers = 20;
     font-weight: 800;
     font-size: 1.45rem;
     letter-spacing: -0.05em;
-    -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 2.4px, transparent 2.4px 3.3px);
-    mask-image: repeating-linear-gradient(to bottom, #000 0 2.4px, transparent 2.4px 3.3px);
+    -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 0.1034em, transparent 0.1034em 0.1422em);
+    mask-image: repeating-linear-gradient(to bottom, #000 0 0.1034em, transparent 0.1034em 0.1422em);
   }
 
   nav {
     display: flex;
-    gap: 1.75rem;
+    gap: 1.5rem;
   }
 
   nav a {
@@ -172,13 +186,10 @@ const layers = 20;
     font-size: 0.88rem;
     color: var(--ink);
     text-decoration: none;
+    transition: color 0.15s var(--ease);
   }
 
   nav a:hover {
-    color: var(--pen);
-  }
-
-  .readout {
     color: var(--pen);
   }
 
@@ -193,7 +204,7 @@ const layers = 20;
     gap: 1rem;
     border-top: 1.5px solid var(--ink);
     border-bottom: 1px solid var(--line);
-    padding-block: 0.6rem;
+    padding-block: 0.5rem;
   }
 
   h1 {
@@ -243,7 +254,7 @@ const layers = 20;
 
   dl {
     display: flex;
-    gap: 2.25rem;
+    gap: 2rem;
     margin: 0;
   }
 
@@ -300,6 +311,7 @@ const layers = 20;
     font-weight: 700;
     font-size: clamp(2rem, 4.5vw, 3.6rem);
     letter-spacing: -0.045em;
+    line-height: 1.1;
     margin: 0;
   }
 
@@ -315,11 +327,11 @@ const layers = 20;
     grid-template-columns: 3rem minmax(10rem, 1.15fr) 2fr auto;
     gap: 0.5rem 2rem;
     align-items: baseline;
-    padding-block: 1.35rem;
+    padding-block: 1.5rem;
     border-bottom: 1px solid var(--line);
     color: var(--ink);
     text-decoration: none;
-    transition: padding 0.3s, background 0.3s;
+    transition: padding 0.2s var(--ease), background 0.2s var(--ease);
   }
 
   li a:hover {
@@ -327,7 +339,8 @@ const layers = 20;
     padding-inline: 1rem;
   }
 
-  li a:hover .t {
+  li a:hover .t,
+  li a:focus-visible .t {
     color: var(--pen);
   }
 
@@ -336,7 +349,7 @@ const layers = 20;
     font-weight: 700;
     font-size: 1.12rem;
     letter-spacing: -0.015em;
-    transition: color 0.2s;
+    transition: color 0.15s var(--ease);
   }
 
   .l {
