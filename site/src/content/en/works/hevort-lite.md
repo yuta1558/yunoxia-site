@@ -1,6 +1,6 @@
 ---
 title: HevORT-lite
-summary: A self-built CoreXY 3D printer with two constraints — a 180 mm build area and a budget under 500 USD.
+summary: A CoreXY 3D printer built by a friend, which I took over and am modifying.
 status: In progress
 updated: 2026-09-01
 tags: [3D printer, CoreXY, Klipper]
@@ -8,12 +8,12 @@ tags: [3D printer, CoreXY, Klipper]
 
 ## Take it apart
 
-Every off-the-shelf 3D printer compromises on something: price, build size, rigidity or room to grow. Looking at what I actually print day to day, 180 mm square is enough. What I want in return is a machine whose behaviour I understand down to the last detail.
+A friend built this CoreXY machine (around 180 mm cubed, with a parts budget of about 500 USD) and passed it on to me. The design and build are theirs; my part is modifying it.
 
 ## Understand it
 
-Fixing the constraints at "180 mm square, under 500 USD" narrows the options. For the Z axis, the user interface, the slicer and motion control, I've been deciding what to prioritise within those limits.
+I am starting by running it as it is, to learn how it behaves.
 
 ## Remake it
 
-The design builds on the ideas of the open-source HevORT, tightened for a small, low-cost machine. I'm currently choosing parts and working through the design.
+I am adjusting it for my own use. I will write up the changes in the [Log](/log/) once they come together.

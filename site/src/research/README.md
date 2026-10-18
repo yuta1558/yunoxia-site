@@ -6,9 +6,20 @@ Research ページ（`src/pages/research.astro`）で使う図です。
 | --- | --- | --- |
 | `VerificationChart.astro` | 実機検証（2026 年 9 月、PLA）の造形時間の棒グラフ | なし |
 | `ConversionDiagram.astro` | 元の方言 → 物理中間表現 → 目的の方言、の 2 段変換の構造図 | なし |
+| `ProfileDensity.astro` | 公開プロファイルの分布（ノズル温度 × 最大体積流量、出典別）。`data/profile-density.json` から描く | なし |
 | `ProfileSpace.astro` | プロファイル空間の散布図。`data/profiles.csv` があるときだけ描く | CSV があるときだけ |
 
 図の数値は研究資料に書かれた値だけを使います。データを合成して図を作ることはしません。
+
+## 公開プロファイルの分布（ProfileDensity）
+
+分析用の CSV（OrcaSlicer と PrusaSlicer の公開プロファイル）から、`source`、`nozzle_temp`、`mvs` の 3 列だけを使い、5 °C × 2 mm³/s のマスで件数を数えた図です。数える以外の計算はしていません。元の CSV はリポジトリに入れず、集計結果（`data/profile-density.json`、約 6KB）だけを置きます。
+
+```sh
+node scripts/profile-density.mjs <分析用 CSV のパス> > src/research/data/profile-density.json
+```
+
+冷却戦略の軸（機械間の分散の 65% を説明する軸）は分析側の計算なので、この図では描きません。その軸の得点列が用意できたら、下の散布図に使います。
 
 ## プロファイル空間の散布図
 

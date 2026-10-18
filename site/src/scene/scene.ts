@@ -147,15 +147,15 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
 
   // --- layout --------------------------------------------------------------
   const resize = () => {
-    const w = innerWidth;
-    const h = innerHeight;
+    const w = canvas.clientWidth || innerWidth;
+    const h = canvas.clientHeight || innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     // Keep the solid clear of the headline on wide screens; centre and shrink on narrow ones
     const wide = w / h > 1.1;
-    group.position.set(wide ? 2.2 : 0, wide ? -0.3 : -1.6, 0);
-    group.scale.setScalar(wide ? 0.85 : Math.min(0.9, (w / h) * 0.95));
+    group.position.set(wide ? 2.2 : 0, wide ? -0.3 : 0, 0);
+    group.scale.setScalar(wide ? 0.85 : Math.min(0.8, (w / h) * 1.0));
   };
   resize();
   addEventListener('resize', resize);
@@ -175,6 +175,22 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   const after = document.querySelector<HTMLElement>('[data-scene="after"]');
   const actEls = [2, 3].map((n) => document.querySelector<HTMLElement>(`[data-act="${n}"]`));
 
+  // An act is current once its top reaches the spot where phones pin its text (index.astro,
+  // top: 4.5rem), so the pinned text never lands on the hero while the hero is still on screen.
+  // None before act 1 or once the scene has faded out. Only phones use this.
+  const PIN_TOP = 72;
+  const allActs = [1, 2, 3].map((n) => document.querySelector<HTMLElement>(`[data-act="${n}"]`));
+  const markActiveAct = () => {
+    if (!acts) return;
+    let current = '';
+    if (state.fade > 0.5) {
+      allActs.forEach((el, i) => {
+        if (el && el.getBoundingClientRect().top <= PIN_TOP) current = String(i + 1);
+      });
+    }
+    if (acts.dataset.active !== current) acts.dataset.active = current;
+  };
+
   const master = ScrollTrigger.create({
     trigger: hero ?? document.body,
     start: 'top top',
@@ -183,6 +199,7 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
     scrub: true,
     onUpdate: (self) => {
       state.p = self.progress;
+      markActiveAct();
     },
     onRefresh: (self) => {
       const span = self.end - self.start;
@@ -204,6 +221,7 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
         scrub: true,
         onUpdate: (self) => {
           state.fade = 1 - self.progress;
+          markActiveAct();
         },
       })
     : null;
@@ -334,13 +352,14 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   const onLost = (e: Event) => {
     e.preventDefault();
     handle.destroy();
-    root.classList.remove('is-live');
   };
   canvas.addEventListener('webglcontextlost', onLost);
 
   ScrollTrigger.refresh();
   play();
   root.classList.add('is-live');
+  document.documentElement.classList.add('scene-live');
+  markActiveAct();
 
   const handle: SceneHandle = {
     destroy() {
@@ -361,6 +380,8 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
       (nozzle.material as Material).dispose();
       renderer.dispose();
       root.classList.remove('is-live');
+      document.documentElement.classList.remove('scene-live');
+      if (acts) delete acts.dataset.active;
     },
   };
   return handle;

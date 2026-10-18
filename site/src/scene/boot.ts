@@ -37,6 +37,22 @@ const afterEngagement = (fn: () => void) => {
   events.forEach((e) => addEventListener(e, go, { once: true, passive: true }));
 };
 
+// ?fps=1: show why the scene is (not) running, for checks on a phone without devtools.
+// Once the scene runs, its own frame meter (scene.ts) replaces this line.
+const status = new URLSearchParams(location.search).has('fps')
+  ? (() => {
+      const el = document.createElement('output');
+      el.dataset.sceneStatus = '';
+      el.style.cssText =
+        'position:fixed;left:8px;bottom:8px;z-index:99;padding:4px 8px;font:12px/1.4 ui-monospace,monospace;' +
+        'background:rgb(0 0 0 / 0.7);color:#fff;border-radius:4px;pointer-events:none';
+      document.body.append(el);
+      return (text: string) => {
+        el.textContent = `scene: ${text}`;
+      };
+    })()
+  : () => {};
+
 export function boot() {
   const root = document.querySelector<HTMLElement>('[data-top-scene]');
   const canvas = root?.querySelector<HTMLCanvasElement>('canvas');
@@ -46,15 +62,21 @@ export function boot() {
   let loading = false;
 
   const run = () => {
-    if (handle || loading || reduceQuery.matches || !hasWebGL()) return;
+    if (handle || loading) return;
+    if (reduceQuery.matches) return status('off (reduced motion is on in system settings)');
+    if (!hasWebGL()) return status('off (WebGL unavailable)');
     loading = true;
+    status('waiting for first scroll or touch');
     afterEngagement(async () => {
+      status('loading…');
       try {
         const { start } = await import('./scene');
-        if (reduceQuery.matches) return;
+        if (reduceQuery.matches) return status('off (reduced motion is on in system settings)');
         handle = await start(root, canvas);
+        document.querySelector('[data-scene-status]')?.remove();
       } catch (err) {
         console.warn('[top-scene] disabled:', err);
+        status(`error: ${err instanceof Error ? err.message : String(err)}`);
         root.classList.remove('is-live');
       } finally {
         loading = false;

@@ -25,9 +25,11 @@ const acts = [
   <section class="acts wrap" aria-label="進め方" data-scene="acts">
     {acts.map((a, i) => (
       <div class="act" data-act={i + 1}>
-        <p class="eyebrow">{a.n}</p>
-        <h2>{a.verb}</h2>
-        <p>{a.line}</p>
+        <div class="act-text">
+          <p class="eyebrow">{a.n}</p>
+          <h2>{a.verb}</h2>
+          <p>{a.line}</p>
+        </div>
       </div>
     ))}
   </section>
@@ -87,6 +89,32 @@ const acts = [
     flex-direction: column;
     justify-content: center;
     max-width: 28rem;
+  }
+
+  /* Phones with the live scene: the scene owns the lower half of the screen, and only the current
+     act's text is shown, pinned above it, so text and scene never overlap. Without the scene the
+     acts read as ordinary text. */
+  @media (max-width: 48rem) {
+    .act {
+      max-width: none;
+    }
+
+    :global(html.scene-live) .act-text {
+      position: fixed;
+      top: 4.5rem;
+      left: var(--gutter);
+      right: var(--gutter);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s var(--ease-out), visibility 0.35s;
+    }
+
+    :global(html.scene-live) .acts[data-active='1'] .act[data-act='1'] .act-text,
+    :global(html.scene-live) .acts[data-active='2'] .act[data-act='2'] .act-text,
+    :global(html.scene-live) .acts[data-active='3'] .act[data-act='3'] .act-text {
+      opacity: 1;
+      visibility: visible;
+    }
   }
 
   .act h2 {
