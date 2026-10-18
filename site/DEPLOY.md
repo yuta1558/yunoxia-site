@@ -107,7 +107,9 @@ node -e "const c=require('crypto');const rl=require('readline').createInterface(
 
 ### 4-4. ログイン試行の制限
 
-ログイン失敗には 0.6 秒の遅延を入れているが、総当たり対策としては足りない。Cloudflare の Security → WAF → Rate limiting rules で、`/api/auth/login` への POST を「同じ IP から 10 分に 10 回まで」などに制限する。
+主な対策はアプリ側の制限（`functions/_lib/attempts.js`、テーブルは `migrations/0002_login_attempts.sql`）。同じ IP からの失敗が 15 分に 5 回、全体で 30 回を超えると 429 を返す。成功するとその IP の記録は消える。0002 を適用していないとログインは 503 になる（制限なしで動かさないため）。
+
+ゾーンの WAF ルールは `*.pages.dev`（プロジェクトの別名とブランチのプレビュー）には効かないので、補助と考える。Free プランでは期間が 10 秒しか選べない（現在は 10 回／10 秒で設定済み）。パスワードは 20 文字以上のランダムな文字列にする。
 
 ### 4-5. ローカルで動かす
 
