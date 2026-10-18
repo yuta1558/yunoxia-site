@@ -19,7 +19,7 @@ const specs = [
   { v: '0.20', u: 'mm', l: 'Layer height', t: '一層の高さ。ここから全部が積み上がる。' },
   { v: '21', u: 'mm³/s', l: 'Max flow', t: '溶かして押し出せる量の上限。' },
   { v: '215', u: '°C', l: 'Nozzle', t: 'PLA を流すときの温度。' },
-  { v: '14,486', u: '', l: 'Profiles', t: '数えた公開プロファイルの数。' },
+  { v: '7,000', u: '+', l: 'Profiles', t: '分析した公開プロファイルの数。' },
 ];
 const layers = 24;
 const contour = (i: number, cx: number, base: number, step: number, amp: number) => {
@@ -90,7 +90,7 @@ const contour = (i: number, cx: number, base: number, step: number, amp: number)
     <!-- Dark band: the technology page's x-ray linework, in blueprint -->
     <section class="band">
       <div class="band__inner">
-        <p class="statement"><span>公開プロファイルを&nbsp;</span><span>14,486 件数えた。</span><span>同じ温度でも、</span><span>流量の設定は</span><span>大きく散らばる。</span></p>
+        <p class="statement"><span>7,000 件を超える</span><span>公開プロファイルを読んだ。</span><span>同じフィラメントでも、</span><span>最大体積流量は</span><span>2.5 倍ずれる。</span></p>
         <svg class="xray" viewBox="0 0 600 260" aria-hidden="true">
           {Array.from({ length: 30 }, (_, i) => (
             <path d={contour(i, 300, 240, 7, 230 - i * 3)} class="xr" style={`opacity:${0.12 + (i / 30) * 0.6}`} />

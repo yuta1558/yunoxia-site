@@ -79,7 +79,6 @@ textarea {
 
 /* Labels: mono, upper case for the Latin part, muted */
 label,
-.pane-head,
 .image-row > span,
 .muted,
 .badge {
@@ -288,29 +287,86 @@ main {
   height: 3rem;
 }
 
+/* Body editor: format bar and tabs above one pane, live preview inside (editor.js) */
 .editor {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
 }
 
-.pane-head {
+.editor-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.3rem;
+  align-items: end;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 0;
+  background: var(--paper);
+  border-bottom: 1.5px solid var(--ink);
 }
 
-.pane-head button {
-  padding: 0.2rem 0.6rem;
+.format {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.format button,
+.tabs button {
+  padding: 0.3rem 0.6rem;
+  border-color: transparent;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.format button:hover {
+  border-color: var(--line);
+  background: var(--surface);
+}
+
+.format.off {
+  opacity: 0.45;
+}
+
+.sep {
+  width: 1px;
+  height: 1.1rem;
+  margin: 0 0.25rem;
+  background: var(--line);
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.tabs button {
   font-family: var(--mono);
   font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.tabs button[aria-selected='true'] {
+  color: var(--ink);
+  border-color: transparent transparent var(--pen);
+  border-bottom-width: 2px;
+}
+
+.editor .cm-editor {
+  border-top: 0 !important;
+}
+
+.hint {
+  margin: 0.5rem 0 0;
 }
 
 /* Preview: the site's prose rules (global.css .prose), kept in step by hand */
 .preview {
   border: 1px solid var(--line);
+  border-top: 0;
   padding: 1rem 1.25rem;
   min-height: 30rem;
   overflow: auto;
@@ -379,10 +435,4 @@ main {
   padding-left: 1rem;
   border-left: 1.5px solid var(--ink);
   color: var(--muted);
-}
-
-@media (max-width: 52rem) {
-  .editor {
-    grid-template-columns: 1fr;
-  }
 }

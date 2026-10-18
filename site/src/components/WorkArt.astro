@@ -1,0 +1,156 @@
+---
+// The picture on a Works card. A work with `cover` in its front matter shows that image (a photo,
+// screenshot or drawing under /assets/works/). Until then each work has its own line drawing of
+// what it is about, so the cards read as different things; unknown works fall back to the toolpath.
+// Drawings are aria-hidden: the card's title and summary carry the meaning.
+import { contour } from './toolpath';
+
+interface Props {
+  id: string;
+  cover?: string;
+  coverAlt?: string;
+  index: number;
+}
+
+const { id, cover, coverAlt = '', index } = Astro.props;
+const k = index % 3;
+---
+
+{cover ? (
+  <img class="cover" src={cover} alt={coverAlt} loading="lazy" decoding="async" />
+) : (
+  <svg class="art" viewBox="0 0 300 220" aria-hidden="true" focusable="false">
+    {id === 'lpd8-dmx-kit' ? (
+      <g>
+        {/* Pad controller: 8 knobs, 8 pads (one pressed), a cable to a light and its beam */}
+        <rect x="16" y="104" width="184" height="76" />
+        {[0, 1].map((r) => [0, 1, 2, 3].map((c) => <circle cx={34 + c * 18} cy={124 + r * 26} r="6" />))}
+        {[0, 1].map((r) => [0, 1, 2, 3].map((c) => (
+          <rect x={106 + c * 22} y={115 + r * 26} width="18" height="18" class={r === 1 && c === 2 ? 'on' : undefined} />
+        )))}
+        <path d="M 200 128 C 236 128, 214 74, 244 70" class="dim" />
+        <path d="M 236 40 L 268 40 L 262 66 L 242 66 Z" />
+        <path d="M 230 52 L 230 30 L 274 30 L 274 52" class="dim" />
+        <path d="M 244 70 L 214 204 M 260 70 L 292 204" class="beam" />
+        <text x="16" y="198">LPD8 → QLC+</text>
+        <text x="200" y="148">DMX</text>
+      </g>
+    ) : id === 'bltouch-troubleshooting' ? (
+      <g>
+        {/* Probe beside the nozzle over the bed, then the three causes checked in order */}
+        <rect x="34" y="62" width="50" height="30" />
+        <path d="M 50 92 L 68 92 L 59 108 Z" />
+        <rect x="96" y="58" width="18" height="44" />
+        <line x1="105" y1="102" x2="105" y2="124" class="pen" />
+        <line x1="16" y1="132" x2="140" y2="132" />
+        <line x1="24" y1="108" x2="24" y2="132" class="dim" />
+        <line x1="19" y1="108" x2="29" y2="108" class="dim" />
+        <line x1="19" y1="132" x2="29" y2="132" class="dim" />
+        <text x="34" y="156">z-offset</text>
+        {['pull-up', 'filter cap', 'wiring'].map((label, i) => (
+          <g>
+            <rect x="170" y={28 + i * 58} width="112" height="30" class={i === 1 ? 'on-line' : undefined} />
+            <text x="180" y={47 + i * 58}>{`${i + 1}  ${label}`}</text>
+            {i < 2 && <path d={`M 226 ${58 + i * 58} L 226 ${86 + i * 58} M 221 ${80 + i * 58} L 226 ${86 + i * 58} L 231 ${80 + i * 58}`} class="dim" />}
+          </g>
+        ))}
+        <path d="M 116 80 C 140 80, 146 43, 170 43" class="dim dash" />
+      </g>
+    ) : id === 'yunoxia-renewal' ? (
+      <g>
+        {/* Before: effects piled up. After: the same page, read first */}
+        <rect x="14" y="40" width="120" height="140" />
+        <line x1="14" y1="54" x2="134" y2="54" />
+        <circle cx="52" cy="92" r="22" class="dim" />
+        <circle cx="62" cy="98" r="30" class="dim" />
+        <circle cx="96" cy="128" r="18" class="dim" />
+        <path d="M 22 150 C 40 132, 60 168, 78 150 S 112 132, 126 150" />
+        <path d="M 22 162 C 40 144, 60 180, 78 162 S 112 144, 126 162" class="dim" />
+        <path d="M 86 76 L 120 70 M 88 86 L 116 82" />
+        <path d="M 140 110 L 160 110 M 154 104 L 160 110 L 154 116" class="pen" />
+        <rect x="166" y="40" width="120" height="140" />
+        <line x1="166" y1="54" x2="286" y2="54" />
+        <line x1="178" y1="74" x2="250" y2="74" class="pen" />
+        {[0, 1, 2, 3].map((i) => <line x1="178" y1={92 + i * 10} x2={i === 3 ? 230 : 272} y2={92 + i * 10} class="dim" />)}
+        <rect x="178" y="140" width="94" height="28" class="dim" />
+        <text x="14" y="198">before</text>
+        <text x="166" y="198">after</text>
+      </g>
+    ) : id === 'hevort-lite' ? (
+      <g>
+        {/* CoreXY frame: a cube with the two crossed belts on top */}
+        <path d="M 60 80 L 200 80 L 200 200 L 60 200 Z" />
+        <path d="M 100 44 L 240 44 L 240 164 L 200 200 M 60 80 L 100 44 M 200 80 L 240 44" />
+        <path d="M 100 44 L 100 164 L 60 200 M 100 164 L 240 164" class="dim dash" />
+        <path d="M 70 76 L 228 50 M 70 50 L 228 76" class="pen" />
+        <line x1="66" y1="63" x2="234" y2="63" />
+        <rect x="140" y="58" width="16" height="12" />
+        <text x="60" y="216">CoreXY</text>
+      </g>
+    ) : (
+      Array.from({ length: 10 + k * 4 }, (_, i) => (
+        <path d={contour(i, 150, 190, 9 - k, 90 - k * 12)} style={`opacity:${(0.25 + i / (14 + k * 4)).toFixed(3)}`} />
+      ))
+    )}
+  </svg>
+)}
+
+<style>
+  .art {
+    align-self: center;
+    width: 100%;
+    max-height: 12rem;
+  }
+
+  .art :is(path, rect, circle, line) {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .art .dim {
+    stroke: var(--muted);
+  }
+
+  .art .dash {
+    stroke-dasharray: 3 3;
+  }
+
+  .art .pen,
+  .art .on-line {
+    stroke: var(--pen);
+  }
+
+  .art .on {
+    fill: var(--pen);
+    stroke: var(--pen);
+  }
+
+  .art .beam {
+    stroke: var(--pen);
+    opacity: 0.6;
+  }
+
+  .art text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    fill: var(--muted);
+  }
+
+  .cover {
+    align-self: center;
+    width: 100%;
+    aspect-ratio: 300 / 220;
+    max-height: 12rem;
+    object-fit: cover;
+  }
+
+  @media (max-width: 48rem) {
+    .art,
+    .cover {
+      height: 9rem;
+    }
+  }
+</style>

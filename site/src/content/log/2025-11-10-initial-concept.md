@@ -1,7 +1,7 @@
 ---
-title: Initial Concept
+title: 構想を始めた
 date: 2025-11-10
-tags: [Concept]
+tags: [構想]
 ---
 
 「記録であり、余白であり、回路である」というコンセプトのもと、yunoxia.one の構想を始めました。シンプルさ、性能、アクセシビリティを重視する方針を決めました。

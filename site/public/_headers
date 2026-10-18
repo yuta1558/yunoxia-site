@@ -23,7 +23,8 @@
 /sw.js
   Service-Worker-Allowed: /
 
-# CMS admin: not indexed, strict CSP (all scripts and styles are same-origin)
+# CMS admin: not indexed, strict CSP. Scripts are same-origin only. Styles also allow inline,
+# because the body editor (CodeMirror) injects its stylesheet in a <style> element at runtime.
 /admin/*
   X-Robots-Tag: noindex, nofollow
-  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'

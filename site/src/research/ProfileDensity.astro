@@ -1,7 +1,7 @@
 ---
 // 公開フィラメントプロファイルの分布（ノズル温度 × 最大体積流量）。
 // data/profile-density.json は scripts/profile-density.mjs が分析用 CSV から数えたもので、CSV の列をそのまま使う。
-// 冷却戦略の軸（65% の知見）は分析側の計算なので、ここでは描かない。静的な SVG で、JS はない。
+// 静的な SVG で、JS はない。件数は出典ごとにパネルの見出しに出し、合計は本文に書かない。
 import density from './data/profile-density.json';
 
 interface Props {
@@ -13,22 +13,20 @@ const t = {
   ja: {
     title: '公開プロファイルの分布',
     names: { orca: 'OrcaSlicer', prusa: 'PrusaSlicer' } as Record<string, string>,
-    count: (n: number) => `${n.toLocaleString('ja-JP')} 件`,
     xLabel: 'ノズル温度 (°C)',
     yLabel: '最大体積流量 (mm³/s)',
-    caption: (total: number, outside: number) =>
-      `${total.toLocaleString('ja-JP')} 件の公開プロファイルを、ノズル温度と最大体積流量で数えた分布。色が濃いほど件数が多い。` +
+    caption: (outside: number) =>
+      `ノズル温度と最大体積流量で数えた、出典別の公開プロファイルの分布。色が濃いほど件数が多い。` +
       `範囲外の ${outside.toLocaleString('ja-JP')} 件は描いていない。同じ温度帯でも流量の設定は大きく散らばり、出典によって分布の形も違う。`,
     aria: (name: string) => `${name} のプロファイルの分布`,
   },
   en: {
     title: 'How public profiles are distributed',
     names: { orca: 'OrcaSlicer', prusa: 'PrusaSlicer' } as Record<string, string>,
-    count: (n: number) => `${n.toLocaleString('en-US')} profiles`,
     xLabel: 'Nozzle temperature (°C)',
     yLabel: 'Max volumetric flow (mm³/s)',
-    caption: (total: number, outside: number) =>
-      `${total.toLocaleString('en-US')} public profiles counted by nozzle temperature and max volumetric flow; darker means more profiles. ` +
+    caption: (outside: number) =>
+      `Public profiles by source, counted by nozzle temperature and max volumetric flow; darker means more profiles. ` +
       `${outside.toLocaleString('en-US')} fall outside the plotted range. Flow settings spread widely even at the same temperature, and the shape differs by source.`,
     aria: (name: string) => `Distribution of ${name} profiles`,
   },
@@ -55,7 +53,7 @@ const panels = Object.entries(density.sources).map(([key, s]) => ({ key, name: t
   <div class="panels">
     {panels.map((p) => (
       <div class="panel">
-        <p class="meta">{p.name} · {t.count(p.n)}</p>
+        <p class="meta">{p.name}</p>
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t.aria(p.name)}>
           {yTicks.map((v) => (
             <g>
@@ -75,7 +73,7 @@ const panels = Object.entries(density.sources).map(([key, s]) => ({ key, name: t
       </div>
     ))}
   </div>
-  <figcaption>{t.caption(density.total, density.outsideRange)}</figcaption>
+  <figcaption>{t.caption(density.outsideRange)}</figcaption>
 </figure>
 
 <style>

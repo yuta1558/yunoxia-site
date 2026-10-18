@@ -25,9 +25,12 @@ site/
 ├── functions/              # Pages Functions: CMS API, /log/p/<slug>/, CMS posts into /log/, the top pages, RSS, sitemap and updates.json
 ├── migrations/             # D1 schema
 ├── scripts/
+│   ├── build-admin.mjs     # bundles src/admin/editor.ts into public/admin/editor.js (before build and dev)
+│   ├── cms.mjs             # write Log posts through the CMS API (see "Writing Log posts")
 │   ├── font-subsets.mjs    # writes src/styles/fonts.generated.css (runs before every build)
 │   └── profile-density.mjs # builds the Research density chart data from the analysis CSV
 ├── src/
+│   ├── admin/editor.ts     # CMS body editor (CodeMirror 6, Obsidian-style live preview)
 │   ├── layouts/Base.astro  # head, header, footer, theme script, bead
 │   ├── components/         # Home (top page, ja/en), WorkCards, toolpath geometry
 │   ├── pages/              # index, works, research, log, about, 404, en/*, rss, updates.json, lab/d
@@ -62,6 +65,17 @@ npm run test:e2e     # needs a build first; set CHROMIUM_PATH to use a preinstal
 - **Colours**: use the v3 tokens in `global.css` (`--paper`, `--ink`, `--muted`, `--line`, `--pen`, `--panel`, `--band`…), defined for both themes. `--bg` / `--fg` / `--accent` are aliases read at runtime by the scene, the bead and the research figures; keep them.
 - **Typography**: headlines are light (300) and end with a full stop; break Japanese headlines only between phrases (`.phrases` spans). Bold only for the wordmark and the top h1.
 - **One h1 per page**, `lang` set, no page errors: the e2e suite checks every sitemap page.
+
+## Writing Log posts
+
+When asked to write or publish a Log post, use the CMS through `site/scripts/cms.mjs`, not a Markdown file under `src/content/log/` (those are the pre-CMS archive):
+
+1. Write the post as Markdown with front matter (`title`, `slug`, `excerpt`, `tags`, `status`, optionally `featured_image`) in the scratchpad, not in the repository. Give an ASCII `slug`: a Japanese title alone becomes `post-<random>`.
+2. Follow the Privacy rule above and the site's voice (light, short sentences; headings with `##`).
+3. `node scripts/cms.mjs push <file>` saves a draft; add `--publish` only when the user asked to publish. Same slug = update.
+4. Report the URL it prints. `list` and `get <slug>` read existing posts.
+
+It needs `CMS_TOKEN` in the environment (the `CMS_API_TOKEN` secret of the Pages project; DEPLOY.md 4-6). If it is missing, say so and do not ask for the token in chat. Image upload needs the R2 binding `IMAGES`. The CLI strips JPEG metadata (EXIF, GPS) but cannot resize: shrink images to 2000 px on the long side first (e.g. `convert in.jpg -auto-orient -resize 2000x2000\> -strip -quality 85 out.jpg`). The admin UI shrinks and re-encodes uploads itself.
 
 ## Caching (`public/_headers`)
 

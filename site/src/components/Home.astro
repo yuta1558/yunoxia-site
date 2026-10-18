@@ -28,16 +28,16 @@ const t = {
     worksTitle: ['作ったもの。', '直したもの。'],
     worksText: '既製品や仕組みを開けて中を見て、物理量に分けて理解し、他の人も使える道具にする。その記録。',
     worksCta: 'Works 一覧',
-    statement: ['公開プロファイルを ', '14,486 件数えた。', '同じ温度でも、', '流量の設定は', '大きく散らばる。'],
+    statement: ['7,000 件を超える', '公開プロファイルを読んだ。', '同じフィラメントでも、', '最大体積流量は', '2.5 倍ずれる。'],
     researchText: 'スライサーの方言のあいだで、フィラメントの設定を物理量を介して変換する研究。',
     researchCta: '研究を読む',
     numbersTitle: '数字で見る。',
     numbersText: '分かったことは、単位の付いた数字で残す。',
     specs: [
-      { v: '14,486', u: '', l: 'Profiles', t: '分布を数えた公開プロファイル。' },
-      { v: '65', u: '%', l: 'Cooling', t: '機械どうしのばらつきのうち、冷却戦略で説明できる割合。' },
-      { v: '2.5', u: '×', l: 'Spread', t: '同じフィラメントの公式設定が、エコシステムによってずれる最大の幅。' },
-      { v: '0.76–0.85', u: '×', l: 'GF → CF', t: 'ガラス繊維から炭素繊維に替えたときの最大体積流量の比。' },
+      { v: '7,000', u: '+', l: 'Profiles', t: '分析した公開プロファイル。4 系統、2026 年 7 月時点。' },
+      { v: '2.5', u: '×', l: 'Spread', t: '同じフィラメントの最大体積流量が、エコシステムによってずれる幅。' },
+      { v: '220', u: '°C', l: 'Nozzle', t: '温度は方言をまたいで一致する。Prusa 34 件中 20 件、Bambu 21 件中 20 件。' },
+      { v: '84.9 → 57.7', u: '分', l: 'Print time', t: '変換したプロファイルでの造形時間。差の 8 割超は冷却の閾値から。' },
     ],
     logTitle: '記録。',
     logText: '作っているものの途中経過と、考えたこと。',
@@ -51,16 +51,16 @@ const t = {
     worksTitle: ['Things made.', 'Things fixed.'],
     worksText: 'Open up products and systems, break them down into physical quantities, and turn what I learn into tools others can use.',
     worksCta: 'All works',
-    statement: ['I counted ', '14,486 public profiles.', 'At the same temperature,', 'flow settings', 'still scatter widely.'],
+    statement: ['I read more than ', '7,000 public profiles.', 'For the same filament,', 'max volumetric flow', 'differs by 2.5×.'],
     researchText: 'Converting filament profiles between slicer dialects through physical quantities.',
     researchCta: 'Read the research',
     numbersTitle: 'In numbers.',
     numbersText: 'What I learn is kept as numbers with units.',
     specs: [
-      { v: '14,486', u: '', l: 'Profiles', t: 'Public profiles counted for the distribution.' },
-      { v: '65', u: '%', l: 'Cooling', t: 'Share of machine-to-machine spread explained by cooling strategy.' },
-      { v: '2.5', u: '×', l: 'Spread', t: 'Largest gap between official settings for the same filament across ecosystems.' },
-      { v: '0.76–0.85', u: '×', l: 'GF → CF', t: 'Max volumetric flow ratio when switching from glass to carbon fibre.' },
+      { v: '7,000', u: '+', l: 'Profiles', t: 'Public profiles analysed, from four sources, as of July 2026.' },
+      { v: '2.5', u: '×', l: 'Spread', t: 'Gap in max volumetric flow for the same filament across ecosystems.' },
+      { v: '220', u: '°C', l: 'Nozzle', t: 'Temperature agrees across dialects: 20 of 34 Prusa profiles, 20 of 21 Bambu.' },
+      { v: '84.9 → 57.7', u: 'min', l: 'Print time', t: 'Print time with the converted profile; over 80% of the gap is the cooling threshold.' },
     ],
     logTitle: 'Log.',
     logText: 'Notes on work in progress, in Japanese.',
@@ -115,7 +115,7 @@ const xray = Array.from({ length: 30 }, (_, i) => i);
       <div>
         <dt class="meta">{s.l}</dt>
         <dd>
-          <span class="num">{s.v}</span>
+          <span class:list={['num', { 'num--long': s.v.length > 6 }]}>{s.v}</span>
           {s.u && <span class="unit">{s.u}</span>}
         </dd>
         <dd class="desc">{s.t}</dd>
@@ -280,6 +280,12 @@ const xray = Array.from({ length: 30 }, (_, i) => i);
     line-height: 1;
     letter-spacing: -0.05em;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* A from → to pair: smaller so it stays on one line in a half-width column at 390px */
+  .num--long {
+    font-size: clamp(1.45rem, 2.6vw, 2.4rem);
+    white-space: nowrap;
   }
 
   .unit {
