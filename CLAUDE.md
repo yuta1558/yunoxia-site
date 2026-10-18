@@ -73,7 +73,7 @@ npm run test:e2e     # needs a build first; set CHROMIUM_PATH to use a preinstal
 When asked to write or publish a Log post, use the CMS through `site/scripts/cms.mjs`, not a Markdown file under `src/content/log/` (those are the pre-CMS archive):
 
 1. Write the post as Markdown with front matter (`title`, `slug`, `excerpt`, `tags`, `status`, optionally `featured_image`) in the scratchpad, not in the repository. Give an ASCII `slug`: a Japanese title alone becomes `post-<random>`.
-2. Follow the Privacy rule above and the site's voice (light, short sentences; headings with `##`).
+2. Follow the Privacy rule above and the site's voice (light, short sentences; headings with `##`). `push` refuses a file containing a forbidden string before sending anything; posts written in the admin UI are not checked.
 3. `node scripts/cms.mjs push <file>` saves a draft; add `--publish` only when the user asked to publish. Same slug = update.
 4. Report the URL it prints. `list` and `get <slug>` read existing posts.
 
@@ -94,7 +94,7 @@ It authenticates with the `CMS_API_TOKEN` secret of the Pages project, set as a 
 ## Git Workflow
 
 - Feature branches: `claude/<description>` or `codex/<description>`.
-- PR-based. Cloudflare Pages posts a preview URL on each PR. Claude reviews every PR on open and on each push (`.github/workflows/claude-review.yml`, rules in `REVIEW.md`); Codex also reviews when its quota allows.
+- PR-based. Cloudflare Pages posts a preview URL on each PR. CI (`.github/workflows/ci.yml`) runs the privacy check, unit tests, the build and the e2e suite on every PR and on `main`. Claude reviews every PR on open and on each push (`.github/workflows/claude-review.yml`, rules in `REVIEW.md`); Codex also reviews when its quota allows.
 - Merging to `main` deploys straight to yunoxia.one.
 - Commit messages: English or Japanese, describing what changed and why.
 

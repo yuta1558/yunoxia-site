@@ -31,6 +31,7 @@
 import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { basename, dirname, extname, resolve } from 'node:path';
+import { findForbidden } from './forbidden.mjs';
 import { parse, serialize } from './lib/frontmatter.mjs';
 
 // Node's fetch ignores HTTPS_PROXY unless NODE_USE_ENV_PROXY is set. Behind a proxy (where the
@@ -140,9 +141,14 @@ async function get(slug) {
 }
 
 async function push(file, publish) {
-  const parsed = parse(await readFile(file, 'utf8'));
+  const text = await readFile(file, 'utf8');
+  const parsed = parse(text);
   if (!parsed) fail('The file needs a front matter block (--- title: … ---).');
   const { meta, content } = parsed;
+  // Privacy rule: refuse before anything (images included) is sent. The decoded front matter
+  // is checked too, since a JSON string value can spell a character as \uXXXX.
+  const hits = findForbidden([text, ...Object.values(meta).flat()].join('\n'));
+  if (hits.length) fail(`${file} contains forbidden string ${hits.map((n) => `#${n}`).join(', ')} (scripts/forbidden.mjs). Nothing was sent.`);
   if (!meta.title) fail('title is required in the front matter.');
   const dir = dirname(resolve(file));
 

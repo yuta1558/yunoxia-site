@@ -33,3 +33,4 @@ This repository is public and so are review comments. Never write the owner's re
 - Generated files: `site/src/styles/fonts.generated.css`, `site/public/admin/editor.js`, `site/package-lock.json`.
 - The pre-CMS Log archive under `site/src/content/log/` unless the PR edits it.
 - Formatting that does not change meaning.
+- What CI already checks (`.github/workflows/ci.yml`): unit and e2e failures, a broken build, the privacy check. Point out a missing test, not a failing one.

@@ -8,7 +8,7 @@
 // can go into a PR comment or a CI log of this public repository. Exits 1 when anything is found.
 import { execFileSync } from 'node:child_process';
 import { readFileSync, statSync } from 'node:fs';
-import { FORBIDDEN } from './forbidden.mjs';
+import { findForbidden } from './forbidden.mjs';
 
 const listFiles = (paths) =>
   execFileSync('git', ['ls-files', '-z', '--', ...paths], { encoding: 'utf8' }).split('\0').filter(Boolean);
@@ -24,12 +24,10 @@ for (const file of listFiles(process.argv.slice(2))) {
   }
   if (text.includes('\0')) continue; // binary
   text.split('\n').forEach((line, i) => {
-    FORBIDDEN.forEach((word, n) => {
-      if (line.includes(word)) {
-        console.log(`${file}:${i + 1}: forbidden string #${n + 1}`);
-        hits++;
-      }
-    });
+    for (const n of findForbidden(line)) {
+      console.log(`${file}:${i + 1}: forbidden string #${n}`);
+      hits++;
+    }
   });
 }
 if (hits) {
