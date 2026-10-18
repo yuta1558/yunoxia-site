@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Admin — yunoxia</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/admin/admin.css" />
+    <script src="/admin/admin.js" defer></script>
+  </head>
+  <body>
+    <section id="login" class="login" hidden>
+      <form id="login-form" class="card">
+        <h1>yunoxia Admin</h1>
+        <label>ユーザー名<input name="username" autocomplete="username" required /></label>
+        <label>パスワード<input name="password" type="password" autocomplete="current-password" required /></label>
+        <p id="login-error" class="error" role="alert" hidden></p>
+        <button type="submit" class="primary">ログイン</button>
+      </form>
+    </section>
+
+    <section id="app" hidden>
+      <header class="bar">
+        <a href="/log/" class="brand">yunoxia</a>
+        <span class="badge">Admin</span>
+        <span class="spacer"></span>
+        <button id="logout" type="button">ログアウト</button>
+      </header>
+
+      <main>
+        <div id="view-list">
+          <div class="toolbar">
+            <h2>記事</h2>
+            <div class="filters" role="group" aria-label="絞り込み">
+              <button type="button" data-filter="all" aria-pressed="true">すべて</button>
+              <button type="button" data-filter="published" aria-pressed="false">公開</button>
+              <button type="button" data-filter="draft" aria-pressed="false">下書き</button>
+            </div>
+            <button id="new-post" type="button" class="primary">新規作成</button>
+          </div>
+          <p id="list-status" class="muted">読み込み中…</p>
+          <ul id="posts" class="posts"></ul>
+        </div>
+
+        <form id="view-editor" hidden>
+          <div class="toolbar">
+            <button id="back" type="button">← 一覧</button>
+            <span class="spacer"></span>
+            <select id="status" aria-label="状態">
+              <option value="draft">下書き</option>
+              <option value="published">公開</option>
+            </select>
+            <button id="delete" type="button" class="danger" hidden>削除</button>
+            <button type="submit" class="primary">保存（Ctrl+S）</button>
+          </div>
+          <p id="save-status" class="muted" role="status"></p>
+
+          <label>タイトル<input id="title" required maxlength="200" /></label>
+          <label>スラッグ（英小文字・数字・ハイフン。空なら自動）<input id="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="80" /></label>
+          <label>抜粋<textarea id="excerpt" rows="2" maxlength="500"></textarea></label>
+          <label>タグ（カンマ区切り、10 個まで）<input id="tags" /></label>
+
+          <div class="image-row">
+            <span>アイキャッチ画像</span>
+            <img id="featured-preview" alt="" hidden />
+            <input id="featured" type="hidden" />
+            <button id="featured-upload" type="button">アップロード</button>
+            <button id="featured-remove" type="button" hidden>外す</button>
+          </div>
+
+          <div class="editor">
+            <div class="pane">
+              <div class="pane-head">
+                <span>本文（Markdown）</span>
+                <button id="insert-image" type="button">画像を挿入</button>
+              </div>
+              <textarea id="content" rows="24" required spellcheck="false"></textarea>
+            </div>
+            <div class="pane">
+              <div class="pane-head">
+                <span>プレビュー</span>
+                <button id="refresh-preview" type="button">更新</button>
+              </div>
+              <div id="preview" class="preview"></div>
+            </div>
+          </div>
+          <input id="file" type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/avif" hidden />
+        </form>
+      </main>
+    </section>
+  </body>
+</html>

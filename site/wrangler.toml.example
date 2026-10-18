@@ -1,0 +1,29 @@
+# Local development config for the CMS (copy to wrangler.toml; do NOT commit the copy yet).
+#
+# Why this is not wrangler.toml: when a Pages project's root contains wrangler.toml, Cloudflare
+# treats it as the source of truth for bindings and the dashboard can no longer set them. Until
+# the D1 database exists, a committed wrangler.toml would either break deploys or block the
+# dashboard bindings. See DEPLOY.md, "CMS: bindings", for the two supported options.
+
+name = "yunoxia-site-next"
+compatibility_date = "2026-10-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "yunoxia-blog"
+database_id = "00000000-0000-0000-0000-000000000000" # local only; real id from `wrangler d1 create`
+migrations_dir = "migrations"
+
+# Optional: image uploads. Without this binding /api/upload answers 503 and the rest works.
+# [[r2_buckets]]
+# binding = "IMAGES"
+# bucket_name = "yunoxia-images"
+
+[vars]
+ADMIN_USERNAME = "admin"
+
+# Secrets go in .dev.vars locally (gitignored by you) and in the dashboard / `wrangler pages secret`
+# in production — never here:
+#   JWT_SECRET            random string, 32+ bytes
+#   ADMIN_PASSWORD_HASH   pbkdf2$100000$<salt b64>$<hash b64>  (see DEPLOY.md)
