@@ -25,7 +25,7 @@ for (const path of routes) {
     expect(res?.status()).toBe(200);
     await expect(page).toHaveTitle(/yunoxia/);
     await expect(page.locator('h1')).toHaveCount(1);
-    await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
+    await expect(page.locator('html')).toHaveAttribute('lang', path.startsWith('/en/') ? 'en' : 'ja');
     await page.waitForTimeout(300);
     expect(errors).toEqual([]);
   });
