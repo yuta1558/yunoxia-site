@@ -7,6 +7,7 @@
     <title>Admin — yunoxia</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/admin/admin.css" />
+    <script src="/admin/editor.js" defer></script>
     <script src="/admin/admin.js" defer></script>
   </head>
   <body>
@@ -70,20 +71,36 @@
           </div>
 
           <div class="editor">
-            <div class="pane">
-              <div class="pane-head">
-                <span>本文（Markdown）</span>
-                <button id="insert-image" type="button">画像を挿入</button>
+            <div class="editor-head">
+              <div class="format" role="toolbar" aria-label="書式">
+                <button type="button" data-cmd="h2" title="見出し（## ）">見出し</button>
+                <button type="button" data-cmd="h3" title="小見出し（### ）">小見出し</button>
+                <span class="sep" aria-hidden="true"></span>
+                <button type="button" data-cmd="bold" title="太字（Ctrl+B）">太字</button>
+                <button type="button" data-cmd="italic" title="斜体（Ctrl+I）">斜体</button>
+                <button type="button" data-cmd="code" title="コード（Ctrl+E）">コード</button>
+                <button type="button" data-cmd="link" title="リンク（Ctrl+K）">リンク</button>
+                <button id="insert-image" type="button" title="画像（貼り付け・ドラッグでも入る）">画像</button>
+                <span class="sep" aria-hidden="true"></span>
+                <button type="button" data-cmd="bullet" title="箇条書き（- ）">・箇条書き</button>
+                <button type="button" data-cmd="number" title="番号付き（1. ）">1. 番号</button>
+                <button type="button" data-cmd="quote" title="引用（&gt; ）">引用</button>
+                <button type="button" data-cmd="codeblock" title="コードブロック（```）">コード枠</button>
+                <button type="button" data-cmd="rule" title="区切り線（---）">区切り線</button>
               </div>
-              <textarea id="content" rows="24" required spellcheck="false"></textarea>
+              <div class="tabs" role="tablist" aria-label="表示">
+                <button type="button" role="tab" id="tab-write" aria-selected="true" aria-controls="pane-write">編集</button>
+                <button type="button" role="tab" id="tab-preview" aria-selected="false" aria-controls="pane-preview">プレビュー</button>
+              </div>
             </div>
-            <div class="pane">
-              <div class="pane-head">
-                <span>プレビュー</span>
-                <button id="refresh-preview" type="button">更新</button>
-              </div>
+            <div id="pane-write" role="tabpanel" aria-labelledby="tab-write">
+              <div id="editor-host"></div>
+              <textarea id="content" rows="24" spellcheck="false" aria-label="本文（Markdown）"></textarea>
+            </div>
+            <div id="pane-preview" role="tabpanel" aria-labelledby="tab-preview" hidden>
               <div id="preview" class="preview"></div>
             </div>
+            <p class="hint muted">「## 」で見出し、「- 」で箇条書き、**太字**、[リンク](URL)。記号はカーソルのある所にだけ出る。画像は貼り付けかドラッグで入る。</p>
           </div>
           <input id="file" type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/avif" hidden />
         </form>

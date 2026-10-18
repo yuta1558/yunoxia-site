@@ -3,14 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "node scripts/font-subsets.mjs && astro build",
+    "dev": "node scripts/build-admin.mjs && astro dev",
+    "build": "node scripts/font-subsets.mjs && node scripts/build-admin.mjs && astro build",
     "fonts": "node scripts/font-subsets.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "test:unit": "node --test \"tests/unit/*.test.mjs\"",
     "test:e2e": "playwright test",
-    "test": "npm run test:unit && npm run build && npm run test:e2e"
+    "test": "npm run test:unit && npm run build && npm run test:e2e",
+    "admin": "node scripts/build-admin.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
@@ -22,8 +23,15 @@
     "three": "^0.186.1"
   },
   "devDependencies": {
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/lang-markdown": "6.5.2",
+    "@codemirror/language": "6.12.4",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.13",
+    "@lezer/highlight": "1.2.5",
     "@playwright/test": "1.64.1",
     "@types/three": "^0.186.0",
+    "esbuild": "0.28.2",
     "wrangler": "^4.151.1"
   }
 }

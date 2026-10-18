@@ -67,6 +67,8 @@ HSTS は付け替えとは別に段階的に入れる（1 日 → 1 か月 → 1
 | 更新マーク | `functions/updates.json.js`（公開記事の更新日時を `/updates.json` に足す） |
 | RSS への差し込み | `functions/rss.xml.js` |
 | 管理画面 | `public/admin/`（`/admin/`、noindex、外部スクリプトなし） |
+| 本文エディタ | `src/admin/editor.ts`（CodeMirror 6、ライブプレビュー）。`scripts/build-admin.mjs` がビルドと dev の前に `public/admin/editor.js` へまとめる（生成物なのでコミットしない） |
+| CLI からの投稿 | `scripts/cms.mjs`（4-6） |
 | スキーマ | `migrations/0001_create_posts.sql` |
 | Functions を動かす範囲 | `public/_routes.json`（上の差し込み先と API だけ。他は静的配信） |
 
@@ -102,6 +104,7 @@ npx wrangler d1 migrations apply yunoxia-blog --remote
 | `JWT_SECRET` | 32 バイト以上のランダム文字列。`openssl rand -base64 48` |
 | `ADMIN_PASSWORD_HASH` | 下のコマンドで作る |
 | `ADMIN_USERNAME` | 任意（省略時は admin）。種類は通常の変数でよい |
+| `CMS_API_TOKEN` | 任意。`scripts/cms.mjs`（Claude からの投稿）用の API トークン。32 文字以上、`openssl rand -base64 48`。未設定なら CLI からは書けない |
 
 パスワードのハッシュ（PBKDF2-SHA256、10 万回、ソルト付き）は手元で作る。パスワードはシェルの履歴に残さない。
 
@@ -127,6 +130,29 @@ npx wrangler pages dev                         # http://localhost:8788/admin/
 ```
 
 `wrangler.toml`、`.dev.vars`、`.wrangler/` はコミットしない。
+
+### 4-6. Claude（CLI）から書く
+
+`scripts/cms.mjs` は API トークンで API を呼び、記事の作成・更新・公開をする。管理画面のパスワードは使わない。
+
+```sh
+cd site
+export CMS_TOKEN=<CMS_API_TOKEN と同じ値>      # CMS_URL は省略時 https://yunoxia.one
+node scripts/cms.mjs list                      # 記事の一覧（下書きを含む）
+node scripts/cms.mjs get <slug> > post.md      # 既存の記事をファイルに書き出す
+node scripts/cms.mjs push post.md              # 作成。同じ slug があれば更新
+node scripts/cms.mjs push post.md --publish    # 公開して URL を表示
+```
+
+ファイルはフロントマター（`title`、`slug`、`excerpt`、`tags`、`status`、`featured_image`）付きの Markdown。本文や `featured_image` にローカルの画像パスがあれば、先にアップロードして URL に置き換える（R2 の `IMAGES` が必要）。
+
+設定：
+
+1. Pages の Secret に `CMS_API_TOKEN` を登録する（4-3）。
+2. Claude の環境（クラウド環境の設定）に、同じ値を環境変数 `CMS_TOKEN` として登録する。チャットには貼らない。
+3. 漏れたと思ったら `CMS_API_TOKEN` を作り直す。古い値はその時点で使えなくなる。
+
+トークンは管理者と同じ権限（作成、更新、削除、アップロード）を持つ。CLI は削除を持たない。
 
 ## PR #41 からの変更点
 

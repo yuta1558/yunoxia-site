@@ -18,7 +18,7 @@
   let currentId = null;
   let fileTarget = 'content'; // where an uploaded image goes: 'content' or 'featured'
   let dirty = false; // the editor has changes that are not saved yet
-  let previewTimer = 0;
+  let body = null; // the body editor (editor.js), or the plain textarea if it did not load
 
   // ---- API ----------------------------------------------------------------
 
@@ -136,12 +136,12 @@
     $('excerpt').value = post.excerpt;
     $('tags').value = post.tags.join(', ');
     $('status').value = post.status;
-    $('content').value = post.content;
+    body.setValue(post.content);
     $('delete').hidden = !id;
     setFeatured(post.featured_image);
     dirty = false;
     show('editor');
-    refreshPreview();
+    showTab('write');
   }
 
   // Leaving the editor with unsaved changes asks first
@@ -154,13 +154,18 @@
       excerpt: $('excerpt').value,
       tags: $('tags').value.split(',').map((t) => t.trim()).filter(Boolean),
       status: $('status').value,
-      content: $('content').value,
+      content: body.getValue(),
       featured_image: $('featured').value,
     };
   }
 
   async function save() {
     if (!$('view-editor').reportValidity()) return;
+    if (!body.getValue().trim()) {
+      $('save-status').textContent = '本文が空です。';
+      body.focus();
+      return;
+    }
     $('save-status').textContent = '保存中…';
     try {
       const data = collect();
@@ -200,7 +205,7 @@
   async function refreshPreview() {
     try {
       // The server renderer escapes all input and allow-lists URLs, so its output is safe to insert.
-      $('preview').innerHTML = (await api('/preview', { method: 'POST', body: { content: $('content').value } })).html;
+      $('preview').innerHTML = (await api('/preview', { method: 'POST', body: { content: body.getValue() } })).html;
     } catch (e) {
       $('preview').textContent = `プレビューに失敗しました：${e.message}`;
     }
@@ -213,12 +218,46 @@
     return url;
   }
 
-  function insertAtCursor(text) {
+  // The live-preview editor when editor.js loaded, else the textarea with the same interface
+  function mountBody() {
     const area = $('content');
-    const { selectionStart: s, selectionEnd: e, value } = area;
-    area.value = value.slice(0, s) + text + value.slice(e);
-    area.selectionStart = area.selectionEnd = s + text.length;
-    area.focus();
+    if (window.YxEditor) {
+      area.hidden = true;
+      return window.YxEditor.mount($('editor-host'), {
+        onChange: () => {
+          dirty = true;
+        },
+        upload,
+        onStatus: (text) => {
+          $('save-status').textContent = text;
+        },
+      });
+    }
+    document.querySelectorAll('.format [data-cmd], .format .sep').forEach((b) => (b.hidden = true));
+    area.addEventListener('input', () => (dirty = true));
+    return {
+      getValue: () => area.value,
+      setValue: (value) => (area.value = value),
+      insert(text) {
+        const { selectionStart: s, selectionEnd: e, value } = area;
+        area.value = value.slice(0, s) + text + value.slice(e);
+        area.selectionStart = area.selectionEnd = s + text.length;
+        area.focus();
+        dirty = true;
+      },
+      focus: () => area.focus(),
+      command: () => false,
+    };
+  }
+
+  function showTab(name) {
+    const preview = name === 'preview';
+    $('tab-write').setAttribute('aria-selected', String(!preview));
+    $('tab-preview').setAttribute('aria-selected', String(preview));
+    $('pane-write').hidden = preview;
+    $('pane-preview').hidden = !preview;
+    document.querySelector('.format').classList.toggle('off', preview);
+    if (preview) refreshPreview();
   }
 
   // ---- Wiring -------------------------------------------------------------
@@ -261,19 +300,32 @@
       if (confirmLeave()) loadList();
     });
 
-    // Track unsaved changes, and refresh the preview a moment after typing stops
-    $('view-editor').addEventListener('input', (event) => {
+    body = mountBody();
+
+    // Track unsaved changes in the fields (the body editor reports its own)
+    $('view-editor').addEventListener('input', () => {
       dirty = true;
-      if (event.target === $('content')) {
-        clearTimeout(previewTimer);
-        previewTimer = setTimeout(refreshPreview, 700);
-      }
     });
+
+    // Toolbar: keep the editor's selection on click, and write into the editor even from the preview tab
+    document.querySelectorAll('.format button').forEach((button) => {
+      button.addEventListener('mousedown', (event) => event.preventDefault());
+    });
+    document.querySelectorAll('[data-cmd]').forEach((button) => {
+      button.addEventListener('click', () => {
+        showTab('write');
+        body.command(button.dataset.cmd);
+      });
+    });
+    $('tab-write').addEventListener('click', () => {
+      showTab('write');
+      body.focus();
+    });
+    $('tab-preview').addEventListener('click', () => showTab('preview'));
     addEventListener('beforeunload', (event) => {
       if (dirty && !$('view-editor').hidden) event.preventDefault();
     });
     $('delete').addEventListener('click', remove);
-    $('refresh-preview').addEventListener('click', refreshPreview);
     $('view-editor').addEventListener('submit', (event) => {
       event.preventDefault();
       save();
@@ -287,6 +339,7 @@
     });
 
     $('insert-image').addEventListener('click', () => {
+      showTab('write');
       fileTarget = 'content';
       $('file').click();
     });
@@ -307,7 +360,7 @@
       try {
         const url = await upload(file);
         if (fileTarget === 'featured') setFeatured(url);
-        else insertAtCursor(`![](${url})`);
+        else body.insert(`![](${url})\n`);
         dirty = true;
         $('save-status').textContent = 'アップロードしました。';
       } catch (e) {
