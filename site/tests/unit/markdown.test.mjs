@@ -32,3 +32,10 @@ test('placeholder characters in the input are dropped, not expanded', () => {
 test('raw HTML is escaped', () => {
   assert.equal(renderMarkdown('<img src=x onerror=alert(1)> & "q"'), '<p>&lt;img src=x onerror=alert(1)&gt; &amp; &quot;q&quot;</p>');
 });
+
+test('control characters are removed from post fields', async () => {
+  const { validatePost } = await import('../../functions/_lib/posts.js');
+  const out = validatePost({ title: 'Tab\u0008bell\u0000', content: 'a\tb\nc\u001F' });
+  assert.equal(out.title, 'Tabbell');
+  assert.equal(out.content, 'a\tb\nc');
+});

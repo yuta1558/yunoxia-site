@@ -58,8 +58,11 @@
     $('view-editor').hidden = view !== 'editor';
   }
 
+  // The day in Japan, as on the site (functions/_lib/shell.js)
+  const JST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' });
   function formatDate(iso) {
-    return iso ? iso.slice(0, 10).replaceAll('-', '.') : '';
+    const d = new Date(iso || '');
+    return Number.isNaN(+d) ? '' : JST.format(d).replaceAll('-', '.');
   }
 
   function renderList() {

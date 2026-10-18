@@ -26,7 +26,9 @@ export function validatePost(input, { partial = false } = {}) {
       return;
     }
     if (typeof value !== 'string') throw new Error(`${key} must be a string`);
-    const trimmed = key === 'content' ? value : value.trim();
+    // Control characters (other than tab and newlines) are invalid in the RSS feed's XML
+    const clean = value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    const trimmed = key === 'content' ? clean : clean.trim();
     if (required && !trimmed) throw new Error(`${key} is required`);
     if (trimmed.length > max) throw new Error(`${key} is too long`);
     out[key] = trimmed;
