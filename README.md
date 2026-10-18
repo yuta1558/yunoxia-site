@@ -1,42 +1,15 @@
-# yunoxia.one static site
+# yunoxia.one
 
-This repository contains the files that make up **yunoxia.one**, a small personal website. The pages are plain HTML styled with CSS and enhanced with a little JavaScript.
+分解して、理解して、作り替える。yunoxia は、ゆーの制作と研究の記録です。
 
-## Serving locally
-
-No build step is required. To view the site locally, run any static HTTP server in this directory, e.g.
+The site lives in [`site/`](site/): an Astro static site with a small blog CMS on Cloudflare Pages Functions + D1, deployed to yunoxia.one by Cloudflare Pages from `main`.
 
 ```bash
-python3 -m http.server
-```
-
-Then open `http://localhost:8000/` in your browser.
-
-## Deploying
-
-Because it is entirely static, the site can be deployed to any static hosting provider such as GitHub Pages or Netlify. Simply upload the contents of this repository to your hosting service of choice.
-
-## Features
-
-- A dark‑mode toggle (`theme-switch` element) remembers the user's preference and respects the system color scheme.
-- PJAX navigation in `assets/js/app.js` fetches page fragments and updates the history so navigation feels instant without full page reloads.
-
-## Testing
-
-The project includes a comprehensive test suite covering unit tests, integration tests, and accessibility validation. Tests are **optional** and not required for production deployment.
-
-```bash
-# Install dependencies (dev only)
+cd site
 npm install
-
-# Run all tests
-npm test
-
-# Run specific test suites
-npm run test:unit          # Unit tests
-npm run test:integration   # Browser-based E2E tests
-npm run test:a11y          # Accessibility audit
+npm run dev      # local dev server
+npm run build    # → site/dist
+npm run test:unit && npm run test:e2e
 ```
 
-For detailed testing documentation, see [TESTING.md](TESTING.md).
-
+Deployment, the domain and the CMS setup are described in [`site/DEPLOY.md`](site/DEPLOY.md). Guidance for AI assistants is in [`CLAUDE.md`](CLAUDE.md).
