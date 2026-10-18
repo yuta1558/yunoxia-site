@@ -1,0 +1,94 @@
+---
+// Decorative scroll scene for the top page (分解 → 理解 → 作り替え).
+// The text in the page is the content; this only illustrates it. See README.md for wiring.
+---
+
+<div class="top-scene" data-top-scene aria-hidden="true">
+  <canvas class="top-scene__canvas"></canvas>
+  <!-- Static illustration of a sliced, exploded solid: shown until the scene runs,
+       and permanently under reduced motion or without WebGL -->
+  <svg class="top-scene__fallback" viewBox="0 0 240 200" focusable="false">
+    <g fill="currentColor">
+      <rect x="40" y="168" width="160" height="7" rx="1" opacity="0.18"></rect>
+      <rect x="40" y="152" width="160" height="7" rx="1" opacity="0.2"></rect>
+      <rect x="44" y="134" width="152" height="7" rx="1" opacity="0.22"></rect>
+      <rect x="48" y="114" width="144" height="7" rx="1" opacity="0.24"></rect>
+      <rect x="54" y="92" width="132" height="7" rx="1" opacity="0.26"></rect>
+      <rect x="62" y="68" width="116" height="7" rx="1" opacity="0.28"></rect>
+    </g>
+    <rect class="hot" x="72" y="42" width="96" height="7" rx="1"></rect>
+    <circle class="hot" cx="168" cy="34" r="3"></circle>
+  </svg>
+</div>
+
+<script>
+  import { boot } from './boot';
+  boot();
+</script>
+
+<style>
+  .top-scene {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    color: var(--fg);
+  }
+
+  .top-scene__canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.8s var(--ease-out);
+  }
+
+  .top-scene__fallback {
+    position: absolute;
+    right: max(var(--gutter), calc((100vw - 64rem) / 2 + var(--gutter)));
+    top: 18vh;
+    width: min(34vw, 26rem);
+    height: auto;
+    transition: opacity 0.6s var(--ease-out);
+  }
+
+  .top-scene__fallback .hot {
+    fill: var(--accent);
+  }
+
+  .top-scene:global(.is-live) .top-scene__canvas {
+    opacity: 1;
+  }
+
+  .top-scene:global(.is-live) .top-scene__fallback {
+    opacity: 0;
+  }
+
+  @media (max-width: 48rem) {
+    .top-scene__fallback {
+      top: auto;
+      bottom: 6vh;
+      right: var(--gutter);
+      width: 52vw;
+      opacity: 0.6;
+    }
+
+    .top-scene:global(.is-live) .top-scene__canvas {
+      opacity: 0.55;
+    }
+  }
+
+  /* Lenis (only active on this page) */
+  :global(html.lenis),
+  :global(html.lenis body) {
+    height: auto;
+  }
+
+  :global(.lenis.lenis-smooth) {
+    scroll-behavior: auto !important;
+  }
+
+  :global(.lenis.lenis-stopped) {
+    overflow: hidden;
+  }
+</style>
