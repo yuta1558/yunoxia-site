@@ -138,6 +138,18 @@ a:hover {
   text-decoration-color: var(--pen);
 }
 
+/* Links in running text need an underline you can see (WCAG 1.4.1): --line is ~1.4:1 against the paper,
+   --muted is 5.7:1 (light) / 6.2:1 (dark). Nav, cards and other UI links keep the faint --line. */
+.prose a,
+.intro a {
+  text-decoration-color: var(--muted);
+}
+
+.prose a:hover,
+.intro a:hover {
+  text-decoration-color: var(--pen);
+}
+
 :focus-visible {
   outline: 2px solid var(--pen);
   outline-offset: 2px;

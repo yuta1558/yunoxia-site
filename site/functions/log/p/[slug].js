@@ -4,6 +4,8 @@ import { escapeHtml } from '../../_lib/http.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { getPublishedBySlug } from '../../_lib/posts.js';
 import { fetchAsset, formatDate, withHtmlHeaders } from '../../_lib/shell.js';
+import { withFullStop } from '../../../src/lib/headline.mjs';
+import { blogPosting, jsonLdString } from '../../../src/lib/jsonld.mjs';
 
 async function notFound(context) {
   const page = await fetchAsset(context, '/404.html');
@@ -36,10 +38,14 @@ export async function onRequestGet(context) {
   const article = `
     <article class="wrap page">
       <p class="eyebrow"><a href="/log/">Log</a></p>
-      <h1 class="page-title">${escapeHtml(post.title)}</h1>
+      <h1 class="page-title">${escapeHtml(withFullStop(post.title, 'ja'))}</h1>
       <p class="meta"><time datetime="${escapeHtml(post.published_at || '')}">${formatDate(post.published_at)}</time>${tags}</p>
       <div class="prose">${image}${renderMarkdown(post.content)}</div>
     </article>`;
+
+  const structured = jsonLdString(
+    blogPosting({ title: post.title, date: new Date(post.published_at), url: canonical, description: post.excerpt }),
+  );
 
   const setAttr = (attr, value) => ({ element: (el) => el.setAttribute(attr, value) });
 
@@ -55,6 +61,7 @@ export async function onRequestGet(context) {
     .on('meta[property="og:image:width"], meta[property="og:image:height"]', post.featured_image ? { element: (el) => el.remove() } : {})
     // The Log shell has no hreflang alternates for posts; drop any it carries
     .on('link[rel="alternate"][hreflang]', { element: (el) => el.remove() })
+    .on('head', { element: (el) => el.append(`<script type="application/ld+json">${structured}</script>`, { html: true }) })
     .on('main', { element: (el) => el.setInnerContent(article, { html: true }) })
     .transform(shell);
 
