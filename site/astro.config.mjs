@@ -9,6 +9,8 @@ export default defineConfig({
   // Japanese at the root, English under /en/; the sitemap emits hreflang alternates for pages that exist in both
   integrations: [
     sitemap({
+      // Design lab pages are for review only
+      filter: (page) => !page.includes('/lab/'),
       i18n: {
         defaultLocale: 'ja',
         locales: { ja: 'ja-JP', en: 'en-US' },
