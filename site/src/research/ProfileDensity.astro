@@ -1,0 +1,124 @@
+---
+// 公開フィラメントプロファイルの分布（ノズル温度 × 最大体積流量）。
+// data/profile-density.json は scripts/profile-density.mjs が分析用 CSV から数えたもので、CSV の列をそのまま使う。
+// 冷却戦略の軸（65% の知見）は分析側の計算なので、ここでは描かない。静的な SVG で、JS はない。
+import density from './data/profile-density.json';
+
+interface Props {
+  lang?: 'ja' | 'en';
+}
+const { lang = 'ja' } = Astro.props;
+
+const t = {
+  ja: {
+    title: '公開プロファイルの分布',
+    names: { orca: 'OrcaSlicer', prusa: 'PrusaSlicer' } as Record<string, string>,
+    count: (n: number) => `${n.toLocaleString('ja-JP')} 件`,
+    xLabel: 'ノズル温度 (°C)',
+    yLabel: '最大体積流量 (mm³/s)',
+    caption: (total: number, outside: number) =>
+      `${total.toLocaleString('ja-JP')} 件の公開プロファイルを、ノズル温度と最大体積流量で数えた分布。色が濃いほど件数が多い。` +
+      `範囲外の ${outside.toLocaleString('ja-JP')} 件は描いていない。同じ温度帯でも流量の設定は大きく散らばり、出典によって分布の形も違う。`,
+    aria: (name: string) => `${name} のプロファイルの分布`,
+  },
+  en: {
+    title: 'How public profiles are distributed',
+    names: { orca: 'OrcaSlicer', prusa: 'PrusaSlicer' } as Record<string, string>,
+    count: (n: number) => `${n.toLocaleString('en-US')} profiles`,
+    xLabel: 'Nozzle temperature (°C)',
+    yLabel: 'Max volumetric flow (mm³/s)',
+    caption: (total: number, outside: number) =>
+      `${total.toLocaleString('en-US')} public profiles counted by nozzle temperature and max volumetric flow; darker means more profiles. ` +
+      `${outside.toLocaleString('en-US')} fall outside the plotted range. Flow settings spread widely even at the same temperature, and the shape differs by source.`,
+    aria: (name: string) => `Distribution of ${name} profiles`,
+  },
+}[lang];
+
+const { x, y } = density;
+const W = 320;
+const H = 220;
+const pad = { l: 42, r: 14, t: 8, b: 30 };
+const cw = (W - pad.l - pad.r) / x.bins;
+const ch = (H - pad.t - pad.b) / y.bins;
+const max = Math.max(...Object.values(density.sources).flatMap((s) => s.cells.map((c) => c[2])));
+// Log scale so sparse settings stay visible next to the dense PLA cluster
+const shade = (c: number) => (0.12 + 0.88 * (Math.log1p(c) / Math.log1p(max))).toFixed(3);
+const xTicks = Array.from({ length: Math.floor((x.max - x.min) / 20) + 1 }, (_, i) => x.min + i * 20);
+const yTicks = Array.from({ length: Math.floor(y.max / 10) + 1 }, (_, i) => i * 10);
+const px = (v: number) => pad.l + ((v - x.min) / (x.max - x.min)) * (W - pad.l - pad.r);
+const py = (v: number) => H - pad.b - (v / y.max) * (H - pad.t - pad.b);
+const panels = Object.entries(density.sources).map(([key, s]) => ({ key, name: t.names[key] ?? key, ...s }));
+---
+
+<figure class="density">
+  <p class="meta title">{t.title}</p>
+  <div class="panels">
+    {panels.map((p) => (
+      <div class="panel">
+        <p class="meta">{p.name} · {t.count(p.n)}</p>
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t.aria(p.name)}>
+          {yTicks.map((v) => (
+            <g>
+              <line class="grid" x1={pad.l} x2={W - pad.r} y1={py(v)} y2={py(v)} />
+              <text class="tick" x={pad.l - 6} y={py(v) + 3} text-anchor="end">{v}</text>
+            </g>
+          ))}
+          {xTicks.map((v) => (
+            <text class="tick" x={px(v)} y={H - pad.b + 14} text-anchor="middle">{v}</text>
+          ))}
+          {p.cells.map(([i, j, c]) => (
+            <rect x={pad.l + i * cw} y={H - pad.b - (j + 1) * ch} width={cw + 0.2} height={ch + 0.2} fill-opacity={shade(c)} />
+          ))}
+          <text class="axis" x={(pad.l + W - pad.r) / 2} y={H - 2} text-anchor="middle">{t.xLabel}</text>
+          <text class="axis" transform={`translate(10 ${(pad.t + H - pad.b) / 2}) rotate(-90)`} text-anchor="middle">{t.yLabel}</text>
+        </svg>
+      </div>
+    ))}
+  </div>
+  <figcaption>{t.caption(density.total, density.outsideRange)}</figcaption>
+</figure>
+
+<style>
+  .density {
+    margin: 2rem 0;
+  }
+
+  .title {
+    margin-bottom: 0.75rem;
+  }
+
+  .panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.5rem;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 0.25rem;
+  }
+
+  rect {
+    fill: var(--accent);
+  }
+
+  .grid {
+    stroke: var(--line);
+    stroke-width: 0.5;
+  }
+
+  .tick,
+  .axis {
+    fill: var(--muted);
+    font-family: var(--font-sans);
+    font-size: 9px;
+  }
+
+  figcaption {
+    margin-top: 0.75rem;
+    color: var(--muted);
+    font-size: var(--step--1);
+  }
+</style>
