@@ -61,4 +61,6 @@ test('emphasis nests in strong; a * between word characters stays literal', () =
   assert.equal(renderMarkdown('**bold *it* x**'), '<p><strong>bold <em>it</em> x</strong></p>');
   assert.equal(renderMarkdown('2*3*4'), '<p>2*3*4</p>');
   assert.equal(renderMarkdown('a *b* c'), '<p>a <em>b</em> c</p>');
+  // Crossed marks never produce crossed tags
+  assert.equal(renderMarkdown('**a *b** c*'), '<p><strong>a *b</strong> c*</p>');
 });

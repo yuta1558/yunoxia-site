@@ -16,7 +16,8 @@ function safeUrl(raw) {
 }
 
 // A single * opens or closes emphasis only at a word edge, so 2*3*4 stays literal (as in excerpt.mjs)
-const em = (s) => s.replace(/(^|[^\w*])\*([^*\s](?:[^*]*[^*\s])?)\*(?![\w*])/g, '$1<em>$2</em>');
+// Text is escaped by now, so a < can only be a <strong> tag: em never spans one
+const em = (s) => s.replace(/(^|[^\w*])\*([^*\s<](?:[^*<]*[^*\s<])?)\*(?![\w*])/g, '$1<em>$2</em>');
 const emphasis = (s) => em(s.replace(/\*\*(\S(?:.*?\S)?)\*\*/g, (_, inner) => `<strong>${em(inner)}</strong>`));
 
 function inline(text) {
