@@ -77,12 +77,10 @@ const rows = works.map((w) => Math.max(0.4, w.data.title.length / longest).toFix
       top: 48svh;
     }
 
+    /* A fixed static picture cannot follow the acts on a phone and ends up cut by the text
+       backing, so phones without the live scene get text only */
     .top-scene__fallback {
-      top: 50%;
-      right: 50%;
-      transform: translate(50%, -50%);
-      width: min(64vw, 18rem);
-      opacity: 0.7;
+      display: none;
     }
   }
 
