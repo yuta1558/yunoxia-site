@@ -1,13 +1,20 @@
 ---
-// The hero's picture: a part printed one layer at a time. Sits inside the hero panel (see Home.astro).
+// The hero's picture: a part taken apart, measured and remade. Sits inside the hero panel (see Home.astro).
+// `steps` are the captions shown under the scene for its three steps (分解 / 理解 / 作り替え).
 // The static drawing below is the content-equivalent fallback; the WebGL scene replaces it once it runs.
 import { contour } from '../components/toolpath';
 
+interface Props {
+  steps: string[];
+}
+
+const { steps } = Astro.props;
 const layers = 24;
 ---
 
-<div class="top-scene" data-top-scene aria-hidden="true">
+<div class="top-scene" data-top-scene data-steps={steps.join('|')} aria-hidden="true">
   <canvas class="top-scene__canvas"></canvas>
+  <p class="top-scene__step" data-scene-step></p>
   <!-- Shown until the scene runs, and permanently under reduced motion or without WebGL -->
   <svg class="top-scene__fallback" viewBox="0 0 600 420" focusable="false">
     {Array.from({ length: layers }, (_, i) => (
@@ -70,6 +77,18 @@ const layers = 24;
     font-family: var(--font-mono);
     font-size: 10px;
     fill: var(--pen);
+  }
+
+  /* Caption for the current step; empty until the scene runs */
+  .top-scene__step {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--pen);
   }
 
   .top-scene:global(.is-live) .top-scene__canvas {

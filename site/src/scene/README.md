@@ -2,13 +2,19 @@
 
 Decorative WebGL scene inside the top page's hero panel. The HTML text is the content; the scene is `aria-hidden`.
 
-A vase-like part is printed one layer at a time: each layer is a closed toolpath loop, the newest three layers are drawn in pen blue, older layers fade toward the panel colour, and a pen-blue dimension line grows with the part. After the print finishes the part holds for a few seconds and the print starts again. The part turns slowly; on desktop it also leans a little toward the pointer.
+The scene loops through the three verbs of the h1:
+
+1. 分解 (take apart): a finished part comes apart into five blocks of layers, which pull away from each other and shift sideways.
+2. 理解 (understand): a pen-blue scan runs up the layers one at a time, and beside the stack a pen-blue profile (radius per layer) is drawn as it goes: the shape turned into numbers.
+3. 作り替え (remake): the old part dissolves, the profile is redrawn into a new shape, and a new part is printed to it layer by layer (newest three layers in pen blue).
+
+Each loop remakes the part into the next of three shapes (vase, cup, spool). While the scene runs, the hero gets `data-phase="1|2|3"`; the matching line of the h1 turns pen blue and a caption under the scene names the step. Without the scene the h1 keeps its default (last line pen blue) and no caption is shown. The part turns slowly; on desktop it also leans toward the pointer.
 
 ## Effects ledger
 
 | Effect | What it conveys | Reduced motion / no WebGL | Budget |
 | --- | --- | --- | --- |
-| Layer-by-layer print in the hero | 作り替える: understanding turned into a made thing, one layer at a time, as FDM does | The same part as a static SVG drawing (`.top-scene__fallback`, shared geometry in `components/toolpath.ts`); three.js is never requested | 40 layers × 160 points desktop, 24 × 96 phones (≤ 13k line segments). DPR 1.5 desktop, 1 phones. Xperia 1 II: 60 fps, worst frame ≤ 20 ms, init ≤ 150 ms |
+| Take apart → measure → reprint loop in the hero | The h1's three verbs as one process: a part split into layers, each layer measured into a profile, a new part printed from it | The same part as a static SVG drawing (`.top-scene__fallback`, shared geometry in `components/toolpath.ts`); three.js is never requested | 40 layers × 160 points desktop, 24 × 96 phones (≤ 6.4k line segments, rewritten on the CPU each frame). DPR 1.5 desktop, 1 phones. Xperia 1 II: 60 fps, worst frame ≤ 20 ms, init ≤ 150 ms |
 
 ## Wiring
 

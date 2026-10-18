@@ -23,6 +23,7 @@ const t = {
   ja: {
     h1: ['分解して、', '理解して、', '作り替える。'],
     heroCta: '作ったものを見る',
+    steps: ['01 分解 — 造形物を層のかたまりに分ける', '02 理解 — 一層ずつ測り、形を数値にする', '03 作り替え — 測った形を描き直し、刷り直す'],
     sheet: 'Sheet 01 / 04 — yunoxia、ゆーの制作と研究',
     worksTitle: ['作ったもの。', '直したもの。'],
     worksText: '既製品や仕組みを開けて中を見て、物理量に分けて理解し、他の人も使える道具にする。その記録。',
@@ -45,6 +46,7 @@ const t = {
   en: {
     h1: ['Take it apart.', 'Understand it.', 'Remake it.'],
     heroCta: 'See the work',
+    steps: ['01 Take apart — split the part into blocks of layers', '02 Understand — measure each layer, turn the shape into numbers', '03 Remake — redraw the profile and print it again'],
     sheet: 'Sheet 01 / 04 — yunoxia, making and research by Yu',
     worksTitle: ['Things made.', 'Things fixed.'],
     worksText: 'Open up products and systems, break them down into physical quantities, and turn what I learn into tools others can use.',
@@ -69,9 +71,9 @@ const t = {
 const xray = Array.from({ length: 30 }, (_, i) => i);
 ---
 
-<section class="hero">
+<section class="hero" data-scene-host>
   <div class="hero__art">
-    <TopScene />
+    <TopScene steps={t.steps} />
   </div>
   <div class="hero__copy">
     <h1>{t.h1.map((line, i) => (i === t.h1.length - 1 ? <span class="pen">{line}</span> : <span>{line}</span>))}</h1>
@@ -174,9 +176,21 @@ const xray = Array.from({ length: 30 }, (_, i) => i);
 
   h1 span {
     display: block;
+    transition: color 0.4s var(--ease);
   }
 
   .pen {
+    color: var(--pen);
+  }
+
+  /* While the scene runs, the line for its current step is the pen-blue one */
+  .hero[data-phase] h1 span {
+    color: var(--ink);
+  }
+
+  .hero[data-phase='1'] h1 span:nth-child(1),
+  .hero[data-phase='2'] h1 span:nth-child(2),
+  .hero[data-phase='3'] h1 span:nth-child(3) {
     color: var(--pen);
   }
 
