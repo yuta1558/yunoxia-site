@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**yunoxia.one** is Yu's site for making and research. It lives in `site/`: an Astro 7 static site with a small blog CMS on Cloudflare Pages Functions + D1. Everything outside `site/` is repository housekeeping (this file, `README.md`, `.gitignore`).
+**yunoxia.one** is Yu's site for making and research. It lives in `site/`: an Astro 7 static site with a small blog CMS on Cloudflare Pages Functions + D1. Everything outside `site/` is repository housekeeping (this file, `README.md`, `REVIEW.md`, `.gitignore`, `.github/workflows/`).
 
 - **Hosting**: Cloudflare Pages project `yunoxia-next` (root directory `site`, build `npm run build`, output `dist`), auto-deployed from `main`. Every PR gets a preview at `*.yunoxia-next.pages.dev`. The old project `yunoxia-site` (the pre-2026 static site at the repository root) has automatic deployments turned off and no longer serves the domain.
 - **Languages**: Japanese at the root, English under `/en/` (Log is Japanese only).
@@ -28,6 +28,8 @@ site/
 │   ├── build-admin.mjs     # bundles src/admin/editor.ts into public/admin/editor.js (before build and dev)
 │   ├── cms.mjs             # write Log posts through the CMS API (see "Writing Log posts")
 │   ├── font-subsets.mjs    # writes src/styles/fonts.generated.css (runs before every build)
+│   ├── forbidden.mjs       # encoded list of strings the site must never show (Privacy rule)
+│   ├── privacy-check.mjs   # finds those strings in tracked files without printing them
 │   └── profile-density.mjs # builds the Research density chart data from the analysis CSV
 ├── src/
 │   ├── admin/editor.ts     # CMS body editor (CodeMirror 6, Obsidian-style live preview)
@@ -58,7 +60,7 @@ npm run test:e2e     # needs a build first; set CHROMIUM_PATH to use a preinstal
 
 ## Rules
 
-- **Privacy**: the site never shows the owner's real name, employer, employer product names or location. The e2e suite checks every page, `rss.xml` and `updates.json` against an encoded list; grep `site/` before committing.
+- **Privacy**: the site never shows the owner's real name, employer, employer product names or location. The e2e suite checks every page, `rss.xml` and `updates.json` against an encoded list (`scripts/forbidden.mjs`); run `node scripts/privacy-check.mjs` before committing. Never spell the strings out in code, commits or PR comments.
 - **Effects**: every effect needs a row in the effects ledger (`src/scene/README.md`): what it conveys, its reduced-motion / no-WebGL fallback, and its performance budget. Reduced motion and no-WebGL keep the static drawing and never request three.js or the bead.
 - **Performance**: Lighthouse (mobile) ≥ 90 on reading pages, ≥ 80 on the top page. `?fps=1` on the top page shows a frame meter for real-device checks (headless Chromium renders WebGL in software, so fps measured there is meaningless).
 - **Fonts**: Zen Kaku Gothic New is served only for the characters the site uses (`scripts/font-subsets.mjs`). Weight 700 is used only by the top h1. Do not import Fontsource's full weight CSS in pages: it adds ~180 KB of render-blocking CSS.
@@ -92,7 +94,7 @@ It authenticates with the `CMS_API_TOKEN` secret of the Pages project, set as a 
 ## Git Workflow
 
 - Feature branches: `claude/<description>` or `codex/<description>`.
-- PR-based. Cloudflare Pages posts a preview URL on each PR; Codex reviews PRs automatically when its quota allows.
+- PR-based. Cloudflare Pages posts a preview URL on each PR. Claude reviews every PR on open and on each push (`.github/workflows/claude-review.yml`, rules in `REVIEW.md`); Codex also reviews when its quota allows.
 - Merging to `main` deploys straight to yunoxia.one.
 - Commit messages: English or Japanese, describing what changed and why.
 
