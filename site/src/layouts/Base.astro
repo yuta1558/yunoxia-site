@@ -303,6 +303,13 @@ const structured = [
     min-height: 70vh;
   }
 
+  /* Footer links: a 24px target (WCAG 2.5.8); the negative margin keeps the layout where it was */
+  .site-footer .meta a {
+    display: inline-block;
+    padding-block: 0.25rem;
+    margin-block: -0.25rem;
+  }
+
   .site-footer {
     display: flex;
     flex-wrap: wrap;

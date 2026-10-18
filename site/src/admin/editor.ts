@@ -328,6 +328,7 @@ export function mount(host: HTMLElement, opts: Options) {
     history(),
     drawSelection(),
     EditorView.lineWrapping,
+    EditorView.contentAttributes.of({ 'aria-label': '本文（Markdown）', 'aria-multiline': 'true' }),
     markdownLanguage, // GFM without the nested HTML/JS/CSS parsers, which would triple the bundle
     livePreview,
     theme,

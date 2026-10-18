@@ -92,7 +92,7 @@ const xray = Array.from({ length: 30 }, (_, i) => i);
 
 <section class="band-section">
   <div class="section-head">
-    <h2>{t.worksTitle[0]}<br />{t.worksTitle[1]}</h2>
+    <h2>{t.worksTitle[0]}{lang === 'en' && ' '}<br />{t.worksTitle[1]}</h2>
     <p>{t.worksText}</p>
     <a class="btn btn--dark" href={localPath(lang, '/works/')}>{t.worksCta}</a>
   </div>

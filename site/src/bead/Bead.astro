@@ -1,10 +1,11 @@
 ---
 // Molten bead + "updated since your last visit" marks.
-// The marks work everywhere; the bead only runs with a fine pointer, motion allowed and a 2D canvas.
+// The marks work everywhere; the bead only runs with a fine pointer, motion allowed and WebGL available.
 ---
 
 <script>
   import { markUpdates } from './updates';
+  import { hasWebGL } from '../scene/webgl';
 
   const idle = (fn: () => void) =>
     'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 200);
@@ -14,7 +15,7 @@
     const allowed =
       matchMedia('(pointer: fine)').matches &&
       !matchMedia('(prefers-reduced-motion: reduce)').matches &&
-      !!document.createElement('canvas').getContext;
+      hasWebGL();
     if (allowed) import('./bead').then((m) => m.startBead());
   });
 </script>

@@ -290,6 +290,8 @@
     const preview = name === 'preview';
     $('tab-write').setAttribute('aria-selected', String(!preview));
     $('tab-preview').setAttribute('aria-selected', String(preview));
+    $('tab-write').tabIndex = preview ? -1 : 0;
+    $('tab-preview').tabIndex = preview ? 0 : -1;
     $('pane-write').hidden = preview;
     $('pane-preview').hidden = !preview;
     document.querySelector('.format').classList.toggle('off', preview);
@@ -358,6 +360,21 @@
       body.focus();
     });
     $('tab-preview').addEventListener('click', () => showTab('preview'));
+    // Arrow keys, Home and End move between the two tabs and activate them
+    document.querySelector('.tabs').addEventListener('keydown', (event) => {
+      const names = ['write', 'preview'];
+      const at = names.findIndex((n) => $('tab-' + n) === event.target);
+      if (at < 0) return;
+      let next = at;
+      if (event.key === 'ArrowRight') next = (at + 1) % names.length;
+      else if (event.key === 'ArrowLeft') next = (at + names.length - 1) % names.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = names.length - 1;
+      else return;
+      event.preventDefault();
+      showTab(names[next]);
+      $('tab-' + names[next]).focus();
+    });
     addEventListener('beforeunload', (event) => {
       if (dirty && !$('view-editor').hidden) event.preventDefault();
     });

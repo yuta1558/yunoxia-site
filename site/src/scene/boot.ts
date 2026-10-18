@@ -2,20 +2,9 @@
 // Reduced motion or no WebGL: three.js is never requested and the static illustration stays.
 
 import type { SceneHandle } from './scene';
+import { hasWebGL } from './webgl';
 
 const reduceQuery = matchMedia('(prefers-reduced-motion: reduce)');
-
-function hasWebGL(): boolean {
-  try {
-    const c = document.createElement('canvas');
-    const gl = (c.getContext('webgl2') || c.getContext('webgl')) as WebGLRenderingContext | null;
-    if (!gl) return false;
-    gl.getExtension('WEBGL_lose_context')?.loseContext();
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 const afterFirstPaint = (fn: () => void) => {
   const go = () => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 200));

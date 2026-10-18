@@ -33,6 +33,16 @@ test('no page contains the owner’s real name, employer or location', async ({ 
   }
 });
 
+test('footer links are at least 24px tall at 390px', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const links = page.locator('.site-footer a');
+  expect(await links.count()).toBeGreaterThan(0);
+  for (const box of await links.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) {
+    expect(box).toBeGreaterThanOrEqual(24);
+  }
+});
+
 test('unknown paths show the 404 page', async ({ page }) => {
   const res = await page.goto('/no-such-page/');
   expect(res?.status()).toBe(404);
