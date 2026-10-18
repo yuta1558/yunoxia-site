@@ -1,5 +1,6 @@
 ---
 title: このサイトの作り直し
+description: 以前のサイトはビルドなしの HTML と JavaScript で作られていました。演出ごとに伝える内容を書き出し、Astro の静的な HTML で作り直しています。
 summary: 「分解して、理解して、作り替える」を、このサイト自体で実践する。
 status: 進行中
 updated: 2026-10-18

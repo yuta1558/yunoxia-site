@@ -13,7 +13,7 @@ const { Content } = await render(work);
 const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 ---
 
-<Base title={work.data.title} description={work.data.summary}>
+<Base title={work.data.title} description={work.data.description ?? work.data.summary}>
   <article class="wrap page">
     <p class="eyebrow"><a href="/en/works/">Works</a></p>
     <h1 class="page-title">{withFullStop(work.data.title, 'en')}</h1>
