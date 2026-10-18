@@ -6,6 +6,7 @@ export function json(data, status = 200, headers = {}) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
       ...headers,
     },
   });
@@ -17,8 +18,12 @@ export function error(message, status) {
 
 export async function readJson(request, maxBytes = 512 * 1024) {
   try {
+    // Refuse a declared oversize body before reading it; a chunked body has no length and is
+    // checked after reading.
+    const declared = request.headers.get('Content-Length');
+    if (declared !== null && Number(declared) > maxBytes) return { error: 'Request body too large' };
     const text = await request.text();
-    if (text.length > maxBytes) return { error: 'Request body too large' };
+    if (new TextEncoder().encode(text).length > maxBytes) return { error: 'Request body too large' };
     const value = JSON.parse(text);
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return { error: 'JSON object expected' };

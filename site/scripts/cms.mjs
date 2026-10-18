@@ -53,6 +53,14 @@ function fail(message) {
   process.exit(1);
 }
 
+// The token (or the proxy's network secret) must not travel over plain HTTP
+{
+  const { protocol, hostname } = new URL(BASE);
+  if (protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(hostname)) {
+    fail(`CMS_URL must be https (got ${BASE}); http is allowed only for localhost.`);
+  }
+}
+
 async function api(path, { method = 'GET', body, form } = {}) {
   const headers = TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';

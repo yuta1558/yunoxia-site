@@ -23,6 +23,9 @@ export async function claimAttempt(db, ip) {
   // anywhere. Distributed guessing is answered by PBKDF2, a 20+ character random password and
   // the zone's WAF rule (DEPLOY.md 4-4).
   const mine = await upsert.bind(ip, t, WINDOW).first();
+  // Drop rows from earlier windows so the table does not grow with every address that ever
+  // failed. A separate best-effort statement keeps the upsert above a single statement.
+  await db.prepare('DELETE FROM login_attempts WHERE window_start < ?').bind(t - WINDOW).run().catch(() => {});
   return (mine?.failures ?? 0) > PER_IP;
 }
 

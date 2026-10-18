@@ -5,10 +5,10 @@
 // SVG is not accepted: an SVG served from this origin can run script and reach the admin token.
 
 import { error, json } from '../_lib/http.js';
+import { KEY_RE } from '../_lib/posts.js';
 
 const TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp', 'image/avif': 'avif' };
 const MAX_SIZE = 5 * 1024 * 1024;
-const KEY_RE = /^blog\/\d+-[0-9a-f]{8}\.(jpg|png|gif|webp|avif)$/;
 
 export async function onRequestGet({ request, env }) {
   if (!env.IMAGES) return error('Image storage is not configured', 503);

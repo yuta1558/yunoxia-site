@@ -2,7 +2,7 @@
 -- Zone WAF rules do not cover *.pages.dev hosts, so the app limits attempts itself.
 
 CREATE TABLE IF NOT EXISTS login_attempts (
-  key TEXT PRIMARY KEY,           -- client IP, or '*' for the global counter
+  key TEXT PRIMARY KEY,           -- client IP
   failures INTEGER NOT NULL DEFAULT 0,
   window_start INTEGER NOT NULL   -- unix seconds
 );

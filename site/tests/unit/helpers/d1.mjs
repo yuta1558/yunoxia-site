@@ -13,7 +13,7 @@ export function createD1() {
     bind: (...p) => statement(sql, p),
     first: async () => db.prepare(sql).get(...params) ?? null,
     all: async () => ({ results: db.prepare(sql).all(...params) }),
-    run: async () => (db.prepare(sql).run(...params), { success: true }),
+    run: async () => ({ success: true, meta: { changes: Number(db.prepare(sql).run(...params).changes) } }),
   });
   return {
     raw: db,

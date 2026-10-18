@@ -27,5 +27,6 @@ export async function onRequestGet(context) {
   headers.delete('Content-Length');
   headers.delete('ETag');
   headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+  headers.set('X-Content-Type-Options', 'nosniff');
   return new Response(text.slice(0, at) + items + text.slice(at), { status: 200, headers });
 }

@@ -11,7 +11,11 @@ export async function onRequestGet(context) {
       .all();
     for (const p of results || []) updates[`/log/p/${p.slug}/`] = p.updated_at;
     return new Response(JSON.stringify(updates), {
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=0, must-revalidate' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=0, must-revalidate',
+        'X-Content-Type-Options': 'nosniff',
+      },
     });
   } catch {
     return res;
