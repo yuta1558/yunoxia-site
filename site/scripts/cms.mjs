@@ -31,6 +31,7 @@
 import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { basename, dirname, extname, resolve } from 'node:path';
+import { findForbidden } from './forbidden.mjs';
 
 // Node's fetch ignores HTTPS_PROXY unless NODE_USE_ENV_PROXY is set. Behind a proxy (where the
 // network secret is added), run again with it so requests go through the proxy.
@@ -176,7 +177,11 @@ async function get(slug) {
 }
 
 async function push(file, publish) {
-  const { meta, content } = parse(await readFile(file, 'utf8'));
+  const text = await readFile(file, 'utf8');
+  // Privacy rule: refuse before anything (images included) is sent.
+  const hits = findForbidden(text);
+  if (hits.length) fail(`${file} contains forbidden string ${hits.map((n) => `#${n}`).join(', ')} (scripts/forbidden.mjs). Nothing was sent.`);
+  const { meta, content } = parse(text);
   if (!meta.title) fail('title is required in the front matter.');
   const dir = dirname(resolve(file));
 
