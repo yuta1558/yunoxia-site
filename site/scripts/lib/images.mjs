@@ -64,13 +64,23 @@ export async function rewriteImages(content, upload) {
   return mapOutsideCode(content, (text) => text.replace(IMAGE, (all, alt, src) => (done.has(src) ? `![${alt}](${done.get(src)})` : all)));
 }
 
-// ## and ### headings in the body that do not end in a full stop, by the site's own rule
+// ## and ### (and setext) headings in the body that do not end in a full stop, by the site's own rule
 // (src/lib/headline.mjs). Returns the heading texts.
 export function headingsWithoutStop(content) {
   const missing = [];
   mapOutsideCode(content, (text) => {
-    for (const [, heading] of text.matchAll(/^ {0,3}#{2,3}[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm)) {
+    const check = (heading) => {
       if (withFullStop(heading, 'ja') !== heading || withFullStop(heading, 'en') !== heading) missing.push(heading);
+    };
+    for (const [, heading] of text.matchAll(/^ {0,3}#{2,3}[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm)) check(heading);
+    // Text over a --- or === line is a heading too (setext, as functions/_lib/markdown.js renders it)
+    let para = [];
+    for (const line of text.split('\n')) {
+      if (/^ {0,3}(=+|-+)[ \t]*$/.test(line)) {
+        if (para.length) check(para.join(' ')); // else a rule
+        para = [];
+      } else if (!line.trim() || /^ {0,3}(#|>|[-*+][ \t]|\d+\.[ \t])/.test(line)) para = [];
+      else para.push(line.trim());
     }
     return text;
   });

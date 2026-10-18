@@ -87,3 +87,8 @@ test('headingsWithoutStop follows the headline rule', () => {
   ].join('\n');
   assert.deepEqual(headingsWithoutStop(md), ['句点がない', 'Rebuilding this site', '閉じ']);
 });
+
+test('headingsWithoutStop also checks text over --- or === (setext headings)', () => {
+  const md = ['本文の見出し', '---', '', '区切り線の前の段落。', '', '---', '', '- 項目', '---', 'Two lines', 'of heading', '==='].join('\n');
+  assert.deepEqual(headingsWithoutStop(md), ['本文の見出し', 'Two lines of heading']);
+});
