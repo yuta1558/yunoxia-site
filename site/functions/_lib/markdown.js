@@ -15,10 +15,10 @@ function safeUrl(raw) {
   return null;
 }
 
-// A single * opens or closes emphasis only at a word edge, so 2*3*4 stays literal (as in excerpt.mjs)
-// Text is escaped by now, so a < can only be a <strong> tag: em never spans one
-const em = (s) => s.replace(/(^|[^\w*])\*([^*\s<](?:[^*<]*[^*\s<])?)\*(?![\w*])/g, '$1<em>$2</em>');
-const emphasis = (s) => em(s.replace(/\*\*(\S(?:.*?\S)?)\*\*/g, (_, inner) => `<strong>${em(inner)}</strong>`));
+// A single * opens or closes emphasis only at a word edge, so 2*3*4 stays literal (as in excerpt.mjs).
+// A finished <strong> is held as a placeholder, so em can contain it but never cross it.
+const em = (s) => s.replace(/(^|[^\w*])\*([^*\s](?:[^*]*[^*\s])?)\*(?![\w*])/g, '$1<em>$2</em>');
+const emphasis = (s, hold) => em(s.replace(/\*\*(\S(?:.*?\S)?)\*\*/g, (_, inner) => hold(`<strong>${em(inner)}</strong>`)));
 
 function inline(text) {
   // Placeholders: \u0000n\u0000 for code spans, \u0001n\u0001 for finished links and images.
@@ -40,13 +40,13 @@ function inline(text) {
     if (bang) return hold(`<img src="${escapeHtml(safe)}" alt="${codeText(label)}" loading="lazy" decoding="async">`);
     if (!label) return match;
     const external = /^https?:/i.test(safe);
-    return hold(`<a href="${escapeHtml(safe)}"${external ? ' rel="noopener"' : ''}>${emphasis(label)}</a>`);
+    return hold(`<a href="${escapeHtml(safe)}"${external ? ' rel="noopener"' : ''}>${emphasis(label, hold)}</a>`);
   });
-  src = emphasis(src);
+  src = emphasis(src, hold);
+  // Held markup can hold more placeholders (a link inside strong), so restore until none is left
+  while (/\u0001\d+\u0001/.test(src)) src = src.replace(/\u0001(\d+)\u0001/g, (_, i) => held[Number(i)]);
 
-  return src
-    .replace(/\u0001(\d+)\u0001/g, (_, i) => held[Number(i)])
-    .replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${escapeHtml(codes[Number(i)])}</code>`);
+  return src.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${escapeHtml(codes[Number(i)])}</code>`);
 }
 
 const HR = /^\s*([-*_])(\s*\1){2,}\s*$/;
@@ -112,14 +112,25 @@ export function renderMarkdown(markdown) {
     }
 
     const para = [];
+    let setext = false;
     while (
       i < lines.length &&
       !/^\s*$/.test(lines[i]) &&
       !/^(#{1,6}\s|```|>\s?)/.test(lines[i]) &&
-      !HR.test(lines[i]) &&
       !/^\s*([-*+]|\d+\.)\s+/.test(lines[i])
     ) {
+      // As in CommonMark (and the editor's preview), === or --- under text makes it a heading
+      if (para.length && /^ {0,3}(=+|-+)[ \t]*$/.test(lines[i])) {
+        setext = true;
+        i++;
+        break;
+      }
+      if (HR.test(lines[i])) break;
       para.push(lines[i++].trim());
+    }
+    if (setext) {
+      out.push(`<h2>${inline(para.join(' '))}</h2>`);
+      continue;
     }
     out.push(`<p>${inline(para.join(' '))}</p>`);
   }

@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { postDescription, rssItems } from '../../functions/_lib/feed.js';
+import { listPublished } from '../../functions/_lib/posts.js';
 import { onRequestGet } from '../../functions/rss.xml.js';
 import { createD1 } from './helpers/d1.mjs';
 
@@ -35,4 +36,12 @@ test('the rss Function reads bodies from D1 and survives a bad date row', async 
   const text = await res.text();
   assert.match(text, /<description>Body text\.<\/description>/);
   assert.doesNotMatch(text, /Invalid Date|\/log\/p\/bad\//);
+});
+
+test('listPublished with content reads only the start of each body', async () => {
+  const DB = createD1();
+  DB.raw.prepare("INSERT INTO posts (id, slug, title, content, excerpt, tags, status, created_at, updated_at, published_at) VALUES ('l', 'l', 'T', ?, '', '[]', 'published', '2026-10-18T01:00:00Z', '2026-10-18T01:00:00Z', '2026-10-18T01:00:00Z')").run('First paragraph.\n\n' + 'x'.repeat(10000));
+  const [post] = await listPublished(DB, 20, { withContent: true });
+  assert.equal(post.content.length, 4000);
+  assert.equal(postDescription(post), 'First paragraph.');
 });

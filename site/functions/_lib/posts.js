@@ -100,10 +100,11 @@ export async function getPublishedBySlug(db, slug) {
   return rowToPost(row);
 }
 
-// `withContent` adds the body, for callers that derive an excerpt from it
+// `withContent` adds the start of the body, for callers that derive an excerpt from it
+// (the first paragraph is all excerpt() reads)
 export async function listPublished(db, limit = 50, { withContent = false } = {}) {
   const { results } = await db
-    .prepare(`SELECT id, slug, title, excerpt, ${withContent ? 'content, ' : ''}tags, published_at FROM posts WHERE status = 'published' ORDER BY published_at DESC LIMIT ?`)
+    .prepare(`SELECT id, slug, title, excerpt, ${withContent ? 'substr(content, 1, 4000) AS content, ' : ''}tags, published_at FROM posts WHERE status = 'published' ORDER BY published_at DESC LIMIT ?`)
     .bind(limit)
     .all();
   return (results || []).map(rowToPost);

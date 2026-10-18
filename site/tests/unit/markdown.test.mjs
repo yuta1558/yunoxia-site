@@ -48,8 +48,13 @@ test('URLs with one level of balanced parentheses keep them', () => {
   assert.equal(renderMarkdown('([x](https://e.com/a))'), '<p>(<a href="https://e.com/a" rel="noopener">x</a>)</p>');
 });
 
-test('a rule line interrupts a paragraph', () => {
-  assert.equal(renderMarkdown('a\n---\nb'), '<p>a</p>\n<hr>\n<p>b</p>');
+test('a rule line interrupts a paragraph; --- or === right under text makes a heading', () => {
+  assert.equal(renderMarkdown('a\n***\nb'), '<p>a</p>\n<hr>\n<p>b</p>');
+  assert.equal(renderMarkdown('a\n- - -\nb'), '<p>a</p>\n<hr>\n<p>b</p>');
+  // As in CommonMark and the editor's preview (setext headings; h1 is the post title, so h2)
+  assert.equal(renderMarkdown('a\n---\nb'), '<h2>a</h2>\n<p>b</p>');
+  assert.equal(renderMarkdown('a\nb\n==='), '<h2>a b</h2>');
+  assert.equal(renderMarkdown('---\nb'), '<hr>\n<p>b</p>');
 });
 
 test('an empty > line splits a blockquote into paragraphs', () => {
@@ -63,4 +68,7 @@ test('emphasis nests in strong; a * between word characters stays literal', () =
   assert.equal(renderMarkdown('a *b* c'), '<p>a <em>b</em> c</p>');
   // Crossed marks never produce crossed tags
   assert.equal(renderMarkdown('**a *b** c*'), '<p><strong>a *b</strong> c*</p>');
+  // ...and strong nests in em
+  assert.equal(renderMarkdown('*a **b** c*'), '<p><em>a <strong>b</strong> c</em></p>');
+  assert.equal(renderMarkdown('**[*l*](/x)**'), '<p><strong><a href="/x"><em>l</em></a></strong></p>');
 });
