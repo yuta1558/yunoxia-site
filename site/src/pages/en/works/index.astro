@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
-import WorkList from '../../../components/WorkList.astro';
+import WorkCards from '../../../components/WorkCards.astro';
 
 const works = (await getCollection('worksEn')).sort((a, b) => +b.data.updated - +a.data.updated);
 ---
@@ -9,25 +9,8 @@ const works = (await getCollection('worksEn')).sort((a, b) => +b.data.updated - 
 <Base title="Works" description="Things I took apart, understood and remade, including work in progress.">
   <section class="wrap page">
     <p class="eyebrow">Works</p>
-    <h1>Made, and in the making</h1>
+    <h1 class="page-title">Made, and in the making.</h1>
     <p class="intro">Each one is written in the same order: take it apart, understand it, remake it. Work in progress shows where it stands now.</p>
-    <WorkList works={works} lang="en" />
+    <WorkCards works={works} lang="en" />
   </section>
 </Base>
-
-<style>
-  .page {
-    padding-block: 3rem;
-  }
-
-  h1 {
-    font-size: var(--step-2);
-    margin-block: 0.5rem 1rem;
-  }
-
-  .intro {
-    color: var(--muted);
-    max-width: var(--measure);
-    margin-bottom: 3rem;
-  }
-</style>

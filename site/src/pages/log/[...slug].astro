@@ -15,7 +15,7 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 <Base title={entry.data.title}>
   <article class="wrap page">
     <p class="eyebrow"><a href="/log/">Log</a></p>
-    <h1>{entry.data.title}</h1>
+    <h1 class="page-title">{entry.data.title}</h1>
     <p class="meta">
       <time datetime={entry.data.date.toISOString()}>{fmt(entry.data.date)}</time>
       {entry.data.tags.length > 0 && <> · {entry.data.tags.join(' / ')}</>}
@@ -27,18 +27,11 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 </Base>
 
 <style>
-  .page {
-    padding-block: 3rem;
-  }
 
   .eyebrow a {
     text-decoration: none;
   }
 
-  h1 {
-    font-size: var(--step-2);
-    margin-block: 0.5rem 0.75rem;
-  }
 
   .prose {
     margin-top: 2rem;

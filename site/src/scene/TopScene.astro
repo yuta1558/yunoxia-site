@@ -1,29 +1,22 @@
 ---
-// Decorative scroll scene for the top page (分解 → 理解 → 作り替え).
-// The text in the page is the content; this only illustrates it. See README.md for wiring.
-import { getCollection } from 'astro:content';
+// The hero's picture: a part printed one layer at a time. Sits inside the hero panel (see Home.astro).
+// The static drawing below is the content-equivalent fallback; the WebGL scene replaces it once it runs.
+import { contour } from '../components/toolpath';
 
-// Act 3 re-deposits one bar per Works item (newest first), bar length following the title length
-const works = (await getCollection('works')).sort((a, b) => +b.data.updated - +a.data.updated).slice(0, 6);
-const longest = Math.max(1, ...works.map((w) => w.data.title.length));
-const rows = works.map((w) => Math.max(0.4, w.data.title.length / longest).toFixed(2)).join(',');
+const layers = 24;
 ---
 
-<div class="top-scene" data-top-scene data-rows={rows} aria-hidden="true">
+<div class="top-scene" data-top-scene aria-hidden="true">
   <canvas class="top-scene__canvas"></canvas>
-  <!-- Static illustration of a sliced, exploded solid: shown until the scene runs,
-       and permanently under reduced motion or without WebGL -->
-  <svg class="top-scene__fallback" viewBox="0 0 240 200" focusable="false">
-    <g fill="currentColor">
-      <rect x="40" y="168" width="160" height="7" rx="1" opacity="0.18"></rect>
-      <rect x="40" y="152" width="160" height="7" rx="1" opacity="0.2"></rect>
-      <rect x="44" y="134" width="152" height="7" rx="1" opacity="0.22"></rect>
-      <rect x="48" y="114" width="144" height="7" rx="1" opacity="0.24"></rect>
-      <rect x="54" y="92" width="132" height="7" rx="1" opacity="0.26"></rect>
-      <rect x="62" y="68" width="116" height="7" rx="1" opacity="0.28"></rect>
-    </g>
-    <rect class="hot" x="72" y="42" width="96" height="7" rx="1"></rect>
-    <circle class="hot" cx="168" cy="34" r="3"></circle>
+  <!-- Shown until the scene runs, and permanently under reduced motion or without WebGL -->
+  <svg class="top-scene__fallback" viewBox="0 0 600 420" focusable="false">
+    {Array.from({ length: layers }, (_, i) => (
+      <path d={contour(i, 300, 360, 12, 190)} class={i >= layers - 3 ? 'new' : undefined} style={`opacity:${(0.2 + (i / layers) * 0.8).toFixed(3)}`} />
+    ))}
+    <line x1="560" y1="84" x2="560" y2="360" class="dim"></line>
+    <line x1="552" y1="84" x2="568" y2="84" class="dim"></line>
+    <line x1="552" y1="360" x2="568" y2="360" class="dim"></line>
+    <text x="548" y="226" text-anchor="end">{layers} × 0.20</text>
   </svg>
 </div>
 
@@ -34,32 +27,49 @@ const rows = works.map((w) => Math.max(0.4, w.data.title.length / longest).toFix
 
 <style>
   .top-scene {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    color: var(--fg);
+    position: relative;
+    width: 100%;
+    aspect-ratio: 10 / 7;
   }
 
   .top-scene__canvas {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
     opacity: 0;
-    transition: opacity 0.8s var(--ease-out);
+    transition: opacity 0.6s var(--ease);
   }
 
   .top-scene__fallback {
     position: absolute;
-    right: max(var(--gutter), calc((100vw - 64rem) / 2 + var(--gutter)));
-    top: 18vh;
-    width: min(34vw, 26rem);
-    height: auto;
-    transition: opacity 0.6s var(--ease-out);
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transition: opacity 0.4s var(--ease);
   }
 
-  .top-scene__fallback .hot {
-    fill: var(--accent);
+  .top-scene__fallback path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .top-scene__fallback path.new {
+    stroke: var(--pen);
+    stroke-width: 1.6;
+  }
+
+  .top-scene__fallback .dim {
+    stroke: var(--pen);
+    stroke-width: 1;
+  }
+
+  .top-scene__fallback text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    fill: var(--pen);
   }
 
   .top-scene:global(.is-live) .top-scene__canvas {
@@ -68,33 +78,5 @@ const rows = works.map((w) => Math.max(0.4, w.data.title.length / longest).toFix
 
   .top-scene:global(.is-live) .top-scene__fallback {
     opacity: 0;
-  }
-
-  /* Phones: the text column has no room beside it, so the visual takes the lower part of the
-     screen and the act text sticks to the upper part (see index.astro). */
-  @media (max-width: 48rem) {
-    .top-scene {
-      top: 30svh;
-    }
-
-    /* A fixed static picture cannot follow the acts on a phone and ends up cut by the text
-       backing, so phones without the live scene get text only */
-    .top-scene__fallback {
-      display: none;
-    }
-  }
-
-  /* Lenis (only active on this page) */
-  :global(html.lenis),
-  :global(html.lenis body) {
-    height: auto;
-  }
-
-  :global(.lenis.lenis-smooth) {
-    scroll-behavior: auto !important;
-  }
-
-  :global(.lenis.lenis-stopped) {
-    overflow: hidden;
   }
 </style>

@@ -1,43 +1,23 @@
-# Top scene (phases 2–3)
+# Top scene
 
-Decorative WebGL scene for the top page. The HTML text is the content; the canvas is `aria-hidden`.
+Decorative WebGL scene inside the top page's hero panel. The HTML text is the content; the scene is `aria-hidden`.
 
-| Act | What happens | What it conveys |
-| --- | --- | --- |
-| 1 分解 | The word YUNOXIA, built as a solid, is sliced into layers that spread apart | Opening things up; knowing a slicer from the inside |
-| 2 理解 | Each layer's perimeter becomes a toolpath; particles run along it and layers appear in print order, the newest hot (accent) and older layers cooling | Breaking a phenomenon into physical quantities (flow, heat history, cooling) |
-| 3 作り替え | The material is re-deposited, bar by bar like extrusion, into a short list | Turning understanding into something others can use (the Works list that follows) |
+A vase-like part is printed one layer at a time: each layer is a closed toolpath loop, the newest three layers are drawn in pen blue, older layers fade toward the panel colour, and a pen-blue dimension line grows with the part. After the print finishes the part holds for a few seconds and the print starts again. The part turns slowly; on desktop it also leans a little toward the pointer.
 
-## Wiring (index.astro)
+## Effects ledger
 
-```astro
----
-import TopScene from '../scene/TopScene.astro';
----
-<Base>
-  <TopScene />
-  <section class="hero wrap" data-scene="hero">…</section>
-  <section class="acts wrap" data-scene="acts">
-    <div class="act" data-act="1">…</div>
-    <div class="act" data-act="2">…</div>
-    <div class="act" data-act="3">…</div>
-  </section>
-  <section class="wrap block" data-scene="after">…Works…</section>
-```
+| Effect | What it conveys | Reduced motion / no WebGL | Budget |
+| --- | --- | --- | --- |
+| Layer-by-layer print in the hero | 作り替える: understanding turned into a made thing, one layer at a time, as FDM does | The same part as a static SVG drawing (`.top-scene__fallback`, shared geometry in `components/toolpath.ts`); three.js is never requested | 40 layers × 160 points desktop, 24 × 96 phones (≤ 13k line segments). DPR 1.5 desktop, 1 phones. Xperia 1 II: 60 fps, worst frame ≤ 20 ms, init ≤ 150 ms |
 
-- `data-scene="hero"`: scroll range starts at its top.
-- `data-scene="acts"`: scroll range ends when its bottom reaches 55% of the viewport.
-- `data-act="2"` / `data-act="3"`: act boundaries are taken from where these reach 60% of the viewport. If the acts sit side by side (no usable boundaries), the range is split into fixed thirds.
-- `data-scene="after"`: the scene fades out as this section rises from 55% to 20% of the viewport, then rendering stops.
+## Wiring
 
-Recommended layout: stack the acts in one column with roughly `min-height: 80–85vh` each, text kept to the left half on wide screens. In the current three-column layout the whole scene plays within about one screen of scrolling, which is too fast to read.
+`TopScene.astro` is placed inside the hero panel (`components/Home.astro`). It renders a `[data-top-scene]` box with a `<canvas>` and the fallback SVG at the same size, and runs `boot()`.
 
 ## Loading and fallbacks
 
-- `boot.ts` is the only code in the initial page (≈1.3 KB gzip). three.js, GSAP and Lenis are dynamically imported after `load` + idle.
-- `prefers-reduced-motion: reduce` or no WebGL: nothing is requested; a static SVG of the sliced layers is shown. Switching to reduced motion while the page is open tears the scene down.
-- Rendering pauses when the tab is hidden or after the fade-out, and resumes on scroll.
-- Quality: DPR capped (1.5 desktop, 1 mobile); if most of 90 frames exceed 25 ms, DPR drops to 1, then particles are halved.
-- Budgets: 40 layers / 20k particles desktop, 24 layers / 5k particles mobile (within the ledger's 60/20k and 30/5k).
-- Colours come from `--bg`, `--fg`, `--accent` and follow `html[data-theme]` changes.
-- Lenis smooth scrolling runs only while this scene is live (top page only).
+- `boot.ts` is the only code in the initial page. three.js is dynamically imported after the first scroll, pointer, touch or key, then after `load` + idle.
+- `prefers-reduced-motion: reduce` or no WebGL: nothing is requested and the static drawing stays. Switching to reduced motion while the page is open tears the scene down.
+- Rendering runs only while the hero is on screen (IntersectionObserver) and the tab is visible.
+- Colours come from `--panel`, `--fg` and `--accent` and follow `html[data-theme]` changes.
+- `?fps=1` shows a frame meter (fps, worst frame, DPR, layers, time from first engagement to the first frame) for checks on a phone. Headless Chromium renders WebGL in software, so numbers measured there are meaningless.
