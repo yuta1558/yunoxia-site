@@ -4,7 +4,12 @@ export function excerpt(body, limit = 120) {
   const first =
     (body ?? '')
       .split(/\n\s*\n/)
-      .map((b) => b.trim())
+      // Text over a --- or === line is a heading (setext), and a lone one is a rule: keep what follows
+      .map((b) => {
+        const lines = b.split('\n');
+        const last = lines.findLastIndex((l) => /^ {0,3}(=+|-+)[ \t]*$/.test(l));
+        return lines.slice(last + 1).join('\n').trim();
+      })
       .find((b) => b && !/^(#|>|[-*+] |\d+\. |```|\||<)/.test(b) && !/^!\[[^\]]*\]\((?:[^()\s]|\([^()\s]*\))+(?:\s+"[^"]*")?\)$/.test(b)) ?? '';
   const plain = first
     .replace(/!\[[^\]]*\]\((?:[^()\s]|\([^()\s]*\))+(?:\s+"[^"]*")?\)/g, '')

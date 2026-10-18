@@ -41,3 +41,10 @@ test('a link or image title is part of the link, as in CommonMark', () => {
   assert.equal(excerpt('[a](https://e.com "Title") を読む。'), 'a を読む。');
   assert.equal(excerpt('![](a.jpg "Cover")\n\nBody.'), 'Body.');
 });
+
+test('a setext heading is skipped like a # heading, as markdown.js renders it', () => {
+  assert.equal(excerpt('はじめに\n---\n\n本文です。'), '本文です。');
+  assert.equal(excerpt('見出し\n---\n本文です。'), '本文です。');
+  assert.equal(excerpt('Title\n===\n\nBody.'), 'Body.');
+  assert.equal(excerpt('---\n\nBody.'), 'Body.');
+});

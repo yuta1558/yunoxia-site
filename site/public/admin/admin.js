@@ -54,6 +54,7 @@
   function show(view) {
     $('login').hidden = view !== 'login';
     $('app').hidden = view === 'login';
+    $('app').querySelector('main').hidden = view === 'login'; // a hidden <main> carries hidden itself
     $('view-list').hidden = view !== 'list';
     $('view-editor').hidden = view !== 'editor';
   }
