@@ -275,3 +275,7 @@ test('stripMetadata picks the stripper by type and leaves GIF and AVIF alone', (
   assert.deepEqual(webpTypes(stripMetadata(webp, 'image/webp')), ['VP8X', 'VP8 ']);
   assert.deepEqual(stripMetadata(Buffer.from([0xff, 0xd8, 0xff]), 'image/jpeg'), Buffer.from([0xff, 0xd8, 0xff]));
 });
+
+test('headingsWithoutStop reads a heading with inline code as one line', () => {
+  assert.deepEqual(headingsWithoutStop('## 使う `G28`。\n\n## `G28` を使う\n'), ['`G28` を使う']);
+});

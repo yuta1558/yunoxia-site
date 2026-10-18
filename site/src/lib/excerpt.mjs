@@ -6,6 +6,7 @@ export function excerpt(body, limit = 120) {
       .split(/\n\s*\n/)
       // Text over a --- or === line is a heading (setext), and a lone one is a rule: keep what follows
       .map((b) => {
+        if (/^\s*(```|~~~)/.test(b)) return b.trim(); // a --- inside fenced code is code
         const lines = b.split('\n');
         const last = lines.findLastIndex((l) => /^ {0,3}(=+|-+)[ \t]*$/.test(l));
         return lines.slice(last + 1).join('\n').trim();

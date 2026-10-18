@@ -48,3 +48,7 @@ test('a setext heading is skipped like a # heading, as markdown.js renders it', 
   assert.equal(excerpt('Title\n===\n\nBody.'), 'Body.');
   assert.equal(excerpt('---\n\nBody.'), 'Body.');
 });
+
+test('a --- inside fenced code does not cut the code block', () => {
+  assert.equal(excerpt('```yaml\ntitle: a\n---\nfoo: bar\n```\n\nBody.'), 'Body.');
+});

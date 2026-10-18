@@ -89,12 +89,12 @@ export function stripMetadata(buf, type) {
 }
 
 // Run fn over the Markdown outside fenced code blocks and inline code spans; code is kept as is.
-function mapOutsideCode(content, fn) {
+function mapOutsideCode(content, fn, { inline = true } = {}) {
   const out = [];
   let prose = '';
   let fence = null; // { char, size } while inside a fenced block
   const flush = () => {
-    out.push(prose.split(/(``[^\n]*?``|`[^`\n]*`)/).map((part, n) => (n % 2 ? part : fn(part))).join(''));
+    out.push(inline ? prose.split(/(``[^\n]*?``|`[^`\n]*`)/).map((part, n) => (n % 2 ? part : fn(part))).join('') : fn(prose));
     prose = '';
   };
   for (const line of content.split(/(?<=\n)/)) {
@@ -148,6 +148,6 @@ export function headingsWithoutStop(content) {
       else para.push(line.trim());
     }
     return text;
-  });
+  }, { inline: false }); // a heading may hold `code`: look at whole lines
   return missing;
 }
