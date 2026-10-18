@@ -518,6 +518,11 @@ const PJAX = {
         state.elements.container.innerHTML = newContent.innerHTML;
       }
 
+      // Keep the document title in sync with the loaded page
+      if (doc.title) {
+        document.title = doc.title;
+      }
+
       if (pushState) {
         window.history.pushState(null, '', url);
       }
