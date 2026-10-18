@@ -4,7 +4,6 @@
 
 const WINDOW = 15 * 60; // seconds
 const PER_IP = 5; // failures per IP per window
-const GLOBAL = 30; // failures across all IPs per window (slows distributed guessing)
 
 const now = () => Math.floor(Date.now() / 1000);
 
@@ -20,17 +19,16 @@ export async function claimAttempt(db, ip) {
        window_start = CASE WHEN ?2 - window_start >= ?3 THEN ?2 ELSE window_start END
      RETURNING failures`
   );
-  const [mine, all] = await db.batch([upsert.bind(ip, t, WINDOW), upsert.bind('*', t, WINDOW)]);
-  const count = (r) => r?.results?.[0]?.failures ?? 0;
-  return count(mine) > PER_IP || count(all) > GLOBAL;
+  // There is no site-wide cap: one would let anyone lock the owner out by failing 30 times from
+  // anywhere. Distributed guessing is answered by PBKDF2, a 20+ character random password and
+  // the zone's WAF rule (DEPLOY.md 4-4).
+  const [mine] = await db.batch([upsert.bind(ip, t, WINDOW)]);
+  return (mine?.results?.[0]?.failures ?? 0) > PER_IP;
 }
 
-// A successful login forgets this client's attempts and takes its own attempt off the global count.
+// A successful login forgets this client's attempts.
 export async function releaseAttempt(db, ip) {
-  await db.batch([
-    db.prepare('DELETE FROM login_attempts WHERE key = ?').bind(ip),
-    db.prepare("UPDATE login_attempts SET failures = MAX(failures - 1, 0) WHERE key = '*'"),
-  ]);
+  await db.prepare('DELETE FROM login_attempts WHERE key = ?').bind(ip).run();
 }
 
 export const LOCK_SECONDS = WINDOW;

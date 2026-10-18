@@ -35,11 +35,17 @@ test('a correct password logs in and does not count against the limit', async ()
   assert.equal(await login(db, 'wrong'), 401);
   assert.equal(await login(db, 'right-password'), 200);
   const rows = db.raw.prepare('SELECT key, failures FROM login_attempts ORDER BY key').all();
-  assert.deepEqual(rows.map((r) => ({ ...r })), [{ key: '*', failures: 1 }]);
+  assert.deepEqual(rows, []);
 });
 
 test('the sixth attempt in a window is refused, even with the right password', async () => {
   const db = createD1();
   for (let i = 0; i < 5; i++) assert.equal(await login(db, 'wrong'), 401);
   assert.equal(await login(db, 'right-password'), 429);
+});
+
+test('failures from many addresses do not lock out another address', async () => {
+  const db = createD1();
+  for (let i = 0; i < 40; i++) assert.equal(await login(db, 'wrong', `198.51.100.${i}`), 401);
+  assert.equal(await login(db, 'right-password', '203.0.113.9'), 200);
 });
