@@ -1,6 +1,9 @@
-// Top page scene: a part being printed, one layer at a time (作り替える).
-// The static toolpath drawing in the hero says the same thing; this makes it happen.
-// Loaded lazily by boot.ts only when motion is allowed and WebGL is available.
+// Top page scene: 分解 → 理解 → 作り替え, looping.
+//   01 分解: a finished part comes apart into blocks of layers.
+//   02 理解: a scan runs up the layers one by one, and a pen-blue profile (radius per layer) is drawn beside them.
+//   03 作り替え: the old part dissolves, the profile is redesigned, and a new part is printed layer by layer to it.
+// Each loop remakes the part into the next shape. The current step is mirrored on the hero (data-phase) so the
+// matching line of the h1 lights up. Loaded lazily by boot.ts only when motion is allowed and WebGL is available.
 
 import {
   BufferAttribute,
@@ -26,41 +29,31 @@ const isSmallScreen = () => matchMedia('(max-width: 48rem)').matches;
 const budget = () => (isSmallScreen() ? { layers: 24, points: 96 } : { layers: 40, points: 160 });
 
 const PITCH = 0.06; // layer height in world units
-const NEW_LAYERS = 3; // the newest layers are drawn in pen blue
-const PRINT_SECONDS = 9; // one full print
-const HOLD_SECONDS = 4; // finished part shown before the next print starts
+const BLOCKS = 5; // the part comes apart into this many blocks of layers
+const NEW_LAYERS = 3; // the newest printed layers are pen blue
 
-// A vase-like part: each layer is a closed, slightly squared loop whose radius follows the same
-// gentle wave as the 2D drawing (see components/toolpath.ts), so the scene and its fallback match.
-function buildPart(layers: number, points: number) {
-  const segs = layers * points;
-  const position = new Float32Array(segs * 2 * 3);
-  let o = 0;
-  const at = (layer: number, k: number) => {
-    const a = (k / points) * Math.PI * 2;
-    const r = 1 + Math.sin(layer / 3.2) * 0.28;
-    // Superellipse (n = 4) gives the soft corners of a printed box rather than a cylinder
-    const c = Math.cos(a);
-    const s = Math.sin(a);
-    const x = Math.sign(c) * Math.abs(c) ** 0.5 * r * 1.35;
-    const z = Math.sign(s) * Math.abs(s) ** 0.5 * r * 0.85;
-    return [x, (layer - (layers - 1) / 2) * PITCH, z];
-  };
-  for (let l = 0; l < layers; l++) {
-    for (let k = 0; k < points; k++) {
-      const a = at(l, k);
-      const b = at(l, (k + 1) % points);
-      position.set(a, o);
-      position.set(b, o + 3);
-      o += 6;
-    }
-  }
-  return position;
-}
+// Seconds per step of one loop
+const T = { hold: 1.4, apart: 2.2, scan: 3.6, dissolve: 1.2, print: 5.2 };
+const LOOP = T.hold + T.apart + T.scan + T.dissolve + T.print;
+
+// Part profiles (radius per layer, 0..1 along the height). Each loop remakes the part into the next one.
+const SHAPES: ((h: number) => number)[] = [
+  (h) => 1 + Math.sin(h * 12.2) * 0.28, // the vase of the static drawing (same wave as components/toolpath.ts)
+  (h) => 0.72 + h * 0.5 + Math.sin(h * 6) * 0.06, // a flared cup
+  (h) => 1.05 - Math.sin(h * Math.PI) * 0.32, // a waisted spool
+];
+
+const ease = (x: number) => {
+  const c = Math.min(1, Math.max(0, x));
+  return c * c * (3 - 2 * c);
+};
 
 export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promise<SceneHandle> {
   const { layers, points } = budget();
   const small = isSmallScreen();
+  const host = root.closest<HTMLElement>('[data-scene-host]');
+  const stepEl = root.querySelector<HTMLElement>('[data-scene-step]');
+  const steps = (root.dataset.steps || '').split('|');
 
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1 : 1.5));
@@ -68,31 +61,41 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
 
   const scene = new Scene();
   const camera = new PerspectiveCamera(30, 1, 0.1, 50);
-  camera.position.set(0, 1.3, 6.2);
-  camera.lookAt(0, 0, 0);
-
   const group = new Group();
   scene.add(group);
 
+  // One closed loop per layer; the unit loop is a superellipse (soft corners of a printed box)
+  const ux = new Float32Array(points);
+  const uz = new Float32Array(points);
+  for (let k = 0; k < points; k++) {
+    const a = (k / points) * Math.PI * 2;
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    ux[k] = Math.sign(c) * Math.abs(c) ** 0.5 * 1.35;
+    uz[k] = Math.sign(s) * Math.abs(s) ** 0.5 * 0.85;
+  }
+
+  const verts = layers * points * 2;
+  const position = new Float32Array(verts * 3);
+  const colors = new Float32Array(verts * 3);
   const geo = new BufferGeometry();
-  geo.setAttribute('position', new BufferAttribute(buildPart(layers, points), 3));
-  const colors = new Float32Array(layers * points * 2 * 3);
+  geo.setAttribute('position', new BufferAttribute(position, 3));
   geo.setAttribute('color', new BufferAttribute(colors, 3));
   const mat = new LineBasicMaterial({ vertexColors: true });
   const lines = new LineSegments(geo, mat);
   lines.frustumCulled = false;
   group.add(lines);
 
-  // Dimension line: grows with the part, like the drawing's "N × 0.20"
-  const dimGeo = new BufferGeometry();
-  const dimPos = new Float32Array(6 * 3);
-  dimGeo.setAttribute('position', new BufferAttribute(dimPos, 3));
-  const dimMat = new LineBasicMaterial();
-  const dim = new LineSegments(dimGeo, dimMat);
-  dim.frustumCulled = false;
-  scene.add(dim);
+  // The measured profile: one segment per layer, beside the part, in pen blue
+  const profPos = new Float32Array((layers - 1) * 2 * 3);
+  const profGeo = new BufferGeometry();
+  profGeo.setAttribute('position', new BufferAttribute(profPos, 3));
+  const profMat = new LineBasicMaterial({ transparent: true });
+  const profile = new LineSegments(profGeo, profMat);
+  profile.frustumCulled = false;
+  scene.add(profile);
 
-  // Colours follow the theme: older layers fade toward the paper, the newest are pen blue
+  // Colours follow the theme
   let paper = new Color();
   let ink = new Color();
   let pen = new Color();
@@ -100,27 +103,36 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
     paper = new Color(css('--panel') || css('--bg') || '#d9d4c8');
     ink = new Color(css('--fg') || '#121211');
     pen = new Color(css('--accent') || '#1f3dff');
-    dimMat.color.copy(pen);
-    paintedUpTo = -1;
+    profMat.color.copy(pen);
   };
-
-  let paintedUpTo = -1;
-  const tmp = new Color();
-  const paint = (top: number) => {
-    if (top === paintedUpTo) return;
-    paintedUpTo = top;
-    for (let l = 0; l < layers; l++) {
-      if (l >= top - NEW_LAYERS && l < top) tmp.copy(pen);
-      else tmp.copy(paper).lerp(ink, 0.2 + (Math.min(l, top) / Math.max(1, top)) * 0.8);
-      const start = l * points * 2;
-      for (let v = 0; v < points * 2; v++) colors.set([tmp.r, tmp.g, tmp.b], (start + v) * 3);
-    }
-    geo.attributes.color.needsUpdate = true;
-  };
-
   readColors();
   const themeObserver = new MutationObserver(readColors);
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  const radius = (shape: number, l: number) => SHAPES[((shape % SHAPES.length) + SHAPES.length) % SHAPES.length](l / (layers - 1));
+  const blockOf = (l: number) => Math.min(BLOCKS - 1, Math.floor((l / layers) * BLOCKS));
+
+  // Layer height with the blocks pulled apart by `apart` (0..1)
+  const layerY = (l: number, apart: number) =>
+    (l - (layers - 1) / 2) * PITCH + (blockOf(l) - (BLOCKS - 1) / 2) * 0.32 * apart;
+
+  const tmp = new Color();
+  const writeLayer = (l: number, r: number, y: number, dx: number, color: Color) => {
+    let o = l * points * 6;
+    for (let k = 0; k < points; k++) {
+      const n = (k + 1) % points;
+      position[o] = ux[k] * r + dx;
+      position[o + 1] = y;
+      position[o + 2] = uz[k] * r;
+      position[o + 3] = ux[n] * r + dx;
+      position[o + 4] = y;
+      position[o + 5] = uz[n] * r;
+      colors[o] = colors[o + 3] = color.r;
+      colors[o + 1] = colors[o + 4] = color.g;
+      colors[o + 2] = colors[o + 5] = color.b;
+      o += 6;
+    }
+  };
 
   const resize = () => {
     const w = root.clientWidth;
@@ -128,8 +140,6 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
     if (!w || !h) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    // Keep the whole part in frame on narrow (portrait) boxes
-    camera.position.z = w / h < 1 ? 6.2 / Math.max(0.55, w / h) : 6.2;
     camera.updateProjectionMatrix();
   };
   const resizeObserver = new ResizeObserver(resize);
@@ -144,6 +154,15 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
     tiltX = (e.clientY / innerHeight - 0.5) * 0.15;
   };
   if (!small) addEventListener('pointermove', onPointer, { passive: true });
+
+  // Mirror the current step on the hero, so the matching h1 line lights up
+  let shownStep = 0;
+  const showStep = (step: number) => {
+    if (step === shownStep) return;
+    shownStep = step;
+    if (host) host.dataset.phase = String(step);
+    if (stepEl) stepEl.textContent = steps[step - 1] ?? '';
+  };
 
   // ?fps=1 shows a frame meter for on-device checks (no PC needed)
   const meter = new URLSearchParams(location.search).has('fps') ? document.createElement('output') : null;
@@ -163,31 +182,109 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   let running = false;
   let visible = true;
   let clock = 0;
-  const segsPerLayer = points;
+  let camZ = 6.4;
 
   const frame = (now: number) => {
     raf = requestAnimationFrame(frame);
     timer.update(now);
-    const dt = Math.min(timer.getDelta(), 0.1);
+    // rAF timestamps can trail the timer's reset, so clamp at both ends
+    const dt = Math.min(Math.max(timer.getDelta(), 0), 0.1) || 0;
     clock += dt;
 
-    // Print progress: 0 → layers over PRINT_SECONDS, then hold, then start again
-    const cycle = PRINT_SECONDS + HOLD_SECONDS;
-    const t = clock % cycle;
-    const progress = Math.min(1, t / PRINT_SECONDS) * layers;
-    const top = Math.min(layers, Math.floor(progress) + 1);
-    const segs = Math.min(layers * segsPerLayer, Math.floor(progress * segsPerLayer));
-    geo.setDrawRange(0, segs * 2);
-    paint(top);
+    const cycle = Math.floor(clock / LOOP);
+    let t = clock % LOOP;
+    const oldShape = cycle;
+    const newShape = cycle + 1;
 
-    // Dimension line beside the part, from the bed to the current top
-    const yBed = (-(layers - 1) / 2) * PITCH;
-    const yTop = yBed + Math.max(progress, 0.001) * PITCH;
-    const x = 2.15;
-    dimPos.set([x, yBed, 0, x, yTop, 0, x - 0.08, yBed, 0, x + 0.08, yBed, 0, x - 0.08, yTop, 0, x + 0.08, yTop, 0]);
-    dimGeo.attributes.position.needsUpdate = true;
+    let apart = 0;
+    let scan = -1; // layer being measured
+    let measured = 0; // layers measured so far (profile length)
+    let dissolve = 0;
+    let printed = -1; // layers printed of the new part; -1 = the old part is shown
+    let morph = 0; // profile: old shape → new shape
+    let profAlpha = 0;
+    let step = 1;
 
-    group.rotation.y += ((-0.5 + clock * 0.12 + tiltY) - group.rotation.y) * 0.08;
+    if (t < T.hold) {
+      // The finished part
+    } else if ((t -= T.hold) < T.apart) {
+      apart = ease(t / T.apart);
+    } else if ((t -= T.apart) < T.scan) {
+      step = 2;
+      apart = 1;
+      const p = t / T.scan;
+      scan = Math.min(layers - 1, Math.floor(p * layers));
+      measured = Math.min(layers, p * layers);
+      profAlpha = 1;
+    } else if ((t -= T.scan) < T.dissolve) {
+      step = 3;
+      apart = 1 - ease(t / T.dissolve);
+      dissolve = ease(t / T.dissolve);
+      measured = layers;
+      morph = ease(t / T.dissolve);
+      profAlpha = 1;
+    } else {
+      t -= T.dissolve;
+      step = 3;
+      printed = Math.min(layers, (t / (T.print * 0.85)) * layers);
+      measured = layers;
+      morph = 1;
+      profAlpha = 1 - ease((t - T.print * 0.85) / (T.print * 0.15));
+    }
+    showStep(step);
+
+    // Layers
+    const top = Math.floor(printed);
+    for (let l = 0; l < layers; l++) {
+      const h = l / Math.max(1, layers - 1);
+      if (printed < 0) {
+        // The old part: whole, coming apart, being measured, or dissolving
+        const y = layerY(l, apart);
+        const dx = (blockOf(l) % 2 ? 1 : -1) * 0.18 * apart;
+        tmp.copy(paper).lerp(ink, 0.25 + h * 0.75);
+        if (scan >= 0) {
+          if (l === scan) tmp.copy(pen);
+          else if (l > scan) tmp.copy(paper).lerp(ink, 0.25);
+        }
+        if (dissolve > 0) tmp.lerp(paper, dissolve);
+        writeLayer(l, radius(oldShape, l), y, dx, tmp);
+      } else {
+        // The new part, printed to the redesigned profile
+        if (l >= top - NEW_LAYERS && l < top) tmp.copy(pen);
+        else tmp.copy(paper).lerp(ink, 0.25 + (l / Math.max(1, top)) * 0.75);
+        writeLayer(l, radius(newShape, l), layerY(l, 0), 0, tmp);
+      }
+    }
+    const drawn = printed < 0 ? layers * points : Math.floor(printed * points);
+    geo.setDrawRange(0, drawn * 2);
+    geo.attributes.position.needsUpdate = true;
+    geo.attributes.color.needsUpdate = true;
+
+    // Profile beside the part: radius per layer, at the exploded heights while measuring
+    const px = small ? 2.05 : 2.45;
+    const segs = Math.max(0, Math.floor(measured) - 1);
+    for (let l = 0; l < segs; l++) {
+      for (let e = 0; e < 2; e++) {
+        const i = l + e;
+        const r = radius(oldShape, i) * (1 - morph) + radius(newShape, i) * morph;
+        const o = (l * 2 + e) * 3;
+        profPos[o] = px + (r - 1) * 0.9;
+        profPos[o + 1] = layerY(i, apart);
+        profPos[o + 2] = 0;
+      }
+    }
+    profGeo.setDrawRange(0, segs * 2);
+    profGeo.attributes.position.needsUpdate = true;
+    profMat.opacity = profAlpha;
+    profile.visible = profAlpha > 0.01 && segs > 0;
+
+    // Pull the camera back while the part is apart, so the whole stack stays in frame
+    const targetZ = 6.4 + apart * 1.9;
+    camZ += (targetZ - camZ) * 0.06;
+    camera.position.set(0, camZ * 0.2, camZ / Math.min(1, Math.max(0.55, camera.aspect)));
+    camera.lookAt(0, 0, 0);
+
+    group.rotation.y += (-0.5 + clock * 0.1 + tiltY - group.rotation.y) * 0.08;
     group.rotation.x += (tiltX - group.rotation.x) * 0.08;
 
     renderer.render(scene, camera);
@@ -254,10 +351,12 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
       meter?.remove();
       geo.dispose();
       mat.dispose();
-      dimGeo.dispose();
-      dimMat.dispose();
+      profGeo.dispose();
+      profMat.dispose();
       renderer.dispose();
       root.classList.remove('is-live');
+      if (host) delete host.dataset.phase;
+      if (stepEl) stepEl.textContent = '';
     },
   };
   return handle;
