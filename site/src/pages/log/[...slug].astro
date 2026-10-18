@@ -1,7 +1,9 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import { withFullStop } from '../../lib/headline.mjs';
 import { excerpt } from '../../lib/excerpt.mjs';
+import { blogPosting } from '../../lib/jsonld.mjs';
 
 export async function getStaticPaths() {
   const logs = await getCollection('log');
@@ -16,10 +18,15 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 const description = excerpt(entry.body) || undefined;
 ---
 
-<Base title={entry.data.title} description={description} ogType="article">
+<Base
+  title={entry.data.title}
+  description={description}
+  ogType="article"
+  jsonLd={blogPosting({ title: entry.data.title, date: entry.data.date, url: new URL(Astro.url.pathname, Astro.site), description })}
+>
   <article class="wrap page">
     <p class="eyebrow"><a href="/log/">Log</a></p>
-    <h1 class="page-title">{entry.data.title}</h1>
+    <h1 class="page-title">{withFullStop(entry.data.title, 'ja')}</h1>
     <p class="meta">
       <time datetime={entry.data.date.toISOString()}>{fmt(entry.data.date)}</time>
       {entry.data.tags.length > 0 && <> · {entry.data.tags.join(' / ')}</>}

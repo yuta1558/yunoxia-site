@@ -65,7 +65,7 @@ npm run test:e2e     # needs a build first; set CHROMIUM_PATH to use a preinstal
 - **Performance**: Lighthouse (mobile) ≥ 90 on reading pages, ≥ 80 on the top page. `?fps=1` on the top page shows a frame meter for real-device checks (headless Chromium renders WebGL in software, so fps measured there is meaningless).
 - **Fonts**: Zen Kaku Gothic New is served only for the characters the site uses (`scripts/font-subsets.mjs`). Weight 700 is used only by the top h1. Do not import Fontsource's full weight CSS in pages: it adds ~180 KB of render-blocking CSS.
 - **Colours**: use the v3 tokens in `global.css` (`--paper`, `--ink`, `--muted`, `--line`, `--pen`, `--panel`, `--band`…), defined for both themes. `--bg` / `--fg` / `--accent` are aliases read at runtime by the scene, the bead and the research figures; keep them.
-- **Typography**: headlines are light (300) and end with a full stop; break Japanese headlines only between phrases (`.phrases` spans). Bold only for the wordmark and the top h1.
+- **Typography**: headlines are light (300) and end with a full stop; break Japanese headlines only between phrases (`.phrases` spans). Bold only for the wordmark and the top h1. The full stop rule covers section heads, prose h2s in Markdown and pages, and Work and Log h1s; for titles it is added in the h1 only (`src/lib/headline.mjs`, also used by CMS posts), so `<title>`, cards and RSS keep the bare title. Names such as "HevORT-lite" get none.
 - **One h1 per page**, `lang` set, no page errors: the e2e suite checks every sitemap page.
 
 ## Writing Log posts

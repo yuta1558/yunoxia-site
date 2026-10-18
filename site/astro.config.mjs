@@ -1,6 +1,21 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { readdirSync, readFileSync } from 'node:fs';
+
+// lastmod for Works and Log entries: URL path → front matter `updated` (Works) or `date` (Log)
+const lastmod = new Map();
+for (const [dir, base, key] of [
+  ['src/content/works', '/works/', 'updated'],
+  ['src/content/en/works', '/en/works/', 'updated'],
+  ['src/content/log', '/log/', 'date'],
+]) {
+  for (const file of readdirSync(new URL(dir, import.meta.url)).filter((f) => f.endsWith('.md'))) {
+    const text = readFileSync(new URL(`${dir}/${file}`, import.meta.url), 'utf8');
+    const date = text.match(new RegExp(`^${key}:\\s*['"]?(\\d{4}-\\d{2}-\\d{2})`, 'm'))?.[1];
+    if (date) lastmod.set(`${base}${file.replace(/\.md$/, '')}/`, date);
+  }
+}
 
 export default defineConfig({
   site: 'https://yunoxia.one',
@@ -13,7 +28,12 @@ export default defineConfig({
       filter: (page) => !page.includes('/lab/'),
       i18n: {
         defaultLocale: 'ja',
-        locales: { ja: 'ja-JP', en: 'en-US' },
+        // Same codes as <html lang> and the hreflang links in Base.astro
+        locales: { ja: 'ja', en: 'en' },
+      },
+      serialize(item) {
+        const date = lastmod.get(new URL(item.url).pathname);
+        return date ? { ...item, lastmod: date } : item;
       },
     }),
   ],

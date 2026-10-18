@@ -6,6 +6,7 @@ import '../styles/fonts.generated.css';
 import '../styles/global.css';
 import Bead from '../bead/Bead.astro';
 import { counterpart, langOf, localPath, ui } from '../i18n/ui';
+import { jsonLdString, webSite } from '../lib/jsonld.mjs';
 
 interface Props {
   title?: string;
@@ -14,12 +15,25 @@ interface Props {
   /** Leave out canonical and og:url (pages with no URL of their own, such as 404) */
   noCanonical?: boolean;
   ogType?: 'website' | 'article';
+  /**
+   * Structured data rendered as <script type="application/ld+json"> (one object or an array),
+   * e.g. blogPosting() from src/lib/jsonld.mjs on Log posts. The top pages (/ and /en/) get a
+   * WebSite object automatically. Never include a Person, author or any name.
+   */
+  jsonLd?: object | object[];
 }
 
 const lang = langOf(Astro.url.pathname);
 const t = ui[lang];
 
-const { title, description = t.defaultDescription, noindex = false, noCanonical = false, ogType = 'website' } = Astro.props;
+const {
+  title,
+  description = t.defaultDescription,
+  noindex = false,
+  noCanonical = false,
+  ogType = 'website',
+  jsonLd,
+} = Astro.props;
 
 const siteName = 'yunoxia';
 const fullTitle = title ? `${title} — ${siteName}` : `${siteName} — ${t.siteTagline}`;
@@ -45,6 +59,13 @@ const nav = [
   { href: localPath(lang, '/about/'), label: 'About' },
 ];
 const current = Astro.url.pathname;
+
+// JSON-LD: WebSite on the top pages, plus whatever the page passes
+const isTop = current === '/' || current === '/en/' || current === '/en';
+const structured = [
+  ...(isTop ? [webSite({ url: new URL(localPath(lang, '/'), Astro.site), lang, description })] : []),
+  ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []),
+];
 ---
 
 <!doctype html>
@@ -75,6 +96,7 @@ const current = Astro.url.pathname;
     <meta property="og:locale" content={t.ogLocale} />
     {other && <meta property="og:locale:alternate" content={ui[lang === 'ja' ? 'en' : 'ja'].ogLocale} />}
     <meta name="twitter:card" content="summary_large_image" />
+    {structured.map((data) => <script type="application/ld+json" set:html={jsonLdString(data)} />)}
 
     <meta name="theme-color" content="#efece5" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0d1430" media="(prefers-color-scheme: dark)" />
@@ -126,7 +148,8 @@ const current = Astro.url.pathname;
 
     <footer class="site-footer">
       <p class="meta">
-        <a href="mailto:contact@yunoxia.one">contact@yunoxia.one</a>
+        {/* Keep Cloudflare Email Obfuscation off this link; set:html writes the comments out verbatim */}
+        <Fragment set:html="<!--email_off-->" /><a href="mailto:contact@yunoxia.one">contact@yunoxia.one</a><Fragment set:html="<!--/email_off-->" />
         <span aria-hidden="true"> · </span>
         <a href="/rss.xml">RSS</a>
       </p>
