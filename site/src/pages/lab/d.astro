@@ -228,6 +228,13 @@ const contour = (i: number, cx: number, base: number, step: number, amp: number)
   }
 
   /* Light, tight headlines; sentence case, ending in a full stop */
+  /* Geist sets the Latin, Zen Kaku Gothic New fills in the Japanese */
+  h1,
+  h2,
+  .statement {
+    font-family: var(--sans);
+  }
+
   h1,
   h2 {
     font-weight: 300;
@@ -352,7 +359,7 @@ const contour = (i: number, cx: number, base: number, step: number, amp: number)
 
   /* Sections */
   .sec {
-    padding: clamp(4rem, 10vw, 7rem) var(--gutter);
+    padding: clamp(3rem, 10vw, 6rem) var(--gutter);
   }
 
   .sec__head {
@@ -447,7 +454,7 @@ const contour = (i: number, cx: number, base: number, step: number, amp: number)
   .band {
     background: var(--bp);
     color: var(--bp-ink);
-    padding: clamp(4rem, 10vw, 7rem) var(--gutter);
+    padding: clamp(3rem, 10vw, 6rem) var(--gutter);
   }
 
   /* Break only between phrases, never inside one */
