@@ -175,15 +175,17 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   const after = document.querySelector<HTMLElement>('[data-scene="after"]');
   const actEls = [2, 3].map((n) => document.querySelector<HTMLElement>(`[data-act="${n}"]`));
 
-  // The act whose top has passed 60% of the viewport is current; none above act 1 or once the
-  // scene has faded out. Phones show only the current act's text (index.astro).
+  // An act is current once its top reaches the spot where phones pin its text (index.astro,
+  // top: 4.5rem), so the pinned text never lands on the hero while the hero is still on screen.
+  // None before act 1 or once the scene has faded out. Only phones use this.
+  const PIN_TOP = 72;
   const allActs = [1, 2, 3].map((n) => document.querySelector<HTMLElement>(`[data-act="${n}"]`));
   const markActiveAct = () => {
     if (!acts) return;
     let current = '';
     if (state.fade > 0.5) {
       allActs.forEach((el, i) => {
-        if (el && el.getBoundingClientRect().top < innerHeight * 0.6) current = String(i + 1);
+        if (el && el.getBoundingClientRect().top <= PIN_TOP) current = String(i + 1);
       });
     }
     if (acts.dataset.active !== current) acts.dataset.active = current;
