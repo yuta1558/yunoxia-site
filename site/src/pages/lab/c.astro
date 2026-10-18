@@ -1,0 +1,408 @@
+---
+// Direction C — B's drafting paper and colour, A's spirit: heavy type, machine readouts, sliced mark, toolpath art.
+// Latin is Geist / Geist Mono (no serif). Pen blue is the one signal colour; the heat ramp is for data only.
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import '@fontsource/zen-kaku-gothic-new/400.css';
+import '@fontsource/zen-kaku-gothic-new/700.css';
+import Lab from './_LabLayout.astro';
+
+const works = [
+  { n: '01', title: 'LPD8 DMX Kit', line: 'ノブを一つずつ回していた照明を、パッド一押しに。', status: 'DONE', date: '2026.10.18', fresh: true },
+  { n: '02', title: 'このサイトの作り直し', line: '分解して、理解して、作り替える を、このサイトで。', status: 'WIP', date: '2026.10.18', fresh: true },
+  { n: '03', title: 'BLTouch トラブルシューティング', line: '展開しない原因を三つに切り分け、日韓に訳した。', status: 'WIP', date: '2026.09.01', fresh: false },
+  { n: '04', title: 'HevORT-lite', line: '譲り受けた CoreXY 機に手を入れている。', status: 'WIP', date: '2026.09.01', fresh: false },
+];
+const layers = 20;
+---
+
+<Lab title="Lab C — Drafting paper × Thermal">
+  <div class="c">
+    <header class="bar">
+      <a class="mark" href="#" aria-label="yunoxia">yunoxia</a>
+      <nav>
+        <a href="#">Works</a><a href="#">Research</a><a href="#">Log</a><a href="#">About</a>
+      </nav>
+      <span class="readout" aria-hidden="true">Z 0.20 · 215°C</span>
+    </header>
+
+    <section class="hero">
+      <div class="sheet">
+        <span>Sheet 01 / 04</span>
+        <span>yunoxia — ゆーの制作と研究</span>
+        <span>Scale 1:1</span>
+      </div>
+      <h1>
+        <span>分解して、</span>
+        <span>理解して、</span>
+        <span class="pen">作り替える。</span>
+      </h1>
+      <p class="en">Take it apart / Understand it / Remake it</p>
+      <div class="foot">
+        <p class="lead">最も深く掘っている領域は、<br />産業用 3D プリンティング。</p>
+        <dl>
+          <div><dt>Layer</dt><dd>0.20 mm</dd></div>
+          <div><dt>Flow</dt><dd>21 mm³/s</dd></div>
+          <div><dt>Fan</dt><dd>100 %</dd></div>
+        </dl>
+      </div>
+      <!-- toolpath contours stacked layer by layer; the newest layers in pen blue, with a dimension line -->
+      <svg class="art" viewBox="0 0 420 300" aria-hidden="true">
+        {Array.from({ length: layers }, (_, i) => {
+          const y = 262 - i * 10;
+          const w = 140 + Math.sin(i / 3) * 38;
+          return <path d={`M ${190 - w} ${y} C ${190 - w / 2} ${y - 16}, ${190 + w / 2} ${y + 16}, ${190 + w} ${y}`} class={i >= layers - 3 ? 'tp new' : 'tp'} style={`opacity:${0.25 + (i / layers) * 0.75}`} />;
+        })}
+        <line x1="392" y1="72" x2="392" y2="262" class="dim" />
+        <line x1="384" y1="72" x2="400" y2="72" class="dim" />
+        <line x1="384" y1="262" x2="400" y2="262" class="dim" />
+        <text x="380" y="170" class="dimt" text-anchor="end">20 × 0.20</text>
+      </svg>
+    </section>
+
+    <section class="works">
+      <div class="head">
+        <h2>Works</h2>
+        <span class="small">04 items · sorted by last update</span>
+      </div>
+      <ol>
+        {works.map((w) => (
+          <li>
+            <a href="#">
+              <span class="n">{w.n}</span>
+              <span class="t">{w.title}</span>
+              <span class="l">{w.line}</span>
+              <span class={w.fresh ? 'm fresh' : 'm'}>{w.status} · {w.date}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="tokens">
+      <h2 class="small">Color system</h2>
+      <div class="sw">
+        <div style="--c:#EFECE5"><b>paper</b>#EFECE5</div>
+        <div style="--c:#E4E0D6"><b>surface</b>#E4E0D6</div>
+        <div style="--c:#121211"><b>ink</b>#121211</div>
+        <div style="--c:#66635C"><b>muted</b>#66635C</div>
+        <div style="--c:#1F3DFF"><b>pen</b>#1F3DFF 新しい・リンク・寸法</div>
+      </div>
+      <div class="ramp" aria-hidden="true"></div>
+      <p class="small">data ramp: cool → hot（温度や新しさを図で表すときだけ）</p>
+      <div class="sw dark">
+        <div style="--c:#0D1430"><b>blueprint</b>#0D1430</div>
+        <div style="--c:#141C3D"><b>surface</b>#141C3D</div>
+        <div style="--c:#E8EBF4"><b>ink</b>#E8EBF4</div>
+        <div style="--c:#8E97B3"><b>muted</b>#8E97B3</div>
+        <div style="--c:#8FA2FF"><b>pen</b>#8FA2FF</div>
+      </div>
+      <p class="small">dark theme: blueprint</p>
+    </section>
+  </div>
+</Lab>
+
+<style>
+  .c {
+    --paper: #efece5;
+    --surface: #e4e0d6;
+    --ink: #121211;
+    --muted: #66635c;
+    --line: #d2cdc1;
+    --pen: #1f3dff;
+    --sans: 'Geist Variable', 'Zen Kaku Gothic New', sans-serif;
+    --jp: 'Zen Kaku Gothic New', 'Geist Variable', sans-serif;
+    --mono: 'Geist Mono Variable', ui-monospace, monospace;
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--jp);
+    min-height: 100vh;
+    padding: 0 clamp(1rem, 4vw, 3.5rem) 6rem;
+    /* drafting grid, very faint */
+    background-image: linear-gradient(rgb(18 18 17 / 0.045) 1px, transparent 1px), linear-gradient(90deg, rgb(18 18 17 / 0.045) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  :global(body) {
+    margin: 0;
+  }
+
+  .small,
+  .readout,
+  .sheet,
+  dt,
+  .n,
+  .m,
+  .en {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding-block: 1.25rem;
+  }
+
+  /* Wordmark: Geist, cut into layer lines like a sliced part */
+  .mark {
+    margin-right: auto;
+    color: var(--ink);
+    text-decoration: none;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 1.45rem;
+    letter-spacing: -0.05em;
+    -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 2.4px, transparent 2.4px 3.3px);
+    mask-image: repeating-linear-gradient(to bottom, #000 0 2.4px, transparent 2.4px 3.3px);
+  }
+
+  nav {
+    display: flex;
+    gap: 1.75rem;
+  }
+
+  nav a {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 0.88rem;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--pen);
+  }
+
+  .readout {
+    color: var(--pen);
+  }
+
+  .hero {
+    position: relative;
+    padding-block: clamp(2rem, 6vh, 4rem) 4rem;
+  }
+
+  .sheet {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1.5px solid var(--ink);
+    border-bottom: 1px solid var(--line);
+    padding-block: 0.6rem;
+  }
+
+  h1 {
+    position: relative;
+    z-index: 1;
+    font-family: var(--jp);
+    font-weight: 700;
+    font-size: clamp(3rem, 9.5vw, 9rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    font-feature-settings: 'palt' 1;
+    margin: clamp(2.5rem, 7vh, 4.5rem) 0 1.5rem;
+  }
+
+  h1 span {
+    display: block;
+  }
+
+  .pen {
+    color: var(--pen);
+  }
+
+  .en {
+    position: relative;
+    z-index: 1;
+    color: var(--ink);
+    margin: 0 0 3rem;
+  }
+
+  .foot {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 2rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+  }
+
+  .lead {
+    font-size: 1rem;
+    line-height: 1.9;
+    margin: 0;
+  }
+
+  dl {
+    display: flex;
+    gap: 2.25rem;
+    margin: 0;
+  }
+
+  dd {
+    margin: 0.25rem 0 0;
+    font-family: var(--mono);
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+
+  .art {
+    position: absolute;
+    right: -2%;
+    top: 16%;
+    width: min(52vw, 44rem);
+    pointer-events: none;
+  }
+
+  .tp {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .tp.new {
+    stroke: var(--pen);
+    stroke-width: 1.6;
+  }
+
+  .dim {
+    stroke: var(--pen);
+    stroke-width: 1;
+  }
+
+  .dimt {
+    font-family: var(--mono);
+    font-size: 10px;
+    fill: var(--pen);
+  }
+
+  .works {
+    padding-top: 3rem;
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: clamp(2rem, 4.5vw, 3.6rem);
+    letter-spacing: -0.045em;
+    margin: 0;
+  }
+
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1.5px solid var(--ink);
+  }
+
+  li a {
+    display: grid;
+    grid-template-columns: 3rem minmax(10rem, 1.15fr) 2fr auto;
+    gap: 0.5rem 2rem;
+    align-items: baseline;
+    padding-block: 1.35rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    transition: padding 0.3s, background 0.3s;
+  }
+
+  li a:hover {
+    background: var(--surface);
+    padding-inline: 1rem;
+  }
+
+  li a:hover .t {
+    color: var(--pen);
+  }
+
+  .t {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 1.12rem;
+    letter-spacing: -0.015em;
+    transition: color 0.2s;
+  }
+
+  .l {
+    color: var(--muted);
+    line-height: 1.8;
+    font-size: 0.95rem;
+  }
+
+  .m.fresh {
+    color: var(--pen);
+  }
+
+  .tokens {
+    padding-top: 5rem;
+  }
+
+  .sw {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .sw div {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 4.5rem 0.75rem 0.75rem;
+    border: 1px solid var(--line);
+    background: linear-gradient(var(--c), var(--c)) top / 100% 60% no-repeat, var(--paper);
+    color: var(--muted);
+  }
+
+  .sw b {
+    display: block;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .ramp {
+    height: 8px;
+    background: linear-gradient(90deg, #1f3dff, #6e7fd6, #c9b9a0, #ff9a3c, #ff4d1a);
+  }
+
+  @media (max-width: 48rem) {
+    nav {
+      display: none;
+    }
+
+    .sheet span:last-child {
+      display: none;
+    }
+
+    .art {
+      width: 118vw;
+      right: -36%;
+      top: 8%;
+      opacity: 0.28;
+    }
+
+    li a {
+      grid-template-columns: 2.2rem 1fr;
+    }
+
+    .l,
+    .m {
+      grid-column: 2;
+    }
+  }
+</style>
