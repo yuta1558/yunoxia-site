@@ -1,9 +1,15 @@
 ---
 // Decorative scroll scene for the top page (分解 → 理解 → 作り替え).
 // The text in the page is the content; this only illustrates it. See README.md for wiring.
+import { getCollection } from 'astro:content';
+
+// Act 3 re-deposits one bar per Works item (newest first), bar length following the title length
+const works = (await getCollection('works')).sort((a, b) => +b.data.updated - +a.data.updated).slice(0, 6);
+const longest = Math.max(1, ...works.map((w) => w.data.title.length));
+const rows = works.map((w) => Math.max(0.4, w.data.title.length / longest).toFixed(2)).join(',');
 ---
 
-<div class="top-scene" data-top-scene aria-hidden="true">
+<div class="top-scene" data-top-scene data-rows={rows} aria-hidden="true">
   <canvas class="top-scene__canvas"></canvas>
   <!-- Static illustration of a sliced, exploded solid: shown until the scene runs,
        and permanently under reduced motion or without WebGL -->

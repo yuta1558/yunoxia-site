@@ -93,7 +93,9 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   setLayers(0);
 
   // --- act 2/3: toolpath particles -----------------------------------------
-  const pd = buildParticles(solid, particles);
+  // Bar lengths for act 3 come from the Works list (see TopScene.astro)
+  const rows = (root.dataset.rows || '').split(',').map(Number).filter((n) => n > 0 && n <= 1);
+  const pd = buildParticles(solid, particles, rows);
   const geo = new BufferGeometry();
   geo.setAttribute('position', new BufferAttribute(pd.target, 3));
   geo.setAttribute('aRect', new BufferAttribute(pd.rect, 3));
@@ -177,7 +179,7 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
     trigger: hero ?? document.body,
     start: 'top top',
     endTrigger: acts ?? undefined,
-    end: acts ? 'bottom 55%' : `+=${innerHeight * 2.5}`,
+    end: acts ? 'bottom bottom' : `+=${innerHeight * 2.5}`,
     scrub: true,
     onUpdate: (self) => {
       state.p = self.progress;
@@ -196,8 +198,9 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   const fadeTrigger = after
     ? ScrollTrigger.create({
         trigger: after,
-        start: 'top 55%',
-        end: 'top 20%',
+        // Gone before the list reaches reading height, so particles never sit behind its text
+        start: 'top 95%',
+        end: 'top 75%',
         scrub: true,
         onUpdate: (self) => {
           state.fade = 1 - self.progress;

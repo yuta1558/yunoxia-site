@@ -113,11 +113,13 @@ export interface ParticleData {
   order: Float32Array; // deposit order 0..1
 }
 
-// Rows the particles are re-deposited into in act 3: a short list, laid down bar by bar.
-const ROWS = [1, 0.78, 0.9, 0.62];
+// Rows the particles are re-deposited into in act 3: one bar per Works item, laid down bar by bar.
+// Fallback when the page gives no rows.
+const DEFAULT_ROWS = [1, 0.78, 0.9, 0.62];
 const SUBLAYERS = 3;
 
-export function buildParticles(s: SlicedSolid, count: number): ParticleData {
+export function buildParticles(s: SlicedSolid, count: number, rows: number[] = DEFAULT_ROWS): ParticleData {
+  const ROWS = rows.length ? rows : DEFAULT_ROWS;
   const perim = s.intervals.map((iv) => 2 * (iv.x1 - iv.x0) + 2 * s.depth);
   const total = perim.reduce((a, b) => a + b, 0) || 1;
   const rect = new Float32Array(count * 3);
