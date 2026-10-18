@@ -18,3 +18,7 @@ test('empty body', () => {
   assert.equal(excerpt(''), '');
   assert.equal(excerpt(undefined), '');
 });
+
+test('only paired emphasis marks are removed', () => {
+  assert.equal(excerpt('snake_case と ~/path と a*b、*斜体*、_下線_、~~消し~~、__太字__。'), 'snake_case と ~/path と a*b、斜体、下線、消し、太字。');
+});

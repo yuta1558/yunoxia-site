@@ -10,7 +10,12 @@ export function excerpt(body, limit = 120) {
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/<[^>]+>/g, '')
-    .replace(/[`*_~]/g, '')
+    // Only paired marks are markup: snake_case and ~/path keep their characters
+    .replace(/`([^`]*)`/g, '$1')
+    .replace(/(\*\*|__)(.+?)\1/g, '$2')
+    .replace(/~~(.+?)~~/g, '$1')
+    .replace(/(^|[^\w*])\*([^*\s][^*]*?)\*(?![\w*])/g, '$1$2')
+    .replace(/(^|\W)_([^_\s][^_]*)_(?=\W|$)/g, '$1$2')
     .replace(/\s+/g, ' ')
     .trim();
   const chars = Array.from(plain);
