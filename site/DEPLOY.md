@@ -74,7 +74,7 @@ HSTS は付け替えとは別に段階的に入れる（1 日 → 1 か月 → 1
 
 公開ページは、ビルド済みの `/log/` を殻として読み込み、HTMLRewriter で `<main>` を差し替えて返す。ヘッダー、フッター、フォント、CSS はビルドと同じものになる。Markdown の変換は `functions/_lib/markdown.js` が行う。生の HTML は通さず、リンクと画像の URL は http(s)、mailto、サイト内パスに限る。
 
-Log の Markdown（`src/content/log/`）は、CMS 以前の記録として残す。CMS の記事は、一覧と RSS で Markdown の記事より上に並ぶ。CMS の記事は sitemap には入らない（必要になったら sitemap を Function で拡張する）。
+Log の Markdown（`src/content/log/`）は、CMS 以前の記録として残す。CMS の記事は、一覧と RSS で Markdown の記事より上に並ぶ。CMS の公開記事は `functions/sitemap-posts.xml.js` が `/sitemap-posts.xml` に出し、`robots.txt` から参照する。
 
 ### 4-1. D1 を作る
 

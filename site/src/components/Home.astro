@@ -76,7 +76,15 @@ const xray = Array.from({ length: 30 }, (_, i) => i);
     <TopScene steps={t.steps} />
   </div>
   <div class="hero__copy">
-    <h1>{t.h1.map((line, i) => (i === t.h1.length - 1 ? <span class="pen">{line}</span> : <span>{line}</span>))}</h1>
+    <h1>
+      {t.h1.map((line, i) => (
+        <>
+          {/* English lines need a word space in the text; the spans are blocks, so it does not render */}
+          {i > 0 && lang === 'en' && ' '}
+          {i === t.h1.length - 1 ? <span class="pen">{line}</span> : <span>{line}</span>}
+        </>
+      ))}
+    </h1>
     <a class="btn btn--light" href={localPath(lang, '/works/')}>{t.heroCta}</a>
   </div>
   <p class="hero__sheet meta">{t.sheet}</p>

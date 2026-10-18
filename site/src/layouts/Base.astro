@@ -11,12 +11,15 @@ interface Props {
   title?: string;
   description?: string;
   noindex?: boolean;
+  /** Leave out canonical and og:url (pages with no URL of their own, such as 404) */
+  noCanonical?: boolean;
+  ogType?: 'website' | 'article';
 }
 
 const lang = langOf(Astro.url.pathname);
 const t = ui[lang];
 
-const { title, description = t.defaultDescription, noindex = false } = Astro.props;
+const { title, description = t.defaultDescription, noindex = false, noCanonical = false, ogType = 'website' } = Astro.props;
 
 const siteName = 'yunoxia';
 const fullTitle = title ? `${title} — ${siteName}` : `${siteName} — ${t.siteTagline}`;
@@ -51,7 +54,7 @@ const current = Astro.url.pathname;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {!noCanonical && <link rel="canonical" href={canonical} />}
     {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
     {noindex && <meta name="robots" content="noindex" />}
 
@@ -61,11 +64,11 @@ const current = Astro.url.pathname;
     <link rel="alternate" type="application/rss+xml" title="yunoxia Log" href="/rss.xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={siteName} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {!noCanonical && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -131,11 +134,19 @@ const current = Astro.url.pathname;
     </footer>
 
     <script is:inline>
-      document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
-        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        document.documentElement.dataset.theme = next;
-        try { localStorage.setItem('theme', next); } catch {}
-      });
+      (() => {
+        const toggle = document.querySelector('[data-theme-toggle]');
+        if (!toggle) return;
+        // aria-pressed = the dark theme is on
+        const sync = () => toggle.setAttribute('aria-pressed', String(document.documentElement.dataset.theme === 'dark'));
+        sync();
+        toggle.addEventListener('click', () => {
+          const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+          document.documentElement.dataset.theme = next;
+          try { localStorage.setItem('theme', next); } catch {}
+          sync();
+        });
+      })();
     </script>
     <Bead />
   </body>

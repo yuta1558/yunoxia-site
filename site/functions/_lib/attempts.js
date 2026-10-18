@@ -8,31 +8,29 @@ const GLOBAL = 30; // failures across all IPs per window (slows distributed gues
 
 const now = () => Math.floor(Date.now() / 1000);
 
-async function failures(db, key) {
-  const row = await db.prepare('SELECT failures, window_start FROM login_attempts WHERE key = ?').bind(key).first();
-  if (!row || now() - row.window_start >= WINDOW) return 0;
-  return row.failures;
-}
-
-// Returns true when this client (or the site as a whole) must wait before trying again.
-export async function isLocked(db, ip) {
-  const [mine, all] = await Promise.all([failures(db, ip), failures(db, '*')]);
-  return mine >= PER_IP || all >= GLOBAL;
-}
-
-export async function recordFailure(db, ip) {
+// Counts this attempt before the password is checked, and says whether it is over the limit.
+// Counting first (one atomic upsert per key) means concurrent requests cannot all pass a check
+// made before any of them was recorded.
+export async function claimAttempt(db, ip) {
   const t = now();
   const upsert = db.prepare(
     `INSERT INTO login_attempts (key, failures, window_start) VALUES (?1, 1, ?2)
      ON CONFLICT(key) DO UPDATE SET
        failures = CASE WHEN ?2 - window_start >= ?3 THEN 1 ELSE failures + 1 END,
-       window_start = CASE WHEN ?2 - window_start >= ?3 THEN ?2 ELSE window_start END`
+       window_start = CASE WHEN ?2 - window_start >= ?3 THEN ?2 ELSE window_start END
+     RETURNING failures`
   );
-  await db.batch([upsert.bind(ip, t, WINDOW), upsert.bind('*', t, WINDOW)]);
+  const [mine, all] = await db.batch([upsert.bind(ip, t, WINDOW), upsert.bind('*', t, WINDOW)]);
+  const count = (r) => r?.results?.[0]?.failures ?? 0;
+  return count(mine) > PER_IP || count(all) > GLOBAL;
 }
 
-export async function clearFailures(db, ip) {
-  await db.prepare('DELETE FROM login_attempts WHERE key = ?').bind(ip).run();
+// A successful login forgets this client's attempts and takes its own attempt off the global count.
+export async function releaseAttempt(db, ip) {
+  await db.batch([
+    db.prepare('DELETE FROM login_attempts WHERE key = ?').bind(ip),
+    db.prepare("UPDATE login_attempts SET failures = MAX(failures - 1, 0) WHERE key = '*'"),
+  ]);
 }
 
 export const LOCK_SECONDS = WINDOW;
