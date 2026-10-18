@@ -1,0 +1,53 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const works = await getCollection('worksEn');
+  return works.map((work) => ({ params: { slug: work.id }, props: { work } }));
+}
+
+const { work } = Astro.props;
+const { Content } = await render(work);
+const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
+---
+
+<Base title={work.data.title} description={work.data.summary}>
+  <article class="wrap page">
+    <p class="eyebrow"><a href="/en/works/">Works</a></p>
+    <h1>{work.data.title}</h1>
+    <p class="summary">{work.data.summary}</p>
+    <p class="meta">
+      {work.data.status} · <time datetime={work.data.updated.toISOString()}>{fmt(work.data.updated)}</time> updated
+      {work.data.tags.length > 0 && <> · {work.data.tags.join(' / ')}</>}
+    </p>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</Base>
+
+<style>
+  .page {
+    padding-block: 3rem;
+  }
+
+  .eyebrow a {
+    text-decoration: none;
+  }
+
+  h1 {
+    font-size: var(--step-2);
+    margin-block: 0.5rem 1rem;
+  }
+
+  .summary {
+    font-size: var(--step-1);
+    max-width: var(--measure);
+    margin-bottom: 0.75rem;
+  }
+
+  .prose {
+    margin-top: 2rem;
+  }
+</style>

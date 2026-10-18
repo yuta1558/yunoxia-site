@@ -1,22 +1,24 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { type Lang, localPath, ui } from '../i18n/ui';
 
 interface Props {
-  works: CollectionEntry<'works'>[];
+  works: (CollectionEntry<'works'> | CollectionEntry<'worksEn'>)[];
+  lang?: Lang;
 }
 
-const { works } = Astro.props;
+const { works, lang = 'ja' } = Astro.props;
 const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 ---
 
 <ul class="works">
   {works.map((w) => (
     <li>
-      <a href={`/works/${w.id}/`}>
+      <a href={localPath(lang, `/works/${w.id}/`)}>
         <span class="title" data-badge>{w.data.title}</span>
         <span class="summary">{w.data.summary}</span>
         <span class="meta">
-          {w.data.status} · <time datetime={w.data.updated.toISOString()}>{fmt(w.data.updated)}</time> 更新
+          {w.data.status} · <time datetime={w.data.updated.toISOString()}>{fmt(w.data.updated)}</time> {ui[lang].updated}
         </span>
       </a>
     </li>

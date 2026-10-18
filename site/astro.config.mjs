@@ -6,5 +6,13 @@ export default defineConfig({
   site: 'https://yunoxia.one',
   trailingSlash: 'ignore',
   build: { format: 'directory' },
-  integrations: [sitemap()],
+  // Japanese at the root, English under /en/; the sitemap emits hreflang alternates for pages that exist in both
+  integrations: [
+    sitemap({
+      i18n: {
+        defaultLocale: 'ja',
+        locales: { ja: 'ja-JP', en: 'en-US' },
+      },
+    }),
+  ],
 });

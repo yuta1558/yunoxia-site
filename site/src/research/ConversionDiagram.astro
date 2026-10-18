@@ -1,21 +1,56 @@
 ---
 // 2 段変換の構造図。スマホでも文字が潰れないよう、SVG ではなく HTML の段組みで描き、矢印だけ SVG にしている。
-const quantities = ['体積流量', '熱履歴', 'ビード形状', '冷却速度'];
-const classes = [
-  { name: '材料固有', note: 'フィラメントが決める値' },
-  { name: '機械固有', note: 'プリンターが決める値' },
-  { name: '相互作用', note: '両方の組み合わせで決まる値（例：冷却ファン）' },
-];
+interface Props {
+  lang?: 'ja' | 'en';
+}
+const { lang = 'ja' } = Astro.props;
+const t = {
+  ja: {
+    caption: '変換の流れ',
+    input: '入力',
+    source: '元の方言',
+    sourceSub: 'Bambu Lab / Prusa / Polymaker / OrcaSlicer の公開プロファイル',
+    middle: '中間表現',
+    physics: '物理量',
+    output: '出力',
+    target: '目的の方言',
+    targetSub: '変換先の機種の設定',
+    quantities: ['体積流量', '熱履歴', 'ビード形状', '冷却速度'],
+    classes: [
+      { name: '材料固有', note: 'フィラメントが決める値' },
+      { name: '機械固有', note: 'プリンターが決める値' },
+      { name: '相互作用', note: '両方の組み合わせで決まる値（例：冷却ファン）' },
+    ],
+  },
+  en: {
+    caption: 'How the conversion flows',
+    input: 'Input',
+    source: 'Source dialect',
+    sourceSub: 'Published profiles from Bambu Lab / Prusa / Polymaker / OrcaSlicer',
+    middle: 'Intermediate',
+    physics: 'Physical quantities',
+    output: 'Output',
+    target: 'Target dialect',
+    targetSub: 'Settings for the target machine',
+    quantities: ['Volumetric flow', 'Thermal history', 'Bead geometry', 'Cooling rate'],
+    classes: [
+      { name: 'Material-specific', note: 'Set by the filament' },
+      { name: 'Machine-specific', note: 'Set by the printer' },
+      { name: 'Interaction', note: 'Set by the two together (e.g. cooling fan)' },
+    ],
+  },
+}[lang];
+const { quantities, classes } = t;
 ---
 
 <figure class="diagram">
-  <figcaption class="meta">変換の流れ</figcaption>
+  <figcaption class="meta">{t.caption}</figcaption>
 
   <div class="flow">
     <div class="node">
-      <p class="eyebrow">入力</p>
-      <p class="title">元の方言</p>
-      <p class="sub">Bambu Lab / Prusa / Polymaker / OrcaSlicer の公開プロファイル</p>
+      <p class="eyebrow">{t.input}</p>
+      <p class="title">{t.source}</p>
+      <p class="sub">{t.sourceSub}</p>
     </div>
 
     <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -23,8 +58,8 @@ const classes = [
     </svg>
 
     <div class="node core">
-      <p class="eyebrow">中間表現</p>
-      <p class="title">物理量</p>
+      <p class="eyebrow">{t.middle}</p>
+      <p class="title">{t.physics}</p>
       <ul>
         {quantities.map((q) => <li>{q}</li>)}
       </ul>
@@ -35,9 +70,9 @@ const classes = [
     </svg>
 
     <div class="node">
-      <p class="eyebrow">出力</p>
-      <p class="title">目的の方言</p>
-      <p class="sub">変換先の機種の設定</p>
+      <p class="eyebrow">{t.output}</p>
+      <p class="title">{t.target}</p>
+      <p class="sub">{t.targetSub}</p>
     </div>
   </div>
 

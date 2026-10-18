@@ -13,6 +13,18 @@ const works = defineCollection({
   }),
 });
 
+// English versions of Works. File names (ids) match the Japanese entries one to one.
+const worksEn = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/en/works' }),
+  schema: z.object({
+    title: z.string(),
+    summary: z.string(),
+    status: z.enum(['In progress', 'Done', 'Planned']),
+    updated: z.coerce.date(),
+    tags: z.array(z.string()).default([]),
+  }),
+});
+
 const log = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/log' }),
   schema: z.object({
@@ -22,4 +34,4 @@ const log = defineCollection({
   }),
 });
 
-export const collections = { works, log };
+export const collections = { works, worksEn, log };

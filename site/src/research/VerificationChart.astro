@@ -1,9 +1,31 @@
 ---
 // 実機検証（2026 年 9 月、PLA）の造形時間。数値は研究資料のとおりで、ここで新しく作った値はない。
+interface Props {
+  lang?: 'ja' | 'en';
+}
+const { lang = 'ja' } = Astro.props;
+const t = {
+  ja: {
+    labels: ['既存プロファイル', '変換したプロファイル', '変換なし（元の方言のまま）'],
+    unit: '分',
+    caption: '造形時間。変換したプロファイルは、変換なしとほぼ同じ時間で終わり、既存プロファイルだけが長い。',
+    tableCaption: '実機検証（2026 年 9 月、PLA）の造形時間',
+    colProfile: 'プロファイル',
+    colTime: '造形時間',
+  },
+  en: {
+    labels: ['Existing profile', 'Converted profile', 'Unconverted (source dialect as is)'],
+    unit: 'min',
+    caption: 'Print time. The converted profile finishes in about the same time as the unconverted one; only the existing profile takes longer.',
+    tableCaption: 'Print time in the hardware test (September 2026, PLA)',
+    colProfile: 'Profile',
+    colTime: 'Print time',
+  },
+}[lang];
 const rows = [
-  { label: '既存プロファイル', minutes: 84.9, kind: 'outlier' },
-  { label: '変換したプロファイル', minutes: 57.7, kind: 'match' },
-  { label: '変換なし（元の方言のまま）', minutes: 57.0, kind: 'match' },
+  { label: t.labels[0], minutes: 84.9, kind: 'outlier' },
+  { label: t.labels[1], minutes: 57.7, kind: 'match' },
+  { label: t.labels[2], minutes: 57.0, kind: 'match' },
 ] as const;
 
 const scaleMax = 90;
@@ -13,9 +35,7 @@ const pct = (m: number) => (m / scaleMax) * barW;
 ---
 
 <figure class="chart">
-  <figcaption>
-    造形時間。変換したプロファイルは、変換なしとほぼ同じ時間で終わり、既存プロファイルだけが長い。
-  </figcaption>
+  <figcaption>{t.caption}</figcaption>
 
   <ol class="bars" aria-hidden="true">
     {rows.map((r) => (
@@ -26,19 +46,19 @@ const pct = (m: number) => (m / scaleMax) * barW;
             <rect x={barX} y="0" width={pct(r.minutes)} height="10" rx="0.6" />
           </svg>
         </span>
-        <span class="value">{r.minutes.toFixed(1)} 分</span>
+        <span class="value">{r.minutes.toFixed(1)} {t.unit}</span>
       </li>
     ))}
   </ol>
 
   <table class="sr-only">
-    <caption>実機検証（2026 年 9 月、PLA）の造形時間</caption>
+    <caption>{t.tableCaption}</caption>
     <thead>
-      <tr><th scope="col">プロファイル</th><th scope="col">造形時間</th></tr>
+      <tr><th scope="col">{t.colProfile}</th><th scope="col">{t.colTime}</th></tr>
     </thead>
     <tbody>
       {rows.map((r) => (
-        <tr><th scope="row">{r.label}</th><td>{r.minutes.toFixed(1)} 分</td></tr>
+        <tr><th scope="row">{r.label}</th><td>{r.minutes.toFixed(1)} {t.unit}</td></tr>
       ))}
     </tbody>
   </table>
