@@ -106,8 +106,8 @@ const current = Astro.url.pathname;
         </ul>
       </nav>
       {other && (
-        <a class="lang" href={other} hreflang={lang === 'ja' ? 'en' : 'ja'} lang={lang === 'ja' ? 'en' : 'ja'} aria-label={t.langSwitchLabel}>
-          {t.langSwitch}
+        <a class="lang" href={other} hreflang={lang === 'ja' ? 'en' : 'ja'} lang={lang === 'ja' ? 'en' : 'ja'}>
+          {t.langSwitch}<span class="sr-only"> — {t.langSwitchLabel}</span>
         </a>
       )}
       <button class="theme" type="button" aria-label={t.theme} data-theme-toggle>
