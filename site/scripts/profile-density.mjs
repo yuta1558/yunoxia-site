@@ -1,6 +1,12 @@
 // Bin the public filament profiles into a nozzle-temperature x max-volumetric-flow density grid
 // for the Research page. Input: the analysis CSV (not committed). Output: a small JSON of counts.
 //
+// Data (2026-10-18): one row per filament profile, inheritance resolved, abstract profiles
+// (instantiation=false, *common*) dropped. Sources: the OrcaSlicer repository at the commit of that
+// date (source "orca", 7,373 rows) and the official Prusa bundle 2.5.12, all printers ("prusa-2.5.12",
+// 7,155 rows). Not the 7,000+ four-source corpus the Research text describes; src/research/README.md
+// has the full definition.
+//
 //   node scripts/profile-density.mjs <profiles.csv> > src/research/data/profile-density.json
 //
 // Only columns that exist in the CSV are used (source, nozzle_temp, mvs). Nothing is derived beyond
