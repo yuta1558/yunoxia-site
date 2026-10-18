@@ -8,7 +8,7 @@ import * as assert from 'uvu/assert';
 import { createDOM, cleanupDOM } from '../setup.js';
 
 // Extract normalizePath function from app.js
-// This is the same logic as in assets/js/app.js:11-18
+// This is the same logic as normalizePath() in assets/js/app.js
 const normalizePath = (url) => {
   const { pathname } = new URL(url, 'http://localhost:8000/');
   if (pathname === "/" || pathname === "") {
