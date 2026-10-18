@@ -5,7 +5,7 @@ import Base from '../layouts/Base.astro';
 <Base title="About" description="ゆーについて。分解して、理解して、作り替える人。">
   <article class="wrap page">
     <p class="eyebrow">About</p>
-    <h1>ゆー</h1>
+    <h1 class="page-title">ゆー。</h1>
     <div class="prose">
       <p class="lede">既製品や既存の仕組みを分解して理解し、自分の用途に合わせて作り替えています。最も深く掘っている領域は、産業用 3D プリンティングです。</p>
       <p>
@@ -45,17 +45,13 @@ import Base from '../layouts/Base.astro';
 </Base>
 
 <style>
-  .page {
-    padding-block: 3rem;
-  }
 
-  h1 {
-    font-size: var(--step-2);
-    margin-block: 0.5rem 2rem;
-  }
 
   .lede {
+    font-family: var(--font-sans);
+    font-weight: 300;
     font-size: var(--step-1);
-    line-height: 1.7;
+    line-height: 1.45;
+    letter-spacing: -0.03em;
   }
 </style>

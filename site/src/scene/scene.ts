@@ -1,247 +1,156 @@
-// Top page scene: 分解 → 理解 → 作り替え, driven by scroll.
+// Top page scene: a part being printed, one layer at a time (作り替える).
+// The static toolpath drawing in the hero says the same thing; this makes it happen.
 // Loaded lazily by boot.ts only when motion is allowed and WebGL is available.
 
 import {
-  AmbientLight,
-  BoxGeometry,
   BufferAttribute,
   BufferGeometry,
   Color,
-  DirectionalLight,
   Group,
-  InstancedMesh,
-  Matrix4,
-  Mesh,
-  MeshBasicMaterial,
-  MeshLambertMaterial,
+  LineBasicMaterial,
+  LineSegments,
   PerspectiveCamera,
-  Points,
   Scene,
-  ShaderMaterial,
-  SphereGeometry,
   Timer,
-  Vector3,
   WebGLRenderer,
-  type Material,
 } from 'three';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
-import { budget, buildParticles, explodeGap, isSmallScreen, layerY, sliceWord } from './geometry';
-import { particleFragment, particleVertex } from './shaders';
-
-gsap.registerPlugin(ScrollTrigger);
 
 export interface SceneHandle {
   destroy(): void;
 }
 
 const css = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const isSmallScreen = () => matchMedia('(max-width: 48rem)').matches;
 
-function readColors() {
-  const bg = new Color(css('--bg') || '#f6f6f4');
-  const fg = new Color(css('--fg') || '#141416');
-  const accent = new Color(css('--accent') || '#6f5fb8');
-  return {
-    solid: bg.clone().lerp(fg, 0.22),
-    cool: bg.clone().lerp(fg, 0.55),
-    hot: accent,
+// Budgets (effects ledger): 40 layers × 160 points desktop, 24 × 96 phones
+const budget = () => (isSmallScreen() ? { layers: 24, points: 96 } : { layers: 40, points: 160 });
+
+const PITCH = 0.06; // layer height in world units
+const NEW_LAYERS = 3; // the newest layers are drawn in pen blue
+const PRINT_SECONDS = 9; // one full print
+const HOLD_SECONDS = 4; // finished part shown before the next print starts
+
+// A vase-like part: each layer is a closed, slightly squared loop whose radius follows the same
+// gentle wave as the 2D drawing (see components/toolpath.ts), so the scene and its fallback match.
+function buildPart(layers: number, points: number) {
+  const segs = layers * points;
+  const position = new Float32Array(segs * 2 * 3);
+  let o = 0;
+  const at = (layer: number, k: number) => {
+    const a = (k / points) * Math.PI * 2;
+    const r = 1 + Math.sin(layer / 3.2) * 0.28;
+    // Superellipse (n = 4) gives the soft corners of a printed box rather than a cylinder
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    const x = Math.sign(c) * Math.abs(c) ** 0.5 * r * 1.35;
+    const z = Math.sign(s) * Math.abs(s) ** 0.5 * r * 0.85;
+    return [x, (layer - (layers - 1) / 2) * PITCH, z];
   };
+  for (let l = 0; l < layers; l++) {
+    for (let k = 0; k < points; k++) {
+      const a = at(l, k);
+      const b = at(l, (k + 1) % points);
+      position.set(a, o);
+      position.set(b, o + 3);
+      o += 6;
+    }
+  }
+  return position;
 }
 
 export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promise<SceneHandle> {
-  const { layers, particles } = budget();
+  const { layers, points } = budget();
   const small = isSmallScreen();
-  const fontFamily = css('--font-sans').split(',')[0] || 'sans-serif';
-  const solid = await sliceWord(layers, fontFamily);
 
-  // --- renderer / camera -------------------------------------------------
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
-  let dprCap = small ? 1 : 1.5;
-  renderer.setPixelRatio(Math.min(devicePixelRatio, dprCap));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1 : 1.5));
   renderer.setClearColor(0x000000, 0);
 
   const scene = new Scene();
-  const camera = new PerspectiveCamera(35, 1, 0.1, 100);
-  camera.position.set(0, 0, 13);
+  const camera = new PerspectiveCamera(30, 1, 0.1, 50);
+  camera.position.set(0, 1.3, 6.2);
+  camera.lookAt(0, 0, 0);
 
   const group = new Group();
   scene.add(group);
 
-  scene.add(new AmbientLight(0xffffff, 1.6));
-  const sun = new DirectionalLight(0xffffff, 1.8);
-  sun.position.set(3, 5, 6);
-  scene.add(sun);
-
-  // --- act 1: sliced solid (one box per solid interval per layer) ---------
-  const solidMat = new MeshLambertMaterial({ transparent: true });
-  const boxes = new InstancedMesh(new BoxGeometry(1, 1, 1), solidMat, solid.intervals.length);
-  boxes.frustumCulled = false;
-  group.add(boxes);
-
-  const gap = explodeGap(solid);
-  const m4 = new Matrix4();
-  const setLayers = (explode: number) => {
-    solid.intervals.forEach((iv, i) => {
-      const y = layerY(solid, iv.layer) + (iv.layer - (solid.layers - 1) / 2) * gap * explode;
-      m4.makeScale(iv.x1 - iv.x0, solid.pitch * 0.82, solid.depth);
-      m4.setPosition((iv.x0 + iv.x1) / 2, y, 0);
-      boxes.setMatrixAt(i, m4);
-    });
-    boxes.instanceMatrix.needsUpdate = true;
-  };
-  setLayers(0);
-
-  // --- act 2/3: toolpath particles -----------------------------------------
-  // Bar lengths for act 3 come from the Works list (see TopScene.astro)
-  const rows = (root.dataset.rows || '').split(',').map(Number).filter((n) => n > 0 && n <= 1);
-  const pd = buildParticles(solid, particles, rows);
   const geo = new BufferGeometry();
-  geo.setAttribute('position', new BufferAttribute(pd.target, 3));
-  geo.setAttribute('aRect', new BufferAttribute(pd.rect, 3));
-  geo.setAttribute('aSeed', new BufferAttribute(pd.seed, 2));
-  geo.setAttribute('aTarget', new BufferAttribute(pd.target, 3));
-  geo.setAttribute('aOrder', new BufferAttribute(pd.order, 1));
+  geo.setAttribute('position', new BufferAttribute(buildPart(layers, points), 3));
+  const colors = new Float32Array(layers * points * 2 * 3);
+  geo.setAttribute('color', new BufferAttribute(colors, 3));
+  const mat = new LineBasicMaterial({ vertexColors: true });
+  const lines = new LineSegments(geo, mat);
+  lines.frustumCulled = false;
+  group.add(lines);
 
-  const uniforms = {
-    uTime: { value: 0 },
-    uP1: { value: 0 },
-    uP2: { value: 0 },
-    uP3: { value: 0 },
-    uFade: { value: 1 },
-    uLayers: { value: solid.layers },
-    uPitch: { value: solid.pitch },
-    uHeight: { value: solid.height },
-    uDepth: { value: solid.depth },
-    uGap: { value: gap },
-    uSize: { value: small ? 3.6 : 3.2 },
-    uPR: { value: renderer.getPixelRatio() },
-    uCool: { value: new Color() },
-    uHot: { value: new Color() },
+  // Dimension line: grows with the part, like the drawing's "N × 0.20"
+  const dimGeo = new BufferGeometry();
+  const dimPos = new Float32Array(6 * 3);
+  dimGeo.setAttribute('position', new BufferAttribute(dimPos, 3));
+  const dimMat = new LineBasicMaterial();
+  const dim = new LineSegments(dimGeo, dimMat);
+  dim.frustumCulled = false;
+  scene.add(dim);
+
+  // Colours follow the theme: older layers fade toward the paper, the newest are pen blue
+  let paper = new Color();
+  let ink = new Color();
+  let pen = new Color();
+  const readColors = () => {
+    paper = new Color(css('--panel') || css('--bg') || '#d9d4c8');
+    ink = new Color(css('--fg') || '#121211');
+    pen = new Color(css('--accent') || '#1f3dff');
+    dimMat.color.copy(pen);
+    paintedUpTo = -1;
   };
-  const pointsMat = new ShaderMaterial({
-    uniforms,
-    vertexShader: particleVertex,
-    fragmentShader: particleFragment,
-    transparent: true,
-    depthWrite: false,
-  });
-  const points = new Points(geo, pointsMat);
-  points.frustumCulled = false;
-  group.add(points);
 
-  // Nozzle: where material is being laid down right now (act 2 and 3)
-  const nozzle = new Mesh(new SphereGeometry(0.05, 12, 12), new MeshBasicMaterial({ transparent: true }));
-  group.add(nozzle);
-
-  const applyColors = () => {
-    const c = readColors();
-    solidMat.color.copy(c.solid);
-    uniforms.uCool.value.copy(c.cool);
-    uniforms.uHot.value.copy(c.hot);
-    (nozzle.material as MeshBasicMaterial).color.copy(c.hot);
+  let paintedUpTo = -1;
+  const tmp = new Color();
+  const paint = (top: number) => {
+    if (top === paintedUpTo) return;
+    paintedUpTo = top;
+    for (let l = 0; l < layers; l++) {
+      if (l >= top - NEW_LAYERS && l < top) tmp.copy(pen);
+      else tmp.copy(paper).lerp(ink, 0.2 + (Math.min(l, top) / Math.max(1, top)) * 0.8);
+      const start = l * points * 2;
+      for (let v = 0; v < points * 2; v++) colors.set([tmp.r, tmp.g, tmp.b], (start + v) * 3);
+    }
+    geo.attributes.color.needsUpdate = true;
   };
-  applyColors();
-  const themeObserver = new MutationObserver(applyColors);
+
+  readColors();
+  const themeObserver = new MutationObserver(readColors);
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-  // --- layout --------------------------------------------------------------
   const resize = () => {
-    const w = canvas.clientWidth || innerWidth;
-    const h = canvas.clientHeight || innerHeight;
+    const w = root.clientWidth;
+    const h = root.clientHeight;
+    if (!w || !h) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
+    // Keep the whole part in frame on narrow (portrait) boxes
+    camera.position.z = w / h < 1 ? 6.2 / Math.max(0.55, w / h) : 6.2;
     camera.updateProjectionMatrix();
-    // Keep the solid clear of the headline on wide screens; centre and shrink on narrow ones
-    const wide = w / h > 1.1;
-    group.position.set(wide ? 2.2 : 0, wide ? -0.3 : 0, 0);
-    group.scale.setScalar(wide ? 0.85 : Math.min(0.8, (w / h) * 1.0));
   };
+  const resizeObserver = new ResizeObserver(resize);
+  resizeObserver.observe(root);
   resize();
-  addEventListener('resize', resize);
 
-  // --- scroll --------------------------------------------------------------
-  const lenis = new Lenis({ lerp: 0.12 });
-  lenis.on('scroll', ScrollTrigger.update);
-  const tick = (time: number) => lenis.raf(time * 1000);
-  gsap.ticker.add(tick);
-  gsap.ticker.lagSmoothing(0);
-
-  const state = { p: 0, fade: 1 };
-  let bounds: [number, number] = [0.4, 0.7];
-
-  const hero = document.querySelector<HTMLElement>('[data-scene="hero"]');
-  const acts = document.querySelector<HTMLElement>('[data-scene="acts"]');
-  const after = document.querySelector<HTMLElement>('[data-scene="after"]');
-  const actEls = [2, 3].map((n) => document.querySelector<HTMLElement>(`[data-act="${n}"]`));
-
-  // An act is current once its top reaches the spot where phones pin its text (index.astro,
-  // top: 4.5rem), so the pinned text never lands on the hero while the hero is still on screen.
-  // None before act 1 or once the scene has faded out. Only phones use this.
-  const PIN_TOP = 72;
-  const allActs = [1, 2, 3].map((n) => document.querySelector<HTMLElement>(`[data-act="${n}"]`));
-  const markActiveAct = () => {
-    if (!acts) return;
-    let current = '';
-    if (state.fade > 0.5) {
-      allActs.forEach((el, i) => {
-        if (el && el.getBoundingClientRect().top <= PIN_TOP) current = String(i + 1);
-      });
-    }
-    if (acts.dataset.active !== current) acts.dataset.active = current;
+  // Pointer parallax: a small turn toward the pointer, desktop only
+  let tiltX = 0;
+  let tiltY = 0;
+  const onPointer = (e: PointerEvent) => {
+    tiltY = (e.clientX / innerWidth - 0.5) * 0.35;
+    tiltX = (e.clientY / innerHeight - 0.5) * 0.15;
   };
-
-  const master = ScrollTrigger.create({
-    trigger: hero ?? document.body,
-    start: 'top top',
-    endTrigger: acts ?? undefined,
-    end: acts ? 'bottom bottom' : `+=${innerHeight * 2.5}`,
-    scrub: true,
-    onUpdate: (self) => {
-      state.p = self.progress;
-      markActiveAct();
-    },
-    onRefresh: (self) => {
-      const span = self.end - self.start;
-      const at = (el: HTMLElement | null) =>
-        el ? (el.getBoundingClientRect().top + scrollY - innerHeight * 0.6 - self.start) / span : NaN;
-      const b1 = at(actEls[0]);
-      const b2 = at(actEls[1]);
-      // Acts laid out side by side give no usable boundaries; fall back to fixed thirds
-      bounds = b1 > 0.15 && b2 - b1 > 0.12 && b2 < 0.95 ? [b1, b2] : [0.4, 0.7];
-    },
-  });
-
-  const fadeTrigger = after
-    ? ScrollTrigger.create({
-        trigger: after,
-        // Gone before the list reaches reading height, so particles never sit behind its text
-        start: 'top 95%',
-        end: 'top 75%',
-        scrub: true,
-        onUpdate: (self) => {
-          state.fade = 1 - self.progress;
-          markActiveAct();
-        },
-      })
-    : null;
-
-  // --- render loop ---------------------------------------------------------
-  const timer = new Timer();
-  let raf = 0;
-  let running = false;
-  let frames = 0;
-  let slowSum = 0;
-  let downgraded = 0;
-  const easeInOut = (x: number) => x * x * (3 - 2 * x);
-  const target = new Vector3();
+  if (!small) addEventListener('pointermove', onPointer, { passive: true });
 
   // ?fps=1 shows a frame meter for on-device checks (no PC needed)
   const meter = new URLSearchParams(location.search).has('fps') ? document.createElement('output') : null;
   if (meter) {
     meter.style.cssText =
       'position:fixed;right:8px;bottom:8px;z-index:99;padding:4px 8px;font:12px/1.4 ui-monospace,monospace;' +
-      'background:rgb(0 0 0 / 0.7);color:#fff;border-radius:4px;pointer-events:none;white-space:pre';
+      'background:rgb(0 0 0 / 0.7);color:#fff;pointer-events:none;white-space:pre';
     document.body.append(meter);
   }
   let meterFrames = 0;
@@ -249,42 +158,37 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   let meterWorst = 0;
   let meterInit = '';
 
+  const timer = new Timer();
+  let raf = 0;
+  let running = false;
+  let visible = true;
+  let clock = 0;
+  const segsPerLayer = points;
+
   const frame = (now: number) => {
     raf = requestAnimationFrame(frame);
     timer.update(now);
-    const dt = timer.getDelta();
-    const t = timer.getElapsed();
-    const [b1, b2] = bounds;
-    const p = state.p;
-    const p1 = easeInOut(Math.min(1, p / b1));
-    const p2 = Math.max(0, Math.min(1, (p - b1) / (b2 - b1)));
-    const p3 = Math.max(0, Math.min(1, (p - b2) / (1 - b2)));
+    const dt = Math.min(timer.getDelta(), 0.1);
+    clock += dt;
 
-    uniforms.uTime.value = t;
-    uniforms.uP1.value = p1;
-    uniforms.uP2.value = p2;
-    uniforms.uP3.value = p3;
-    uniforms.uFade.value = state.fade;
-    setLayers(p1);
-    solidMat.opacity = (1 - Math.min(1, p2 * 1.5) * 0.88) * (1 - p3) * state.fade;
-    boxes.visible = solidMat.opacity > 0.01;
+    // Print progress: 0 → layers over PRINT_SECONDS, then hold, then start again
+    const cycle = PRINT_SECONDS + HOLD_SECONDS;
+    const t = clock % cycle;
+    const progress = Math.min(1, t / PRINT_SECONDS) * layers;
+    const top = Math.min(layers, Math.floor(progress) + 1);
+    const segs = Math.min(layers * segsPerLayer, Math.floor(progress * segsPerLayer));
+    geo.setDrawRange(0, segs * 2);
+    paint(top);
 
-    // Show the solid in three quarters at rest, turn it flat to read the list in act 3
-    const idle = Math.sin(t * 0.25) * 0.08;
-    group.rotation.y = (-0.55 + idle) * (1 - p3);
-    group.rotation.x = (0.22 + 0.25 * p1) * (1 - p3);
+    // Dimension line beside the part, from the bed to the current top
+    const yBed = (-(layers - 1) / 2) * PITCH;
+    const yTop = yBed + Math.max(progress, 0.001) * PITCH;
+    const x = 2.15;
+    dimPos.set([x, yBed, 0, x, yTop, 0, x - 0.08, yBed, 0, x + 0.08, yBed, 0, x - 0.08, yTop, 0, x + 0.08, yTop, 0]);
+    dimGeo.attributes.position.needsUpdate = true;
 
-    // Nozzle follows the current print layer, then the deposit head
-    if (p3 > 0) {
-      const i = Math.min(pd.count - 1, Math.max(0, Math.floor((p3 * 1.02 - 0.02) * pd.count)));
-      target.set(pd.target[i * 3], pd.target[i * 3 + 1] + solid.pitch, pd.target[i * 3 + 2]);
-    } else {
-      const layer = p2 * solid.layers;
-      const y = layerY(solid, layer) + (layer - (solid.layers - 1) / 2) * gap * p1 + solid.pitch;
-      target.set(Math.sin(t * 2.4) * solid.width * 0.45, y, 0);
-    }
-    nozzle.position.lerp(target, 0.25);
-    (nozzle.material as MeshBasicMaterial).opacity = (p2 > 0 && p3 < 1 ? 1 : 0) * state.fade;
+    group.rotation.y += ((-0.5 + clock * 0.12 + tiltY) - group.rotation.y) * 0.08;
+    group.rotation.x += (tiltX - group.rotation.x) * 0.08;
 
     renderer.render(scene, camera);
 
@@ -299,38 +203,16 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
       if (meterTime >= 1) {
         meter.textContent =
           `${(meterFrames / meterTime).toFixed(0)} fps  worst ${(meterWorst * 1000).toFixed(0)} ms\n` +
-          `dpr ${renderer.getPixelRatio()}  quality -${downgraded}  init ${meterInit}`;
+          `dpr ${renderer.getPixelRatio()}  layers ${layers}  init ${meterInit}`;
         meterFrames = 0;
         meterTime = 0;
         meterWorst = 0;
       }
     }
-
-    // Quality downgrade: if frames stay slow, lower pixel ratio, then halve the particles
-    frames++;
-    if (dt > 1 / 40) slowSum++;
-    if (frames === 90) {
-      if (slowSum > 45 && downgraded < 2) {
-        downgraded++;
-        if (downgraded === 1 && renderer.getPixelRatio() > 1) {
-          dprCap = 1;
-          renderer.setPixelRatio(1);
-          uniforms.uPR.value = 1;
-          resize();
-        } else {
-          geo.setDrawRange(0, Math.floor(pd.count / 2));
-        }
-      }
-      frames = 0;
-      slowSum = 0;
-    }
-
-    // Nothing left to show once the Works list has arrived
-    if (state.fade <= 0.001) stop();
   };
 
   const play = () => {
-    if (running || document.hidden) return;
+    if (running || document.hidden || !visible) return;
     running = true;
     timer.reset();
     raf = requestAnimationFrame(frame);
@@ -340,11 +222,13 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
     cancelAnimationFrame(raf);
   };
 
-  // Resume when scrolling back up into the scene
-  const resumeOnScroll = () => {
-    if (!running && state.fade > 0.001) play();
-  };
-  lenis.on('scroll', resumeOnScroll);
+  // Render only while the hero is on screen
+  const io = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    if (visible) play();
+    else stop();
+  });
+  io.observe(root);
 
   const onVisibility = () => (document.hidden ? stop() : play());
   document.addEventListener('visibilitychange', onVisibility);
@@ -355,33 +239,25 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
   };
   canvas.addEventListener('webglcontextlost', onLost);
 
-  ScrollTrigger.refresh();
   play();
   root.classList.add('is-live');
-  document.documentElement.classList.add('scene-live');
-  markActiveAct();
 
   const handle: SceneHandle = {
     destroy() {
       stop();
-      master.kill();
-      fadeTrigger?.kill();
-      gsap.ticker.remove(tick);
-      lenis.destroy();
+      io.disconnect();
+      resizeObserver.disconnect();
       themeObserver.disconnect();
-      removeEventListener('resize', resize);
+      removeEventListener('pointermove', onPointer);
       document.removeEventListener('visibilitychange', onVisibility);
       canvas.removeEventListener('webglcontextlost', onLost);
+      meter?.remove();
       geo.dispose();
-      pointsMat.dispose();
-      boxes.geometry.dispose();
-      solidMat.dispose();
-      nozzle.geometry.dispose();
-      (nozzle.material as Material).dispose();
+      mat.dispose();
+      dimGeo.dispose();
+      dimMat.dispose();
       renderer.dispose();
       root.classList.remove('is-live');
-      document.documentElement.classList.remove('scene-live');
-      if (acts) delete acts.dataset.active;
     },
   };
   return handle;

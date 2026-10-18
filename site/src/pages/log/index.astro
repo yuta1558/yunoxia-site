@@ -9,7 +9,7 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 <Base title="Log" description="制作と研究の進み具合の記録。">
   <section class="wrap page">
     <p class="eyebrow">Log</p>
-    <h1>進み具合の記録</h1>
+    <h1 class="page-title">進み具合の記録。</h1>
     <p class="intro">作っているものの途中経過と、考えたことを残します。<a href="/rss.xml">RSS</a> でも読めます。</p>
     <ol class="logs">
       {logs.map((l) => (
@@ -23,20 +23,8 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 </Base>
 
 <style>
-  .page {
-    padding-block: 3rem;
-  }
 
-  h1 {
-    font-size: var(--step-2);
-    margin-block: 0.5rem 1rem;
-  }
 
-  .intro {
-    color: var(--muted);
-    max-width: var(--measure);
-    margin-bottom: 3rem;
-  }
 
   .logs {
     list-style: none;

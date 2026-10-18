@@ -5,7 +5,7 @@ import Base from '../../layouts/Base.astro';
 <Base title="About" description="About Yu: someone who takes things apart, understands them and remakes them.">
   <article class="wrap page">
     <p class="eyebrow">About</p>
-    <h1>Yu</h1>
+    <h1 class="page-title">Yu.</h1>
     <div class="prose">
       <p class="lede">I take apart off-the-shelf products and existing systems, work out how they behave, and remake them for what I need. Where I dig deepest is industrial 3D printing.</p>
       <p>
@@ -45,17 +45,13 @@ import Base from '../../layouts/Base.astro';
 </Base>
 
 <style>
-  .page {
-    padding-block: 3rem;
-  }
 
-  h1 {
-    font-size: var(--step-2);
-    margin-block: 0.5rem 2rem;
-  }
 
   .lede {
+    font-family: var(--font-sans);
+    font-weight: 300;
     font-size: var(--step-1);
-    line-height: 1.6;
+    line-height: 1.45;
+    letter-spacing: -0.03em;
   }
 </style>

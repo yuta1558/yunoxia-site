@@ -1,0 +1,142 @@
+---
+// Works as square cards: name top-left, "+" top-right, a toolpath sketch, then the line and status.
+// The sketch changes per item (layer count and width) so the cards read as different parts, not one image.
+import type { CollectionEntry } from 'astro:content';
+import { type Lang, localPath, ui } from '../i18n/ui';
+import { contour } from './toolpath';
+
+interface Props {
+  works: (CollectionEntry<'works'> | CollectionEntry<'worksEn'>)[];
+  lang?: Lang;
+}
+
+const { works, lang = 'ja' } = Astro.props;
+const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
+// Updated within the last 30 days counts as new (pen blue)
+const FRESH_MS = 30 * 24 * 60 * 60 * 1000;
+const now = Date.now();
+---
+
+<ul class="cards">
+  {works.map((w, k) => {
+    const n = 10 + (k % 3) * 4;
+    const step = 9 - (k % 3);
+    const amp = 90 - (k % 3) * 12;
+    return (
+      <li>
+        <a class="card" href={localPath(lang, `/works/${w.id}/`)}>
+          <span class="top">
+            <span class="title" data-badge>{w.data.title}</span>
+            <span class="plus" aria-hidden="true">+</span>
+          </span>
+          <svg class="art" viewBox="0 0 300 220" aria-hidden="true" focusable="false">
+            {Array.from({ length: n }, (_, i) => (
+              <path d={contour(i, 150, 190, step, amp)} style={`opacity:${(0.25 + i / (n + 4)).toFixed(3)}`} />
+            ))}
+          </svg>
+          <span class="foot">
+            <span class="line">{w.data.summary}</span>
+            <span class:list={['meta', { fresh: now - +w.data.updated < FRESH_MS }]}>
+              {w.data.status} · <time datetime={w.data.updated.toISOString()}>{fmt(w.data.updated)}</time> {ui[lang].updated}
+            </span>
+          </span>
+        </a>
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 0.75rem;
+  }
+
+  .card {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 1rem;
+    height: 100%;
+    min-height: 26rem;
+    padding: 1rem;
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: none;
+    transition: background var(--dur-base) var(--ease);
+  }
+
+  .card:hover {
+    background: var(--panel);
+    color: var(--ink);
+  }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .title {
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 1.35rem;
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+    word-break: auto-phrase;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .card:hover .title,
+  .card:focus-visible .title {
+    color: var(--pen);
+  }
+
+  .plus {
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--muted);
+  }
+
+  .art {
+    align-self: center;
+    width: 100%;
+    max-height: 12rem;
+  }
+
+  .art path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .foot {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .line {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .fresh {
+    color: var(--pen);
+  }
+
+  @media (max-width: 48rem) {
+    .card {
+      min-height: 0;
+    }
+
+    .art {
+      height: 9rem;
+    }
+  }
+</style>

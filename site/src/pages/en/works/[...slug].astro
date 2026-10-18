@@ -15,7 +15,7 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 <Base title={work.data.title} description={work.data.summary}>
   <article class="wrap page">
     <p class="eyebrow"><a href="/en/works/">Works</a></p>
-    <h1>{work.data.title}</h1>
+    <h1 class="page-title">{work.data.title}</h1>
     <p class="summary">{work.data.summary}</p>
     <p class="meta">
       {work.data.status} · <time datetime={work.data.updated.toISOString()}>{fmt(work.data.updated)}</time> updated
@@ -28,21 +28,18 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 </Base>
 
 <style>
-  .page {
-    padding-block: 3rem;
-  }
 
   .eyebrow a {
     text-decoration: none;
   }
 
-  h1 {
-    font-size: var(--step-2);
-    margin-block: 0.5rem 1rem;
-  }
 
   .summary {
+    font-family: var(--font-sans);
+    font-weight: 300;
     font-size: var(--step-1);
+    line-height: 1.45;
+    letter-spacing: -0.03em;
     max-width: var(--measure);
     margin-bottom: 0.75rem;
   }

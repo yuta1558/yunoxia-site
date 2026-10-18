@@ -1,0 +1,332 @@
+---
+// The top page, shared by / and /en/. Bands stacked full width:
+// hero panel → Works cards → Research band (dark) → numbers → Log.
+import { getCollection } from 'astro:content';
+import TopScene from '../scene/TopScene.astro';
+import WorkCards from './WorkCards.astro';
+import { contour } from './toolpath';
+import { type Lang, localPath } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const works = (await getCollection(lang === 'en' ? 'worksEn' : 'works'))
+  .sort((a, b) => +b.data.updated - +a.data.updated)
+  .slice(0, 3);
+const logs = (await getCollection('log')).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
+const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
+
+// Every number here comes from the Research page; nothing is decorative
+const t = {
+  ja: {
+    h1: ['分解して、', '理解して、', '作り替える。'],
+    heroCta: '作ったものを見る',
+    sheet: 'Sheet 01 / 04 — yunoxia、ゆーの制作と研究',
+    worksTitle: ['作ったもの。', '直したもの。'],
+    worksText: '既製品や仕組みを開けて中を見て、物理量に分けて理解し、他の人も使える道具にする。その記録。',
+    worksCta: 'Works 一覧',
+    statement: ['公開プロファイルを ', '14,486 件数えた。', '同じ温度でも、', '流量の設定は', '大きく散らばる。'],
+    researchText: 'スライサーの方言のあいだで、フィラメントの設定を物理量を介して変換する研究。',
+    researchCta: '研究を読む',
+    numbersTitle: '数字で見る。',
+    numbersText: '分かったことは、単位の付いた数字で残す。',
+    specs: [
+      { v: '14,486', u: '', l: 'Profiles', t: '分布を数えた公開プロファイル。' },
+      { v: '65', u: '%', l: 'Cooling', t: '機械どうしのばらつきのうち、冷却戦略で説明できる割合。' },
+      { v: '2.5', u: '×', l: 'Spread', t: '同じフィラメントの公式設定が、エコシステムによってずれる最大の幅。' },
+      { v: '0.76–0.85', u: '×', l: 'GF → CF', t: 'ガラス繊維から炭素繊維に替えたときの最大体積流量の比。' },
+    ],
+    logTitle: '記録。',
+    logText: '作っているものの途中経過と、考えたこと。',
+    logCta: 'Log 一覧',
+  },
+  en: {
+    h1: ['Take it apart.', 'Understand it.', 'Remake it.'],
+    heroCta: 'See the work',
+    sheet: 'Sheet 01 / 04 — yunoxia, making and research by Yu',
+    worksTitle: ['Things made.', 'Things fixed.'],
+    worksText: 'Open up products and systems, break them down into physical quantities, and turn what I learn into tools others can use.',
+    worksCta: 'All works',
+    statement: ['I counted ', '14,486 public profiles.', 'At the same temperature,', 'flow settings', 'still scatter widely.'],
+    researchText: 'Converting filament profiles between slicer dialects through physical quantities.',
+    researchCta: 'Read the research',
+    numbersTitle: 'In numbers.',
+    numbersText: 'What I learn is kept as numbers with units.',
+    specs: [
+      { v: '14,486', u: '', l: 'Profiles', t: 'Public profiles counted for the distribution.' },
+      { v: '65', u: '%', l: 'Cooling', t: 'Share of machine-to-machine spread explained by cooling strategy.' },
+      { v: '2.5', u: '×', l: 'Spread', t: 'Largest gap between official settings for the same filament across ecosystems.' },
+      { v: '0.76–0.85', u: '×', l: 'GF → CF', t: 'Max volumetric flow ratio when switching from glass to carbon fibre.' },
+    ],
+    logTitle: 'Log.',
+    logText: 'Notes on work in progress, in Japanese.',
+    logCta: 'All entries',
+  },
+}[lang];
+
+const xray = Array.from({ length: 30 }, (_, i) => i);
+---
+
+<section class="hero">
+  <div class="hero__art">
+    <TopScene />
+  </div>
+  <div class="hero__copy">
+    <h1>{t.h1.map((line, i) => (i === t.h1.length - 1 ? <span class="pen">{line}</span> : <span>{line}</span>))}</h1>
+    <a class="btn btn--light" href={localPath(lang, '/works/')}>{t.heroCta}</a>
+  </div>
+  <p class="hero__sheet meta">{t.sheet}</p>
+</section>
+
+<section class="band-section">
+  <div class="section-head">
+    <h2>{t.worksTitle[0]}<br />{t.worksTitle[1]}</h2>
+    <p>{t.worksText}</p>
+    <a class="btn btn--dark" href={localPath(lang, '/works/')}>{t.worksCta}</a>
+  </div>
+  <WorkCards works={works} lang={lang} />
+</section>
+
+<section class="dark">
+  <p class="statement phrases">{t.statement.map((s) => <span>{s}</span>)}</p>
+  <svg class="xray" viewBox="0 0 600 260" aria-hidden="true" focusable="false">
+    {xray.map((i) => <path d={contour(i, 300, 240, 7, 230 - i * 3)} style={`opacity:${(0.12 + (i / 30) * 0.6).toFixed(3)}`} />)}
+    {xray.map((i) => <path class="b" d={contour(i, 300, 240, 7, 120 + i * 2)} style={`opacity:${(0.08 + (i / 30) * 0.4).toFixed(3)}`} />)}
+  </svg>
+  <div class="section-head">
+    <h2>Research.</h2>
+    <p>{t.researchText}</p>
+    <a class="btn btn--outline" href={localPath(lang, '/research/')}>{t.researchCta}</a>
+  </div>
+</section>
+
+<section class="band-section">
+  <div class="section-head">
+    <h2>{t.numbersTitle}</h2>
+    <p>{t.numbersText}</p>
+    <span></span>
+  </div>
+  <dl class="specs">
+    {t.specs.map((s) => (
+      <div>
+        <dt class="meta">{s.l}</dt>
+        <dd>
+          <span class="num">{s.v}</span>
+          {s.u && <span class="unit">{s.u}</span>}
+        </dd>
+        <dd class="desc">{s.t}</dd>
+      </div>
+    ))}
+  </dl>
+</section>
+
+<section class="band-section">
+  <div class="section-head">
+    <h2>{t.logTitle}</h2>
+    <p>{t.logText}</p>
+    <a class="btn btn--dark" href="/log/" hreflang={lang === 'en' ? 'ja' : undefined}>{t.logCta}</a>
+  </div>
+  <ul class="logs">
+    {logs.map((l) => (
+      <li>
+        <a href={`/log/${l.id}/`} hreflang={lang === 'en' ? 'ja' : undefined}>
+          <time class="meta" datetime={l.data.date.toISOString()}>{fmt(l.data.date)}</time>
+          <span lang="ja">{l.data.title}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  /* Hero: a full-width panel; the toolpath stands in for a product shot */
+  .hero {
+    position: relative;
+    margin: var(--gutter);
+    min-height: min(78vh, 46rem);
+    background: var(--panel);
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    align-items: center;
+    overflow: clip;
+  }
+
+  .hero__art {
+    padding: 2rem;
+  }
+
+  .hero__copy {
+    display: grid;
+    gap: 2rem;
+    justify-items: start;
+    padding: 2rem var(--gutter) 3rem 0;
+  }
+
+  /* The page's one heavy statement; every other heading stays light */
+  h1 {
+    font-weight: 700;
+    font-size: var(--step-4);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+  }
+
+  h1 span {
+    display: block;
+  }
+
+  .pen {
+    color: var(--pen);
+  }
+
+  .hero__sheet {
+    position: absolute;
+    left: 1.25rem;
+    bottom: 1rem;
+  }
+
+  .band-section {
+    padding: var(--section-y) var(--gutter) 0;
+  }
+
+  /* Research band: blueprint ground, x-ray linework */
+  .dark {
+    margin-top: var(--section-y);
+    padding: var(--section-y) var(--gutter);
+    background: var(--band);
+    color: var(--band-ink);
+  }
+
+  .statement {
+    max-width: 22em;
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: clamp(1.8rem, 4vw, 3.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.045em;
+  }
+
+  .xray {
+    display: block;
+    width: 100%;
+    margin: clamp(2rem, 6vw, 4rem) 0;
+  }
+
+  .xray path {
+    fill: none;
+    stroke: var(--band-ink);
+    stroke-width: 0.8;
+  }
+
+  .xray path.b {
+    stroke: var(--band-pen);
+  }
+
+  .dark .section-head {
+    margin-bottom: 0;
+  }
+
+  .dark .section-head p {
+    color: var(--band-muted);
+  }
+
+  .dark :focus-visible {
+    outline-color: var(--band-pen);
+  }
+
+  /* Numbers */
+  .specs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 0;
+  }
+
+  .specs > div {
+    border-top: 1.5px solid var(--ink);
+    padding-top: 1rem;
+  }
+
+  .specs dd {
+    margin: 0;
+  }
+
+  .specs dd:not(.desc) {
+    margin: 1.5rem 0 0.75rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .num {
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: clamp(2.2rem, 4.2vw, 3.6rem);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .unit {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .specs .desc {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  /* Log */
+  .logs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1.5px solid var(--ink);
+  }
+
+  .logs a {
+    display: flex;
+    gap: 2rem;
+    align-items: baseline;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+
+  .logs span {
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+  }
+
+  @media (max-width: 48rem) {
+    .hero {
+      grid-template-columns: 1fr;
+      align-content: end;
+      min-height: 0;
+    }
+
+    .hero__art {
+      padding: 1.5rem 1rem 0;
+    }
+
+    .hero__copy {
+      padding: 0 1.25rem 3.5rem;
+    }
+
+    .specs {
+      grid-template-columns: 1fr 1fr;
+      row-gap: 2rem;
+    }
+
+    .logs a {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+  }
+</style>
