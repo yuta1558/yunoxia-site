@@ -15,26 +15,14 @@ type Persona = {
   cool: number; // seconds of idle before it starts to set
 };
 
-// Two personalities for evaluation. Switch with ?bead=cute|mystic (remembered locally).
-const PERSONAS: Record<'cute' | 'mystic', Persona> = {
-  cute: { maxSpeed: 2600, accel: 11000, jerk: 160000, radius: 7.5, keep: 0, offset: [14, 18], squash: 0.32, wobble: 0.9, glow: 0, cool: 1.4 },
-  mystic: { maxSpeed: 900, accel: 2400, jerk: 18000, radius: 6, keep: 46, offset: [0, 0], squash: 0.14, wobble: 0, glow: 14, cool: 3 },
-};
+// Quiet, slightly distant personality (chosen over a bouncier one after trying both)
+const PERSONA: Persona = { maxSpeed: 900, accel: 2400, jerk: 18000, radius: 6, keep: 46, offset: [0, 0], squash: 0.14, wobble: 0, glow: 14, cool: 3 };
 
 const SIZE = 200; // canvas size in CSS px; the bead is drawn at its centre
 const BURST_MS = 280;
 
 type RGB = [number, number, number];
 type Particle = { x: number; y: number; vx: number; vy: number };
-
-function pickPersona(): Persona {
-  let name = new URLSearchParams(location.search).get('bead');
-  try {
-    if (name === 'cute' || name === 'mystic') localStorage.setItem('yx:bead', name);
-    else name = localStorage.getItem('yx:bead');
-  } catch {}
-  return PERSONAS[name === 'cute' ? 'cute' : 'mystic'];
-}
 
 function cssColor(name: string, fallback: RGB): RGB {
   const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -52,7 +40,7 @@ export function startBead() {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const P = pickPersona();
+  const P = PERSONA;
   const dpr = Math.min(devicePixelRatio || 1, 2);
   canvas.width = canvas.height = SIZE * dpr;
   canvas.setAttribute('aria-hidden', 'true');
