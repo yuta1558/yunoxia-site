@@ -1,17 +1,12 @@
 // Structure, privacy, fallbacks and progressive loading of the built site (dist/).
 import { test, expect } from '@playwright/test';
 import { readFileSync, readdirSync } from 'node:fs';
+import { FORBIDDEN } from '../../scripts/forbidden.mjs';
 
 // Every page listed in the built sitemap(s)
 const routes = readdirSync('dist')
   .filter((f) => /^sitemap-\d+\.xml$/.test(f))
   .flatMap((f) => [...readFileSync(`dist/${f}`, 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname));
-
-// Strings that must never appear on the site (owner's real name, employer, location).
-// Stored encoded so this public repository does not spell them out.
-const FORBIDDEN = ['5bGx76iR', '5bGx5bSO', '5YSq5aSq', 'Ry1aRVJP', 'R1VURU5CRVJH', '6JKy55Sw'].map((b) =>
-  Buffer.from(b, 'base64').toString('utf8'),
-);
 
 test('sitemap lists the expected sections', () => {
   for (const path of ['/', '/works/', '/research/', '/log/', '/about/']) expect(routes).toContain(path);
@@ -44,7 +39,7 @@ test('unknown paths show the 404 page', async ({ page }) => {
   await expect(page.locator('h1')).toHaveText('このページは見つかりませんでした。');
 });
 
-for (const path of ['/', '/works/', '/research/', '/about/']) {
+for (const path of routes) {
   test(`no horizontal overflow at 390px: ${path}`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(path);

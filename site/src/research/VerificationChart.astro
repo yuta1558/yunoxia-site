@@ -51,6 +51,7 @@ const pct = (m: number) => (m / scaleMax) * barW;
     ))}
   </ol>
 
+  {/* sr-only sits on a wrapper: a table box grows to its content and ignores width: 1px */}
   <div class="sr-only">
     <table>
       <caption>{t.tableCaption}</caption>
