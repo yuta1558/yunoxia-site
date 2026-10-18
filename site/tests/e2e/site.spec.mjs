@@ -44,7 +44,7 @@ test('unknown paths show the 404 page', async ({ page }) => {
   await expect(page.locator('h1')).toHaveText('このページは見つかりませんでした。');
 });
 
-for (const path of ['/', '/works/', '/research/', '/about/']) {
+for (const path of routes) {
   test(`no horizontal overflow at 390px: ${path}`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(path);
