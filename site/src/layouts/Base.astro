@@ -2,6 +2,7 @@
 import '@fontsource-variable/noto-sans-jp';
 import '@fontsource-variable/sora';
 import '../styles/global.css';
+import Bead from '../bead/Bead.astro';
 
 interface Props {
   title?: string;
@@ -111,6 +112,7 @@ const current = Astro.url.pathname;
         try { localStorage.setItem('theme', next); } catch {}
       });
     </script>
+    <Bead />
   </body>
 </html>
 

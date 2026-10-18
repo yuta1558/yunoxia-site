@@ -13,7 +13,7 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
   {works.map((w) => (
     <li>
       <a href={`/works/${w.id}/`}>
-        <span class="title">{w.data.title}</span>
+        <span class="title" data-badge>{w.data.title}</span>
         <span class="summary">{w.data.summary}</span>
         <span class="meta">
           {w.data.status} · <time datetime={w.data.updated.toISOString()}>{fmt(w.data.updated)}</time> 更新
