@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import WorkList from '../../components/WorkList.astro';
+
+const works = (await getCollection('works')).sort((a, b) => +b.data.updated - +a.data.updated);
+---
+
+<Base title="Works" description="分解して、理解して、作り替えたもの。進行中のものも含みます。">
+  <section class="wrap page">
+    <p class="eyebrow">Works</p>
+    <h1>作ったもの、作っているもの</h1>
+    <p class="intro">どれも「分解 → 理解 → 作り替え」の順に書いています。進行中のものは、その時点の状態です。</p>
+    <WorkList works={works} />
+  </section>
+</Base>
+
+<style>
+  .page {
+    padding-block: 3rem;
+  }
+
+  h1 {
+    font-size: var(--step-2);
+    margin-block: 0.5rem 1rem;
+  }
+
+  .intro {
+    color: var(--muted);
+    max-width: var(--measure);
+    margin-bottom: 3rem;
+  }
+</style>

@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="404" description="お探しのページは見つかりませんでした。" noindex>
+  <section class="wrap page">
+    <p class="eyebrow">404</p>
+    <h1>このページは見つかりませんでした。</h1>
+    <p>URL が変わったか、ページを削除した可能性があります。</p>
+    <p><a href="/">トップへ戻る</a></p>
+  </section>
+</Base>
+
+<style>
+  .page {
+    padding-block: 6rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  h1 {
+    font-size: var(--step-2);
+  }
+</style>
