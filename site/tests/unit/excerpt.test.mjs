@@ -18,3 +18,16 @@ test('empty body', () => {
   assert.equal(excerpt(''), '');
   assert.equal(excerpt(undefined), '');
 });
+
+test('only paired emphasis marks are removed', () => {
+  assert.equal(excerpt('snake_case と ~/path と a*b、*斜体*、_下線_、~~消し~~、__太字__。'), 'snake_case と ~/path と a*b、斜体、下線、消し、太字。');
+});
+
+test('lone marks around spaces are not emphasis', () => {
+  assert.equal(excerpt('*.md と *.js、_a と _b、2 * 3 * 4、*強調*。'), '*.md と *.js、_a と _b、2 * 3 * 4、強調。');
+});
+
+test('double underscores inside words are not emphasis', () => {
+  // __init__.py is strong "init" in CommonMark, so the text reads init.py, as on the page
+  assert.equal(excerpt('a__b__c と a**b**c と __init__.py。'), 'a__b__c と abc と init.py。');
+});
