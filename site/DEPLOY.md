@@ -137,7 +137,6 @@ npx wrangler pages dev                         # http://localhost:8788/admin/
 
 ```sh
 cd site
-export CMS_TOKEN=<CMS_API_TOKEN と同じ値>      # CMS_URL は省略時 https://yunoxia.one
 node scripts/cms.mjs list                      # 記事の一覧（下書きを含む）
 node scripts/cms.mjs get <slug> > post.md      # 既存の記事をファイルに書き出す
 node scripts/cms.mjs push post.md              # 作成。同じ slug があれば更新
@@ -150,9 +149,11 @@ node scripts/cms.mjs push post.md --publish    # 公開して URL を表示
 
 設定：
 
-1. Pages の Secret に `CMS_API_TOKEN` を登録する（4-3）。
-2. Claude の環境（クラウド環境の設定）に、同じ値を環境変数 `CMS_TOKEN` として登録する。チャットには貼らない。
-3. 漏れたと思ったら `CMS_API_TOKEN` を作り直す。古い値はその時点で使えなくなる。
+1. トークンを作る：`openssl rand -hex 32`（64 文字）。チャットには貼らない。
+2. Pages の Secret に `CMS_API_TOKEN` として登録し（4-3、Production）、本番を Retry deployment する。
+3. Claude のクラウド環境の「ネットワークシークレット」に、`yunoxia.one` 宛てのリクエストに付くヘッダー `Authorization: Bearer <トークン>` として登録する。セッションからは値が見えず、プロキシが付ける。CLI はプロキシがあると `NODE_USE_ENV_PROXY=1` で自分を実行し直すので、Node の fetch もプロキシを通る。
+   - ネットワークシークレットが使えない場所では、環境変数 `CMS_TOKEN=<トークン>` でもよい。ただし環境変数はその環境を使う全員に見える。
+4. 漏れたと思ったら `CMS_API_TOKEN` を作り直して再デプロイし、3 も更新する。古い値はその時点で使えなくなる。
 
 トークンは管理者と同じ権限（作成、更新、削除、アップロード）を持つ。CLI は削除を持たない。
 

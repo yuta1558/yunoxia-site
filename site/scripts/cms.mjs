@@ -2,10 +2,10 @@
 // Write Log posts to the CMS from the command line, so Claude (or anyone with the API token) can
 // draft and publish without the admin UI.
 //
-//   CMS_TOKEN=… node scripts/cms.mjs list
-//   CMS_TOKEN=… node scripts/cms.mjs get <slug>            # prints the post as a Markdown file
-//   CMS_TOKEN=… node scripts/cms.mjs push <file.md>        # create, or update the post with that slug
-//   CMS_TOKEN=… node scripts/cms.mjs push <file.md> --publish
+//   node scripts/cms.mjs list
+//   node scripts/cms.mjs get <slug>            # prints the post as a Markdown file
+//   node scripts/cms.mjs push <file.md>        # create, or update the post with that slug
+//   node scripts/cms.mjs push <file.md> --publish
 //
 // The file is Markdown with a front matter block:
 //
@@ -20,11 +20,27 @@
 //   本文…
 //
 // Images given as local paths (in the body or featured_image) are uploaded first and replaced
-// with their URLs. JPEG metadata (EXIF, GPS) is stripped; files must be 5 MB or less. CMS_URL defaults to https://yunoxia.one. CMS_TOKEN is the CMS_API_TOKEN secret
-// of the Pages project (see DEPLOY.md).
+// with their URLs. JPEG metadata (EXIF, GPS) is stripped; files must be 5 MB or less.
+// CMS_URL defaults to https://yunoxia.one.
+//
+// Authentication is the CMS_API_TOKEN secret of the Pages project (see DEPLOY.md 4-6), either
+// - as a network secret of the Claude environment: the proxy adds "Authorization: Bearer …" to
+//   requests for the site, so this script never sees it and sends no header itself; or
+// - as CMS_TOKEN in the environment, which this script sends.
 
+import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { basename, dirname, extname, resolve } from 'node:path';
+
+// Node's fetch ignores HTTPS_PROXY unless NODE_USE_ENV_PROXY is set. Behind a proxy (where the
+// network secret is added), run again with it so requests go through the proxy.
+if ((process.env.HTTPS_PROXY || process.env.https_proxy) && !process.env.NODE_USE_ENV_PROXY) {
+  const child = spawnSync(process.execPath, ['--disable-warning=UNDICI-EHPA', ...process.argv.slice(1)], {
+    stdio: 'inherit',
+    env: { ...process.env, NODE_USE_ENV_PROXY: '1' },
+  });
+  process.exit(child.status ?? 1);
+}
 
 const BASE = (process.env.CMS_URL || 'https://yunoxia.one').replace(/\/$/, '');
 const TOKEN = process.env.CMS_TOKEN;
@@ -36,10 +52,13 @@ function fail(message) {
 }
 
 async function api(path, { method = 'GET', body, form } = {}) {
-  const headers = { Authorization: `Bearer ${TOKEN}` };
+  const headers = TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   const res = await fetch(`${BASE}/api${path}`, { method, headers, body: form ?? (body !== undefined ? JSON.stringify(body) : undefined) });
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401) {
+    fail(`${method} /api${path}: not authorised. Set the CMS_API_TOKEN value as a network secret for ${new URL(BASE).host} (Authorization: Bearer …) or as CMS_TOKEN.`);
+  }
   if (!res.ok) fail(`${method} /api${path}: ${data.error || `HTTP ${res.status}`}`);
   return data;
 }
@@ -182,7 +201,6 @@ async function push(file, publish) {
 }
 
 const [cmd, arg, ...flags] = process.argv.slice(2);
-if (!TOKEN) fail('Set CMS_TOKEN to the CMS_API_TOKEN secret of the Pages project.');
 if (cmd === 'list') await list();
 else if (cmd === 'get' && arg) await get(arg);
 else if (cmd === 'push' && arg) await push(arg, flags.includes('--publish'));
