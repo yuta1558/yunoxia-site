@@ -22,8 +22,8 @@ export async function claimAttempt(db, ip) {
   // There is no site-wide cap: one would let anyone lock the owner out by failing 30 times from
   // anywhere. Distributed guessing is answered by PBKDF2, a 20+ character random password and
   // the zone's WAF rule (DEPLOY.md 4-4).
-  const [mine] = await db.batch([upsert.bind(ip, t, WINDOW)]);
-  return (mine?.results?.[0]?.failures ?? 0) > PER_IP;
+  const mine = await upsert.bind(ip, t, WINDOW).first();
+  return (mine?.failures ?? 0) > PER_IP;
 }
 
 // A successful login forgets this client's attempts.
