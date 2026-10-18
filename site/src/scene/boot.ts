@@ -1,4 +1,4 @@
-// Decides whether the top scene runs at all, and loads it only after first paint.
+// Decides whether the top scene runs at all, and loads it only after first paint and first engagement.
 // Reduced motion or no WebGL: three.js is never requested and the static illustration stays.
 
 import type { SceneHandle } from './scene';
@@ -23,6 +23,18 @@ const afterFirstPaint = (fn: () => void) => {
   else addEventListener('load', go, { once: true });
 };
 
+// three.js costs seconds of main-thread work on mid-range phones (parse, geometry, shader compile).
+// Until the visitor engages, the static illustration says the same thing, so wait for the first scroll,
+// pointer, touch or key before paying that cost.
+const afterEngagement = (fn: () => void) => {
+  const events = ['scroll', 'wheel', 'pointerdown', 'pointermove', 'touchstart', 'keydown'] as const;
+  const go = () => {
+    events.forEach((e) => removeEventListener(e, go));
+    afterFirstPaint(fn);
+  };
+  events.forEach((e) => addEventListener(e, go, { once: true, passive: true }));
+};
+
 export function boot() {
   const root = document.querySelector<HTMLElement>('[data-top-scene]');
   const canvas = root?.querySelector<HTMLCanvasElement>('canvas');
@@ -34,7 +46,7 @@ export function boot() {
   const run = () => {
     if (handle || loading || reduceQuery.matches || !hasWebGL()) return;
     loading = true;
-    afterFirstPaint(async () => {
+    afterEngagement(async () => {
       try {
         const { start } = await import('./scene');
         if (reduceQuery.matches) return;
