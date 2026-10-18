@@ -83,9 +83,10 @@ export async function getPublishedBySlug(db, slug) {
   return rowToPost(row);
 }
 
-export async function listPublished(db, limit = 50) {
+// `withContent` adds the body, for callers that derive an excerpt from it
+export async function listPublished(db, limit = 50, { withContent = false } = {}) {
   const { results } = await db
-    .prepare("SELECT id, slug, title, excerpt, tags, published_at FROM posts WHERE status = 'published' ORDER BY published_at DESC LIMIT ?")
+    .prepare(`SELECT id, slug, title, excerpt, ${withContent ? 'content, ' : ''}tags, published_at FROM posts WHERE status = 'published' ORDER BY published_at DESC LIMIT ?`)
     .bind(limit)
     .all();
   return (results || []).map(rowToPost);

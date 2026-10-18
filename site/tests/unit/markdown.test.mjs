@@ -39,3 +39,26 @@ test('control characters are removed from post fields', async () => {
   assert.equal(out.title, 'Tabbell');
   assert.equal(out.content, 'a\tb\nc');
 });
+
+test('URLs with one level of balanced parentheses keep them', () => {
+  assert.equal(
+    renderMarkdown('[x](https://e.com/a_(b)) ![i](/p_(1).png)'),
+    '<p><a href="https://e.com/a_(b)" rel="noopener">x</a> <img src="/p_(1).png" alt="i" loading="lazy" decoding="async"></p>',
+  );
+  assert.equal(renderMarkdown('([x](https://e.com/a))'), '<p>(<a href="https://e.com/a" rel="noopener">x</a>)</p>');
+});
+
+test('a rule line interrupts a paragraph', () => {
+  assert.equal(renderMarkdown('a\n---\nb'), '<p>a</p>\n<hr>\n<p>b</p>');
+});
+
+test('an empty > line splits a blockquote into paragraphs', () => {
+  assert.equal(renderMarkdown('> a\n>\n> b'), '<blockquote><p>a</p><p>b</p></blockquote>');
+  assert.equal(renderMarkdown('> a\n> b'), '<blockquote><p>a b</p></blockquote>');
+});
+
+test('emphasis nests in strong; a * between word characters stays literal', () => {
+  assert.equal(renderMarkdown('**bold *it* x**'), '<p><strong>bold <em>it</em> x</strong></p>');
+  assert.equal(renderMarkdown('2*3*4'), '<p>2*3*4</p>');
+  assert.equal(renderMarkdown('a *b* c'), '<p>a <em>b</em> c</p>');
+});

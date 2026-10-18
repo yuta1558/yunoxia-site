@@ -1,7 +1,7 @@
 // Minimal Markdown renderer for CMS posts.
 // Safe by construction: every piece of text is HTML-escaped, raw HTML is never passed
 // through, and link/image URLs are limited to http(s), mailto and same-site paths.
-// Supported: headings, paragraphs, lists (one level), fenced code, blockquotes, rules,
+// Supported: headings, paragraphs, lists (one level: a nested list is flattened), fenced code, blockquotes, rules,
 // tables are not supported (rendered as text). Inline: `code`, **strong**, *em*, links, images.
 
 import { escapeHtml } from './http.js';
@@ -15,8 +15,9 @@ function safeUrl(raw) {
   return null;
 }
 
-const emphasis = (s) =>
-  s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+// A single * opens or closes emphasis only at a word edge, so 2*3*4 stays literal (as in excerpt.mjs)
+const em = (s) => s.replace(/(^|[^\w*])\*([^*\s](?:[^*]*[^*\s])?)\*(?![\w*])/g, '$1<em>$2</em>');
+const emphasis = (s) => em(s.replace(/\*\*(\S(?:.*?\S)?)\*\*/g, (_, inner) => `<strong>${em(inner)}</strong>`));
 
 function inline(text) {
   // Placeholders: \u0000n\u0000 for code spans, \u0001n\u0001 for finished links and images.
@@ -31,7 +32,7 @@ function inline(text) {
   src = src.replace(/`([^`]+)`/g, (_, code) => `\u0000${codes.push(code) - 1}\u0000`);
   src = escapeHtml(src);
 
-  src = src.replace(/(!?)\[([^\]]*)\]\(([^)\s]+)\)/g, (match, bang, label, url) => {
+  src = src.replace(/(!?)\[([^\]]*)\]\(((?:[^()\s]|\([^()\s]*\))+)\)/g, (match, bang, label, url) => {
     if (/[\u0000\u0001]/.test(url)) return match;
     const safe = safeUrl(url.replaceAll('&amp;', '&'));
     if (!safe) return match;
@@ -46,6 +47,8 @@ function inline(text) {
     .replace(/\u0001(\d+)\u0001/g, (_, i) => held[Number(i)])
     .replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${escapeHtml(codes[Number(i)])}</code>`);
 }
+
+const HR = /^\s*([-*_])(\s*\1){2,}\s*$/;
 
 export function renderMarkdown(markdown) {
   const lines = String(markdown).replace(/\r\n?/g, '\n').split('\n');
@@ -81,7 +84,7 @@ export function renderMarkdown(markdown) {
       continue;
     }
 
-    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) {
+    if (HR.test(line)) {
       out.push('<hr>');
       i++;
       continue;
@@ -90,7 +93,9 @@ export function renderMarkdown(markdown) {
     if (/^>\s?/.test(line)) {
       const body = [];
       while (i < lines.length && /^>\s?/.test(lines[i])) body.push(lines[i++].replace(/^>\s?/, ''));
-      out.push(`<blockquote><p>${inline(body.join(' '))}</p></blockquote>`);
+      // An empty `>` line starts a new paragraph
+      const paras = body.join('\n').split(/\n\s*\n/).filter((b) => b.trim());
+      out.push(`<blockquote>${paras.map((b) => `<p>${inline(b.split('\n').join(' '))}</p>`).join('')}</blockquote>`);
       continue;
     }
 
@@ -110,6 +115,7 @@ export function renderMarkdown(markdown) {
       i < lines.length &&
       !/^\s*$/.test(lines[i]) &&
       !/^(#{1,6}\s|```|>\s?)/.test(lines[i]) &&
+      !HR.test(lines[i]) &&
       !/^\s*([-*+]|\d+\.)\s+/.test(lines[i])
     ) {
       para.push(lines[i++].trim());

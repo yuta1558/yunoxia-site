@@ -1,5 +1,6 @@
 // GET /log/p/<slug> — a published CMS post, rendered inside the static /log/ page's shell.
 
+import { postDescription } from '../../_lib/feed.js';
 import { escapeHtml } from '../../_lib/http.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { getPublishedBySlug } from '../../_lib/posts.js';
@@ -29,7 +30,7 @@ export async function onRequestGet(context) {
 
   const canonical = new URL(`/log/p/${post.slug}/`, context.request.url).href;
   const title = `${post.title} — yunoxia`;
-  const description = post.excerpt || post.title;
+  const description = postDescription(post) || post.title;
   const tags = post.tags.length ? ` · ${post.tags.map(escapeHtml).join(' / ')}` : '';
   const image = post.featured_image
     ? `<p><img src="${escapeHtml(post.featured_image)}" alt="" loading="lazy" decoding="async"></p>`
@@ -44,7 +45,7 @@ export async function onRequestGet(context) {
     </article>`;
 
   const structured = jsonLdString(
-    blogPosting({ title: post.title, date: post.published_at, url: canonical, description: post.excerpt }),
+    blogPosting({ title: post.title, date: post.published_at, url: canonical, description: postDescription(post) }),
   );
 
   const setAttr = (attr, value) => ({ element: (el) => el.setAttribute(attr, value) });

@@ -115,7 +115,7 @@ async function upload(path) {
 }
 
 async function uploadLocalImages(content, dir) {
-  const re = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
+  const re = /!\[([^\]]*)\]\(((?:[^()\s]|\([^()\s]*\))+)\)/g;
   const done = new Map();
   for (const [, , src] of content.matchAll(re)) {
     if (isLocal(src)) done.set(src, await upload(resolve(dir, src)));
