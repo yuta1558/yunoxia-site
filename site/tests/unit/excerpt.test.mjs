@@ -26,3 +26,8 @@ test('only paired emphasis marks are removed', () => {
 test('lone marks around spaces are not emphasis', () => {
   assert.equal(excerpt('*.md と *.js、_a と _b、2 * 3 * 4、*強調*。'), '*.md と *.js、_a と _b、2 * 3 * 4、強調。');
 });
+
+test('double underscores inside words are not emphasis', () => {
+  // __init__.py is strong "init" in CommonMark, so the text reads init.py, as on the page
+  assert.equal(excerpt('a__b__c と a**b**c と __init__.py。'), 'a__b__c と abc と init.py。');
+});

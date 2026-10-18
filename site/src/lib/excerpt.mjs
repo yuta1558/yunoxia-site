@@ -12,7 +12,9 @@ export function excerpt(body, limit = 120) {
     .replace(/<[^>]+>/g, '')
     // Only paired marks are markup: snake_case and ~/path keep their characters
     .replace(/`([^`]*)`/g, '$1')
-    .replace(/(\*\*|__)(.+?)\1/g, '$2')
+    // ** works inside words; __ and _ do not (a__b__c and snake_case stay), as in CommonMark
+    .replace(/\*\*(\S(?:.*?\S)?)\*\*/g, '$1')
+    .replace(/(^|\W)__(\S(?:.*?\S)?)__(?=\W|$)/g, '$1$2')
     .replace(/~~(.+?)~~/g, '$1')
     // As in CommonMark, an emphasis mark does not close right after a space (*.md と *.js stays)
     .replace(/(^|[^\w*])\*([^*\s](?:[^*]*[^*\s])?)\*(?![\w*])/g, '$1$2')
