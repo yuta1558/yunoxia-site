@@ -19,7 +19,7 @@ Research ページ（`src/pages/research.astro`）で使う図です。
 node scripts/profile-density.mjs <分析用 CSV のパス> > src/research/data/profile-density.json
 ```
 
-冷却戦略の軸（機械間の分散の 65% を説明する軸）は分析側の計算なので、この図では描きません。その軸の得点列が用意できたら、下の散布図に使います。
+冷却戦略の軸は分析側の計算なので、この図では描きません。その軸の得点列が用意できたら、下の散布図に使います。
 
 ## プロファイル空間の散布図
 
@@ -37,7 +37,7 @@ node scripts/profile-density.mjs <分析用 CSV のパス> > src/research/data/p
 | `filler` | 文字列 | 充填材（`none`、`GF`、`CF` など） |
 | `max_volumetric_flow_mm3s` | 数値 | 最大体積流量 (mm³/s) |
 | `nozzle_temp_c` | 数値 | ノズル温度 (°C)。熱履歴の代表値 |
-| `cooling_axis` | 数値 | 冷却戦略の軸上の位置。分析で求めた主成分得点など（機械間の分散の 65% を説明する軸） |
+| `cooling_axis` | 数値 | 冷却戦略の軸上の位置。分析で求めた主成分得点など |
 
 あると今後の図に使える任意の列（今は読みません）：
 

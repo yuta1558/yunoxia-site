@@ -20,7 +20,7 @@ import ProfileSpace from '../../research/ProfileSpace.astro';
 
       <h2>Method</h2>
       <p>
-        I analysed more than 7,000 published profiles. The conversion runs in two stages: the source dialect is first
+        I analysed more than 7,000 published profiles (four sources, as of July 2026). The conversion runs in two stages: the source dialect is first
         rewritten as a physical intermediate representation (volumetric flow, thermal history, bead geometry, cooling rate),
         and the target dialect is written out from that. Parameters are treated in three classes: material-specific,
         machine-specific, and the interaction between the two.
@@ -34,9 +34,8 @@ import ProfileSpace from '../../research/ProfileSpace.astro';
     <div class="prose">
       <h2>Findings</h2>
       <ul>
-        <li>65% of the variance between machines is explained by a single axis: cooling strategy.</li>
-        <li>For the same filament, official settings differ by up to 2.5× between ecosystems.</li>
-        <li>Moving from glass-fibre to carbon-fibre filled material reduces maximum volumetric flow by a factor of 0.76–0.85, regardless of vendor.</li>
+        <li>For the same filament, the official maximum volumetric flow differs by up to 2.5× between ecosystems.</li>
+        <li>Nozzle temperature agrees across dialects (220 °C: 20 of 34 Prusa profiles, 20 of 21 Bambu).</li>
       </ul>
     </div>
 

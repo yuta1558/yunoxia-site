@@ -39,7 +39,7 @@ export function mountProfileSpace(root: HTMLElement) {
   const material = new THREE.PointsMaterial({ size: 0.03, vertexColors: true, transparent: true, opacity: 0.8 });
   const cloud = new THREE.Points(geometry, material);
 
-  // The cooling axis (x) explains most of the machine-to-machine variance: draw it as a line
+  // Draw the cooling axis (x) as a line
   const axis = new THREE.Line(
     new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-1.8, -1.1, 0), new THREE.Vector3(1.8, -1.1, 0)]),
     new THREE.LineBasicMaterial({ color: palette[0] }),
