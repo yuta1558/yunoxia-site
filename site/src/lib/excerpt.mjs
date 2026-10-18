@@ -5,10 +5,10 @@ export function excerpt(body, limit = 120) {
     (body ?? '')
       .split(/\n\s*\n/)
       .map((b) => b.trim())
-      .find((b) => b && !/^(#|>|[-*+] |\d+\. |```|\||<)/.test(b) && !/^!\[[^\]]*\]\((?:[^()\s]|\([^()\s]*\))+\)$/.test(b)) ?? '';
+      .find((b) => b && !/^(#|>|[-*+] |\d+\. |```|\||<)/.test(b) && !/^!\[[^\]]*\]\((?:[^()\s]|\([^()\s]*\))+(?:\s+"[^"]*")?\)$/.test(b)) ?? '';
   const plain = first
-    .replace(/!\[[^\]]*\]\((?:[^()\s]|\([^()\s]*\))+\)/g, '')
-    .replace(/\[([^\]]*)\]\((?:[^()\s]|\([^()\s]*\))+\)/g, '$1')
+    .replace(/!\[[^\]]*\]\((?:[^()\s]|\([^()\s]*\))+(?:\s+"[^"]*")?\)/g, '')
+    .replace(/\[([^\]]*)\]\((?:[^()\s]|\([^()\s]*\))+(?:\s+"[^"]*")?\)/g, '$1')
     .replace(/<[^>]+>/g, '')
     // Only paired marks are markup: snake_case and ~/path keep their characters
     .replace(/`([^`]*)`/g, '$1')

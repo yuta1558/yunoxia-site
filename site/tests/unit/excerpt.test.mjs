@@ -36,3 +36,8 @@ test('link and image URLs may hold one level of parentheses, as in markdown.js',
   assert.equal(excerpt('[Wiki](https://e.com/a_(b)) を読む。'), 'Wiki を読む。');
   assert.equal(excerpt('![](/p_(1).png)\n\nBody.'), 'Body.');
 });
+
+test('a link or image title is part of the link, as in CommonMark', () => {
+  assert.equal(excerpt('[a](https://e.com "Title") を読む。'), 'a を読む。');
+  assert.equal(excerpt('![](a.jpg "Cover")\n\nBody.'), 'Body.');
+});
