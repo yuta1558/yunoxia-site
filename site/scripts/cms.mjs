@@ -31,6 +31,7 @@
 import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { basename, dirname, extname, resolve } from 'node:path';
+import { parse, serialize } from './lib/frontmatter.mjs';
 
 // Node's fetch ignores HTTPS_PROXY unless NODE_USE_ENV_PROXY is set. Behind a proxy (where the
 // network secret is added), run again with it so requests go through the proxy.
@@ -70,44 +71,6 @@ async function allPosts() {
     posts.push(...res.posts);
     if (!res.pagination?.hasNext) return posts;
   }
-}
-
-// ---- Front matter (the small subset the posts need) ------------------------------
-
-const unquote = (v) => (/^(['"]).*\1$/.test(v) ? v.slice(1, -1) : v);
-
-function parse(text) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(text);
-  if (!m) fail('The file needs a front matter block (--- title: … ---).');
-  const meta = {};
-  for (const line of m[1].split(/\r?\n/)) {
-    const kv = /^([a-z_]+):\s*(.*)$/.exec(line.trim());
-    if (kv) meta[kv[1]] = kv[2].trim();
-  }
-  if (meta.tags !== undefined) {
-    const list = meta.tags.replace(/^\[|\]$/g, '');
-    meta.tags = list ? list.split(',').map((t) => unquote(t.trim())).filter(Boolean) : [];
-  }
-  for (const key of ['title', 'slug', 'excerpt', 'status', 'featured_image']) {
-    if (meta[key] !== undefined) meta[key] = unquote(meta[key]);
-  }
-  return { meta, content: text.slice(m[0].length).replace(/^\s*\n/, '') };
-}
-
-function serialize(post) {
-  const q = (v) => (/^[\s'"[]|:\s|#|^$/.test(v) ? JSON.stringify(v) : v);
-  return [
-    '---',
-    `title: ${q(post.title)}`,
-    `slug: ${post.slug}`,
-    `excerpt: ${q(post.excerpt || '')}`,
-    `tags: [${post.tags.join(', ')}]`,
-    `status: ${post.status}`,
-    `featured_image: ${post.featured_image || ''}`,
-    '---',
-    '',
-    post.content,
-  ].join('\n');
 }
 
 // ---- Images -------------------------------------------------------------------------
@@ -172,23 +135,28 @@ async function get(slug) {
   if (!post) fail(`No post with slug "${slug}".`);
   // Read the single post for its full body
   const full = (await api(`/posts?status=all&id=${encodeURIComponent(post.id)}`)).post;
-  process.stdout.write(serialize(full) + '\n');
+  const out = serialize(full);
+  process.stdout.write(out.endsWith('\n') ? out : `${out}\n`);
 }
 
 async function push(file, publish) {
-  const { meta, content } = parse(await readFile(file, 'utf8'));
+  const parsed = parse(await readFile(file, 'utf8'));
+  if (!parsed) fail('The file needs a front matter block (--- title: … ---).');
+  const { meta, content } = parsed;
   if (!meta.title) fail('title is required in the front matter.');
   const dir = dirname(resolve(file));
 
-  const data = {
-    title: meta.title,
-    content: await uploadLocalImages(content, dir),
-    excerpt: meta.excerpt ?? '',
-    tags: meta.tags ?? [],
-    status: publish ? 'published' : meta.status || 'draft',
-    featured_image: isLocal(meta.featured_image) ? await upload(resolve(dir, meta.featured_image)) : meta.featured_image || '',
-  };
+  // An update sends only what the file says: a key left out keeps its stored value, so a
+  // file without `status:` does not take a published post down.
+  const data = { title: meta.title, content: await uploadLocalImages(content, dir) };
   if (meta.slug) data.slug = meta.slug;
+  if (meta.excerpt !== undefined) data.excerpt = meta.excerpt;
+  if (meta.tags !== undefined) data.tags = meta.tags;
+  if (meta.featured_image !== undefined) {
+    data.featured_image = isLocal(meta.featured_image) ? await upload(resolve(dir, meta.featured_image)) : meta.featured_image;
+  }
+  if (publish) data.status = 'published';
+  else if (meta.status !== undefined) data.status = meta.status;
 
   const existing = meta.slug ? (await allPosts()).find((p) => p.slug === meta.slug) : null;
   const result = existing
