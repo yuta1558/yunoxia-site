@@ -22,3 +22,7 @@ test('empty body', () => {
 test('only paired emphasis marks are removed', () => {
   assert.equal(excerpt('snake_case と ~/path と a*b、*斜体*、_下線_、~~消し~~、__太字__。'), 'snake_case と ~/path と a*b、斜体、下線、消し、太字。');
 });
+
+test('lone marks around spaces are not emphasis', () => {
+  assert.equal(excerpt('*.md と *.js、_a と _b、2 * 3 * 4、*強調*。'), '*.md と *.js、_a と _b、2 * 3 * 4、強調。');
+});

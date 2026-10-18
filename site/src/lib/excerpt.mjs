@@ -14,8 +14,9 @@ export function excerpt(body, limit = 120) {
     .replace(/`([^`]*)`/g, '$1')
     .replace(/(\*\*|__)(.+?)\1/g, '$2')
     .replace(/~~(.+?)~~/g, '$1')
-    .replace(/(^|[^\w*])\*([^*\s][^*]*?)\*(?![\w*])/g, '$1$2')
-    .replace(/(^|\W)_([^_\s][^_]*)_(?=\W|$)/g, '$1$2')
+    // As in CommonMark, an emphasis mark does not close right after a space (*.md と *.js stays)
+    .replace(/(^|[^\w*])\*([^*\s](?:[^*]*[^*\s])?)\*(?![\w*])/g, '$1$2')
+    .replace(/(^|\W)_([^_\s](?:[^_]*[^_\s])?)_(?=\W|$)/g, '$1$2')
     .replace(/\s+/g, ' ')
     .trim();
   const chars = Array.from(plain);
