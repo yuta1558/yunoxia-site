@@ -9,35 +9,42 @@ import { escapeHtml } from './http.js';
 function safeUrl(raw) {
   const url = raw.trim();
   if (/^(https?:|mailto:)/i.test(url)) return url;
-  if (url.startsWith('/') && !url.startsWith('//')) return url;
+  // A path starting "/\" is read by browsers as "//", another site
+  if (url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/\\')) return url;
   if (url.startsWith('#')) return url;
   return null;
 }
 
-function inline(text) {
-  // Pull code spans out first so their contents are not formatted.
-  const codes = [];
-  let src = text.replace(/`([^`]+)`/g, (_, code) => {
-    codes.push(code);
-    return `\u0000${codes.length - 1}\u0000`;
-  });
+const emphasis = (s) =>
+  s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
 
+function inline(text) {
+  // Placeholders: \u0000n\u0000 for code spans, \u0001n\u0001 for finished links and images.
+  // Markup is set aside as soon as it is made, so a later pattern can never match across it
+  // (an image's alt text closed by a link's href="… was an XSS). Input cannot contain either mark.
+  const codes = [];
+  const held = [];
+  const hold = (html) => `\u0001${held.push(html) - 1}\u0001`;
+  const codeText = (s) => s.replace(/\u0000(\d+)\u0000/g, (_, i) => escapeHtml(codes[Number(i)]));
+
+  let src = String(text).replace(/[\u0000\u0001]/g, '');
+  src = src.replace(/`([^`]+)`/g, (_, code) => `\u0000${codes.push(code) - 1}\u0000`);
   src = escapeHtml(src);
 
-  src = src.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (match, alt, url) => {
-    const safe = safeUrl(url.replaceAll('&amp;', '&'));
-    return safe ? `<img src="${escapeHtml(safe)}" alt="${alt}" loading="lazy" decoding="async">` : match;
-  });
-  src = src.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (match, label, url) => {
+  src = src.replace(/(!?)\[([^\]]*)\]\(([^)\s]+)\)/g, (match, bang, label, url) => {
+    if (/[\u0000\u0001]/.test(url)) return match;
     const safe = safeUrl(url.replaceAll('&amp;', '&'));
     if (!safe) return match;
+    if (bang) return hold(`<img src="${escapeHtml(safe)}" alt="${codeText(label)}" loading="lazy" decoding="async">`);
+    if (!label) return match;
     const external = /^https?:/i.test(safe);
-    return `<a href="${escapeHtml(safe)}"${external ? ' rel="noopener"' : ''}>${label}</a>`;
+    return hold(`<a href="${escapeHtml(safe)}"${external ? ' rel="noopener"' : ''}>${emphasis(label)}</a>`);
   });
-  src = src.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  src = src.replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+  src = emphasis(src);
 
-  return src.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${escapeHtml(codes[Number(i)])}</code>`);
+  return src
+    .replace(/\u0001(\d+)\u0001/g, (_, i) => held[Number(i)])
+    .replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${escapeHtml(codes[Number(i)])}</code>`);
 }
 
 export function renderMarkdown(markdown) {

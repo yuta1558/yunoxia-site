@@ -16,8 +16,13 @@ export function scopeAttrs(element) {
   return attrs.map((name) => ` ${name}`).join('');
 }
 
+// Dates are shown as the day in Japan: a post published at 07:30 JST is stored as the previous
+// day in UTC. en-CA formats as YYYY-MM-DD.
+const JST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' });
+
 export function formatDate(iso) {
-  return (iso || '').slice(0, 10).replaceAll('-', '.');
+  const d = new Date(iso || '');
+  return Number.isNaN(+d) ? '' : JST.format(d).replaceAll('-', '.');
 }
 
 export function withHtmlHeaders(response, extra = {}) {

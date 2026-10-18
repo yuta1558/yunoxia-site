@@ -19,7 +19,7 @@ export async function onRequestGet({ request, env }) {
   if (!object) return error('Image not found', 404);
 
   const type = object.httpMetadata?.contentType;
-  if (!type || !(type in TYPES)) return error('Image not found', 404);
+  if (!type || !Object.hasOwn(TYPES, type)) return error('Image not found', 404);
 
   return new Response(object.body, {
     headers: {
@@ -45,7 +45,7 @@ export async function onRequestPost({ request, env }) {
     return error('Invalid form data', 400);
   }
   if (!file || typeof file === 'string') return error('No file provided', 400);
-  if (!(file.type in TYPES)) return error('Allowed types: JPEG, PNG, GIF, WebP, AVIF', 400);
+  if (!Object.hasOwn(TYPES, file.type)) return error('Allowed types: JPEG, PNG, GIF, WebP, AVIF', 400);
   if (file.size > MAX_SIZE) return error('File too large (max 5MB)', 400);
 
   const key = `blog/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${TYPES[file.type]}`;

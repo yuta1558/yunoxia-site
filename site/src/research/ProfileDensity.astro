@@ -1,6 +1,7 @@
 ---
 // 公開フィラメントプロファイルの分布（ノズル温度 × 最大体積流量）。
 // data/profile-density.json は scripts/profile-density.mjs が分析用 CSV から数えたもので、CSV の列をそのまま使う。
+// 対象は Research 本文の「7,000 件超（4 系統）」とは別の集合なので、キャプションで定義を書く（定義は src/research/README.md）。
 // 静的な SVG で、JS はない。件数は出典ごとにパネルの見出しに出し、合計は本文に書かない。
 import density from './data/profile-density.json';
 
@@ -12,22 +13,31 @@ const { lang = 'ja' } = Astro.props;
 const t = {
   ja: {
     title: '公開プロファイルの分布',
-    names: { orca: 'OrcaSlicer', prusa: 'PrusaSlicer' } as Record<string, string>,
+    names: { orca: 'OrcaSlicer リポジトリ', prusa: 'Prusa 公式バンドル 2.5.12' } as Record<string, string>,
+    count: (n: number) => `${n.toLocaleString('ja-JP')} 件`,
     xLabel: 'ノズル温度 (°C)',
     yLabel: '最大体積流量 (mm³/s)',
-    caption: (outside: number) =>
-      `ノズル温度と最大体積流量で数えた、出典別の公開プロファイルの分布。色が濃いほど件数が多い。` +
-      `範囲外の ${outside.toLocaleString('ja-JP')} 件は描いていない。同じ温度帯でも流量の設定は大きく散らばり、出典によって分布の形も違う。`,
+    caption: (skipped: number, outside: number) =>
+      `OrcaSlicer リポジトリ（2026 年 10 月）と Prusa 公式バンドル 2.5.12（全機種）のフィラメントプロファイルを、` +
+      `継承を解決して 1 件 1 行にし、ノズル温度と最大体積流量で数えた分布。機種ごとに分かれた同じフィラメントの設定も、それぞれ 1 件と数える。` +
+      `方法の節の「7,000 件を超えるプロファイル（4 系統）」とは別の集合。色が濃いほど件数が多い。` +
+      `ノズル温度が 0 の ${skipped.toLocaleString('ja-JP')} 件は数えず、範囲外の ${outside.toLocaleString('ja-JP')} 件は描いていない。` +
+      `同じ温度帯でも流量の設定は大きく散らばり、出典によって分布の形も違う。`,
     aria: (name: string) => `${name} のプロファイルの分布`,
   },
   en: {
     title: 'How public profiles are distributed',
-    names: { orca: 'OrcaSlicer', prusa: 'PrusaSlicer' } as Record<string, string>,
+    names: { orca: 'OrcaSlicer repository', prusa: 'Prusa bundle 2.5.12' } as Record<string, string>,
+    count: (n: number) => `${n.toLocaleString('en-US')} profiles`,
     xLabel: 'Nozzle temperature (°C)',
     yLabel: 'Max volumetric flow (mm³/s)',
-    caption: (outside: number) =>
-      `Public profiles by source, counted by nozzle temperature and max volumetric flow; darker means more profiles. ` +
-      `${outside.toLocaleString('en-US')} fall outside the plotted range. Flow settings spread widely even at the same temperature, and the shape differs by source.`,
+    caption: (skipped: number, outside: number) =>
+      `Filament profiles from the OrcaSlicer repository (October 2026) and the official Prusa bundle 2.5.12 (all printers), ` +
+      `with inheritance resolved to one row per profile, counted by nozzle temperature and max volumetric flow. ` +
+      `The same filament split across printers counts once per printer. ` +
+      `This is a different set from the “more than 7,000 profiles (four sources)” in Method. Darker means more profiles. ` +
+      `${skipped.toLocaleString('en-US')} with a nozzle temperature of 0 are not counted, and ${outside.toLocaleString('en-US')} fall outside the plotted range. ` +
+      `Flow settings spread widely even at the same temperature, and the shape differs by source.`,
     aria: (name: string) => `Distribution of ${name} profiles`,
   },
 }[lang];
@@ -53,7 +63,7 @@ const panels = Object.entries(density.sources).map(([key, s]) => ({ key, name: t
   <div class="panels">
     {panels.map((p) => (
       <div class="panel">
-        <p class="meta">{p.name}</p>
+        <p class="meta">{p.name} · {t.count(p.n)}</p>
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t.aria(p.name)}>
           {yTicks.map((v) => (
             <g>
@@ -73,7 +83,7 @@ const panels = Object.entries(density.sources).map(([key, s]) => ({ key, name: t
       </div>
     ))}
   </div>
-  <figcaption>{t.caption(density.outsideRange)}</figcaption>
+  <figcaption>{t.caption(density.skipped, density.outsideRange)}</figcaption>
 </figure>
 
 <style>

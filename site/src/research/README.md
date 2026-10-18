@@ -13,7 +13,17 @@ Research ページ（`src/pages/research.astro`）で使う図です。
 
 ## 公開プロファイルの分布（ProfileDensity）
 
-分析用の CSV（OrcaSlicer と PrusaSlicer の公開プロファイル）から、`source`、`nozzle_temp`、`mvs` の 3 列だけを使い、5 °C × 2 mm³/s のマスで件数を数えた図です。数える以外の計算はしていません。元の CSV はリポジトリに入れず、集計結果（`data/profile-density.json`、約 6KB）だけを置きます。
+OrcaSlicer と Prusa の公開フィラメントプロファイルを 1 件 1 行にした CSV から、`source`、`nozzle_temp`、`mvs` の 3 列だけを使い、5 °C × 2 mm³/s のマスで件数を数えた図です。数える以外の計算はしていません。元の CSV はリポジトリに入れず、集計結果（`data/profile-density.json`、約 6KB）だけを置きます。
+
+### データの定義（2026-10-18 作成）
+
+Research 本文の「7,000 件を超えるプロファイル（4 系統、2026 年 7 月時点）」とは別の集合です。図のキャプションにもそう書いています。
+
+- 出典は 2 つ。OrcaSlicer 公開リポジトリ（CSV 作成日のコミット、73 ベンダー、7,373 件、`source` = `orca`）と、Prusa 公式バンドル 2.5.12（全機種、7,155 件、`source` = `prusa-2.5.12`）。スクリプトは `prusa` で始まる値を `prusa` にまとめます。
+- 継承（`inherits`）を最後まで解決し、1 件 1 行にしています。抽象プロファイル（`instantiation = false` と `*common*` 系）は除いています。機種ごとに分かれた同じフィラメントの設定は、それぞれ 1 件です。
+- CSV は 14,528 行 × 27 列。`nozzle_temp` が 0 の 42 行（Orca 側。FELIX Printers 39、re3D 2、Volumic 1）は数えず、残る 14,486 件（Orca 7,331、Prusa 7,155）を数えます。軸は 1〜99 パーセンタイルから決まり、200〜300 °C × 0〜40 mm³/s。範囲外の 296 件は描きません。
+- 列の注意：Prusa の `printer` は名前の接尾辞（`@XL 0.8` など）から取り、接尾辞なしは MK3-family。Orca の `bed_temp` は hot_plate（Smooth PEI）の値。どちらもこの図では使いません。
+- 2026-10-18 に、この定義の CSV から作り直した JSON は、以前の JSON（元の CSV は残っていない）とバイト単位で一致しました。
 
 ```sh
 node scripts/profile-density.mjs <分析用 CSV のパス> > src/research/data/profile-density.json
