@@ -14,8 +14,10 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
     <ol class="logs">
       {logs.map((l) => (
         <li>
-          <time class="meta" datetime={l.data.date.toISOString()}>{fmt(l.data.date)}</time>
-          <a href={`/log/${l.id}/`}>{l.data.title}</a>
+          <a href={`/log/${l.id}/`}>
+            <time class="meta" datetime={l.data.date.toISOString()}>{fmt(l.data.date)}</time>
+            <span>{l.data.title}</span>
+          </a>
         </li>
       ))}
     </ol>
@@ -23,20 +25,34 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 </Base>
 
 <style>
-
-
-
+  /* Same rows as the top page's Log. CMS posts are prepended with the same markup (functions/_lib/logs.js). */
   .logs {
     list-style: none;
     margin: 0;
     padding: 0;
-    border-top: 1px solid var(--line);
+    border-top: 1.5px solid var(--ink);
   }
 
-  .logs li {
+  .logs a {
     display: flex;
     gap: 2rem;
-    padding-block: 1rem;
+    align-items: baseline;
+    padding-block: 1.25rem;
     border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+
+  .logs span {
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+  }
+
+  @media (max-width: 48rem) {
+    .logs a {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
   }
 </style>

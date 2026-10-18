@@ -6,10 +6,19 @@
   const TOKEN_KEY = 'yunoxia_admin_token';
   const $ = (id) => document.getElementById(id);
 
+  // Same theme as the site: the stored choice, then the system setting
+  try {
+    const stored = localStorage.getItem('theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  } catch {}
+
   let posts = [];
   let filter = 'all';
   let currentId = null;
   let fileTarget = 'content'; // where an uploaded image goes: 'content' or 'featured'
+  let dirty = false; // the editor has changes that are not saved yet
+  let previewTimer = 0;
 
   // ---- API ----------------------------------------------------------------
 
@@ -130,9 +139,13 @@
     $('content').value = post.content;
     $('delete').hidden = !id;
     setFeatured(post.featured_image);
+    dirty = false;
     show('editor');
     refreshPreview();
   }
+
+  // Leaving the editor with unsaved changes asks first
+  const confirmLeave = () => !dirty || confirm('保存していない変更があります。破棄して戻りますか？');
 
   function collect() {
     return {
@@ -157,8 +170,18 @@
       currentId = result.id;
       $('slug').value = result.slug;
       $('delete').hidden = false;
-      const url = `/log/p/${result.slug}/`;
-      $('save-status').textContent = result.status === 'published' ? `保存しました。公開URL：${url}` : '下書きを保存しました。';
+      dirty = false;
+      const status = $('save-status');
+      if (result.status === 'published') {
+        const link = document.createElement('a');
+        link.href = `/log/p/${result.slug}/`;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = link.getAttribute('href');
+        status.replaceChildren('保存しました。公開URL：', link);
+      } else {
+        status.textContent = '下書きを保存しました。';
+      }
     } catch (e) {
       $('save-status').textContent = `保存に失敗しました：${e.message}`;
     }
@@ -234,7 +257,21 @@
     });
 
     $('new-post').addEventListener('click', () => openEditor());
-    $('back').addEventListener('click', loadList);
+    $('back').addEventListener('click', () => {
+      if (confirmLeave()) loadList();
+    });
+
+    // Track unsaved changes, and refresh the preview a moment after typing stops
+    $('view-editor').addEventListener('input', (event) => {
+      dirty = true;
+      if (event.target === $('content')) {
+        clearTimeout(previewTimer);
+        previewTimer = setTimeout(refreshPreview, 700);
+      }
+    });
+    addEventListener('beforeunload', (event) => {
+      if (dirty && !$('view-editor').hidden) event.preventDefault();
+    });
     $('delete').addEventListener('click', remove);
     $('refresh-preview').addEventListener('click', refreshPreview);
     $('view-editor').addEventListener('submit', (event) => {
@@ -257,7 +294,10 @@
       fileTarget = 'featured';
       $('file').click();
     });
-    $('featured-remove').addEventListener('click', () => setFeatured(''));
+    $('featured-remove').addEventListener('click', () => {
+      setFeatured('');
+      dirty = true;
+    });
 
     $('file').addEventListener('change', async (event) => {
       const file = event.target.files[0];
@@ -268,6 +308,7 @@
         const url = await upload(file);
         if (fileTarget === 'featured') setFeatured(url);
         else insertAtCursor(`![](${url})`);
+        dirty = true;
         $('save-status').textContent = 'アップロードしました。';
       } catch (e) {
         $('save-status').textContent = `アップロードに失敗しました：${e.message}`;

@@ -63,10 +63,12 @@ HSTS は付け替えとは別に段階的に入れる（1 日 → 1 か月 → 1
 | API | `functions/api/`（posts、auth/login、auth/verify、preview、upload） |
 | 公開ページ | `functions/log/p/[slug].js` → `/log/p/<slug>/` |
 | Log 一覧への差し込み | `functions/log/index.js`（`/log/` の静的 HTML に公開記事を先頭へ追加） |
+| トップの Log への差し込み | `functions/index.js`、`functions/en/index.js`（新しい記事を先頭に、合計 3 件） |
+| 更新マーク | `functions/updates.json.js`（公開記事の更新日時を `/updates.json` に足す） |
 | RSS への差し込み | `functions/rss.xml.js` |
 | 管理画面 | `public/admin/`（`/admin/`、noindex、外部スクリプトなし） |
 | スキーマ | `migrations/0001_create_posts.sql` |
-| Functions を動かす範囲 | `public/_routes.json`（上の 4 種類だけ。他は静的配信） |
+| Functions を動かす範囲 | `public/_routes.json`（上の差し込み先と API だけ。他は静的配信） |
 
 公開ページは、ビルド済みの `/log/` を殻として読み込み、HTMLRewriter で `<main>` を差し替えて返す。ヘッダー、フッター、フォント、CSS はビルドと同じものになる。Markdown の変換は `functions/_lib/markdown.js` が行う。生の HTML は通さず、リンクと画像の URL は http(s)、mailto、サイト内パスに限る。
 
