@@ -5,6 +5,7 @@
 // SVG is not accepted: an SVG served from this origin can run script and reach the admin token.
 
 import { error, json } from '../_lib/http.js';
+import { imageSize } from '../_lib/imagesize.js';
 import { KEY_RE } from '../_lib/posts.js';
 
 const TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp', 'image/avif': 'avif' };
@@ -78,12 +79,15 @@ export async function onRequestPost({ request, env }) {
   if (!Object.hasOwn(TYPES, file.type)) return error('Allowed types: JPEG, PNG, GIF, WebP, AVIF', 400);
   if (file.size > MAX_SIZE) return error('File too large (max 5MB)', 400);
   // The declared type is the client's word; the stored Content-Type must match the bytes.
-  const head = new Uint8Array(await file.slice(0, SNIFF_BYTES).arrayBuffer());
-  if (!matchesType(head, file.type)) return error(`File content does not match its type (${file.type})`, 400);
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (!matchesType(bytes.subarray(0, SNIFF_BYTES), file.type)) return error(`File content does not match its type (${file.type})`, 400);
 
-  const key = `blog/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${TYPES[file.type]}`;
+  // The size goes into the key so pages can set width/height (no layout shift); unknown stays out
+  const size = imageSize(bytes, file.type);
+  const dims = size ? `-${size.width}x${size.height}` : '';
+  const key = `blog/${Date.now()}-${crypto.randomUUID().slice(0, 8)}${dims}.${TYPES[file.type]}`;
   try {
-    await env.IMAGES.put(key, file.stream(), { httpMetadata: { contentType: file.type } });
+    await env.IMAGES.put(key, bytes, { httpMetadata: { contentType: file.type } });
   } catch {
     return error('Upload failed', 500);
   }

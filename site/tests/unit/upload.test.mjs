@@ -6,6 +6,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { stripJpegMetadata } from '../../scripts/lib/images.mjs';
+import { KEY_RE } from '../../functions/_lib/posts.js';
 import { onRequestGet, onRequestPost } from '../../functions/api/upload.js';
 
 const bucket = () => {
@@ -33,6 +34,7 @@ const post = (IMAGES, file) => {
   if (file) form.append('file', file);
   return onRequestPost({ request: new Request('https://x.test/api/upload', { method: 'POST', body: form }), env: { IMAGES } });
 };
+const TYPE_OF = { jpg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' };
 const get = (IMAGES, key) =>
   onRequestGet({ request: new Request(`https://x.test/api/upload?key=${encodeURIComponent(key)}`), env: { IMAGES } });
 
@@ -172,4 +174,43 @@ test('upload rejects bytes that do not match the declared type', async () => {
   await rejects(new Uint8Array(0), 'image/gif');
   await rejects(text('RIFF'), 'image/webp');
   await rejects(new Uint8Array([0, 0, 0, 16, ...text('ftyp')]), 'image/avif');
+});
+
+test('upload puts the image size in the key and stores the bytes unchanged', async (t) => {
+  try {
+    execFileSync('convert', ['-version'], { stdio: 'ignore' });
+  } catch {
+    return t.skip('ImageMagick (convert) not available');
+  }
+  const dir = mkdtempSync(join(tmpdir(), 'upload-'));
+  try {
+    for (const ext of ['jpg', 'png', 'gif', 'webp']) {
+      const file = join(dir, `o.${ext}`);
+      execFileSync('convert', ['-size', '37x23', 'xc:red', file]);
+      const bytes = new Uint8Array(readFileSync(file));
+      const IMAGES = bucket();
+      const res = await post(IMAGES, new File([bytes], 'a', { type: TYPE_OF[ext] }));
+      const { key, url } = await res.json();
+      assert.match(key, new RegExp(`^blog/\\d+-[0-9a-f]{8}-37x23\\.${ext}$`));
+      assert.match(key, KEY_RE);
+      assert.equal(url, `/api/upload?key=${encodeURIComponent(key)}`);
+      assert.deepEqual([...IMAGES.store.get(key).body], [...bytes]);
+      assert.equal((await get(IMAGES, key)).status, 200);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('a sized key is accepted, and an image of unknown size keeps the old key format', async () => {
+  assert.match('blog/1700000000000-0123abcd-37x23.png', KEY_RE);
+  assert.match('blog/1700000000000-0123abcd.png', KEY_RE);
+  for (const key of ['blog/1-0123abcd-0x5.png', 'blog/1-0123abcd-5x.png', 'blog/1-0123abcd-123456x5.png', 'blog/1-0123abcd-5x5-5x5.png']) assert.doesNotMatch(key, KEY_RE, key);
+  const IMAGES = bucket();
+  const key = 'blog/1700000000000-0123abcd-37x23.webp';
+  IMAGES.store.set(key, { body: Buffer.from('img'), httpMetadata: { contentType: 'image/webp' } });
+  assert.equal((await get(IMAGES, key)).status, 200);
+  // PNG signature with no IHDR: valid type, no size
+  const res = await post(IMAGES, new File([pad(PNG)], 'a.png', { type: 'image/png' }));
+  assert.match((await res.json()).key, /^blog\/\d+-[0-9a-f]{8}\.png$/);
 });

@@ -73,3 +73,15 @@ test('emphasis nests in strong; a * between word characters stays literal', () =
   assert.equal(renderMarkdown('*a **b** c*'), '<p><em>a <strong>b</strong> c</em></p>');
   assert.equal(renderMarkdown('**[*l*](/x)**'), '<p><strong><a href="/x"><em>l</em></a></strong></p>');
 });
+
+test('uploaded images with a sized key get width and height; others do not', () => {
+  const sized = encodeURIComponent('blog/1700000000000-0123abcd-37x23.png');
+  assert.equal(
+    renderMarkdown(`![a](/api/upload?key=${sized})`),
+    `<p><img src="/api/upload?key=${sized}" alt="a" width="37" height="23" loading="lazy" decoding="async"></p>`,
+  );
+  const plain = '/api/upload?key=blog%2F1700000000000-0123abcd.png';
+  assert.equal(renderMarkdown(`![a](${plain})`), `<p><img src="${plain}" alt="a" loading="lazy" decoding="async"></p>`);
+  assert.equal(renderMarkdown('![a](https://e.com/api/upload?key=blog%2F1-0123abcd-37x23.png)'), '<p><img src="https://e.com/api/upload?key=blog%2F1-0123abcd-37x23.png" alt="a" loading="lazy" decoding="async"></p>');
+  assert.equal(renderMarkdown('![a](/x-37x23.png)'), '<p><img src="/x-37x23.png" alt="a" loading="lazy" decoding="async"></p>');
+});

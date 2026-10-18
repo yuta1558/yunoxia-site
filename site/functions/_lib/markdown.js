@@ -5,6 +5,7 @@
 // tables are not supported (rendered as text). Inline: `code`, **strong**, *em*, links, images.
 
 import { escapeHtml } from './http.js';
+import { sizeFromKey } from './imagesize.js';
 
 function safeUrl(raw) {
   const url = raw.trim();
@@ -42,7 +43,12 @@ function inline(text) {
     if (/[\u0000\u0001]/.test(url)) return match;
     const safe = safeUrl(url.replaceAll('&amp;', '&'));
     if (!safe) return match;
-    if (bang) return hold(`<img src="${escapeHtml(safe)}" alt="${codeText(label)}" loading="lazy" decoding="async">`);
+    if (bang) {
+      // Uploads carry their size in the key; width/height let the browser reserve the space
+      const size = sizeFromKey(safe);
+      const dims = size ? ` width="${size.width}" height="${size.height}"` : '';
+      return hold(`<img src="${escapeHtml(safe)}" alt="${codeText(label)}"${dims} loading="lazy" decoding="async">`);
+    }
     if (!label) return match;
     const external = /^https?:/i.test(safe);
     return hold(`<a href="${escapeHtml(safe)}"${external ? ' rel="noopener"' : ''}>${emphasis(label, hold)}</a>`);

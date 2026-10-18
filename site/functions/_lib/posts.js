@@ -1,8 +1,9 @@
 // Post validation and D1 access shared by the API and the public Log pages.
 
 export const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-// Keys of uploaded images (api/upload.js makes them; this format has never changed)
-export const KEY_RE = /^blog\/\d+-[0-9a-f]{8}\.(jpg|png|gif|webp|avif)$/;
+// Keys of uploaded images (api/upload.js makes them): blog/<ts>-<8hex>.<ext>, and since the size
+// moved into the key blog/<ts>-<8hex>-<w>x<h>.<ext>. Both stay valid: older uploads keep their keys.
+export const KEY_RE = /^blog\/\d+-[0-9a-f]{8}(?:-[1-9]\d{0,4}x[1-9]\d{0,4})?\.(jpg|png|gif|webp|avif)$/;
 const IMAGE_PREFIX = '/api/upload?key=';
 
 // Control characters (other than tab and newlines) are invalid in the RSS feed's XML

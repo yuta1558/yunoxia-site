@@ -65,6 +65,10 @@ test('featured_image must be a whole upload key, or empty', () => {
     '/api/upload?key=%E0%A4%A', 'https://evil.example/a.jpg', `/api/upload?key=${k}"onerror=1`,
   ]) bad({ ...ok, featured_image: v }, /uploaded image/);
   bad({ ...ok, featured_image: 5 }, /must be a string/);
+  // keys with the size (-WxH) and without it (older uploads) are both valid
+  const sized = 'blog/1700000000000-0123abcd-37x23.jpg';
+  assert.equal(validatePost({ ...ok, featured_image: `/api/upload?key=${encodeURIComponent(sized)}` }).featured_image, `/api/upload?key=${encodeURIComponent(sized)}`);
+  bad({ ...ok, featured_image: '/api/upload?key=blog/1700000000000-0123abcd-0x23.jpg' }, /uploaded image/);
 });
 
 test('slugify', () => {
