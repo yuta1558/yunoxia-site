@@ -1,7 +1,8 @@
 ---
 // Direction D — C's paper, pen and toolpath, with Even Realities' restraint: light-weight headlines in sentence-case
 // with a full stop, a three-part section head (title / short text / action), square cards with the label top-left,
-// a dark "technology" band with x-ray linework, and big light numerals for specs. The wordmark is the one heavy thing.
+// a dark "technology" band with x-ray linework, and big light numerals for specs.
+// Only two things are heavy: the wordmark, and the top h1 as the page's one claim.
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '@fontsource/zen-kaku-gothic-new/300.css';
@@ -234,10 +235,12 @@ const contour = (i: number, cx: number, base: number, step: number, amp: number)
     margin: 0;
   }
 
+  /* The one heavy statement on the page; every other heading stays light */
   h1 {
-    font-size: clamp(2.4rem, 5vw, 4rem);
-    line-height: 1.08;
-    letter-spacing: -0.05em;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 5.6vw, 5rem);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
   }
 
   h2 {
