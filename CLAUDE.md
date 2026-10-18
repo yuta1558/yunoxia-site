@@ -29,7 +29,7 @@ site/
 │   ├── cms.mjs             # write Log posts through the CMS API (see "Writing Log posts")
 │   ├── font-subsets.mjs    # writes src/styles/fonts.generated.css (runs before every build)
 │   ├── forbidden.mjs       # encoded list of strings the site must never show (Privacy rule)
-│   ├── lib/                # pure helpers of cms.mjs, unit-tested: front matter, images (JPEG EXIF/GPS stripping), heading check
+│   ├── lib/                # pure helpers of cms.mjs, unit-tested: front matter, images (JPEG/PNG/WebP metadata stripping), heading check
 │   ├── privacy-check.mjs   # finds those strings in tracked files without printing them
 │   └── profile-density.mjs # builds the Research density chart data from the analysis CSV
 ├── src/
