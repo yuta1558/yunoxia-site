@@ -6,7 +6,7 @@ import WorkCards from '../../components/WorkCards.astro';
 const works = (await getCollection('works')).sort((a, b) => +b.data.updated - +a.data.updated);
 ---
 
-<Base title="Works" description="分解して、理解して、作り替えたもの。進行中のものも含みます。">
+<Base title="Works" description="分解して、理解して、作り替えたものの一覧です。完成したものだけでなく、進行中のものも載せています。">
   <section class="wrap page">
     <p class="eyebrow">Works</p>
     <h1 class="page-title phrases"><span>作ったもの。</span><span>作っているもの。</span></h1>
