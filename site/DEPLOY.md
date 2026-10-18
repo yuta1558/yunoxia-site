@@ -146,6 +146,8 @@ node scripts/cms.mjs push post.md --publish    # 公開して URL を表示
 
 ファイルはフロントマター（`title`、`slug`、`excerpt`、`tags`、`status`、`featured_image`）付きの Markdown。本文や `featured_image` にローカルの画像パスがあれば、先にアップロードして URL に置き換える（R2 の `IMAGES` が必要）。
 
+画像の扱い：管理画面はアップロード前にブラウザで長辺 2000px に縮小し、WebP（品質 0.85）で再エンコードする。再エンコードで EXIF（撮影位置を含む）は消える。GIF と AVIF はそのまま送る。CLI は JPEG のメタデータを消すだけで縮小はしないので、5 MB を超える画像は先に縮小する。
+
 設定：
 
 1. Pages の Secret に `CMS_API_TOKEN` を登録する（4-3）。

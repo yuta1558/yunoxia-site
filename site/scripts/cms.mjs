@@ -20,7 +20,7 @@
 //   本文…
 //
 // Images given as local paths (in the body or featured_image) are uploaded first and replaced
-// with their URLs. CMS_URL defaults to https://yunoxia.one. CMS_TOKEN is the CMS_API_TOKEN secret
+// with their URLs. JPEG metadata (EXIF, GPS) is stripped; files must be 5 MB or less. CMS_URL defaults to https://yunoxia.one. CMS_TOKEN is the CMS_API_TOKEN secret
 // of the Pages project (see DEPLOY.md).
 
 import { readFile } from 'node:fs/promises';
@@ -96,13 +96,35 @@ function serialize(post) {
 const isLocal = (src) => src && !/^(https?:)?\/\//.test(src) && !src.startsWith('/') && !src.startsWith('data:');
 
 const uploaded = new Map(); // path → URL, so a file used twice is uploaded once
+const MAX_BYTES = 5 * 1024 * 1024; // the API's limit
+
+// Drop a JPEG's APP1 segments (EXIF and XMP: camera data, GPS position) and keep the image data.
+// The admin UI re-encodes and shrinks images in the browser; Node has no image encoder, so the CLI
+// only strips metadata and leaves resizing to whoever prepares the file.
+function stripJpegMetadata(buf) {
+  if (buf[0] !== 0xff || buf[1] !== 0xd8) return buf;
+  const parts = [buf.subarray(0, 2)];
+  let i = 2;
+  while (i + 4 <= buf.length && buf[i] === 0xff) {
+    const marker = buf[i + 1];
+    if (marker === 0xda) break; // start of scan: the rest is image data
+    const len = buf.readUInt16BE(i + 2);
+    if (marker !== 0xe1) parts.push(buf.subarray(i, i + 2 + len));
+    i += 2 + len;
+  }
+  parts.push(buf.subarray(i));
+  return Buffer.concat(parts);
+}
 
 async function upload(path) {
   if (uploaded.has(path)) return uploaded.get(path);
   const type = TYPES[extname(path).toLowerCase()];
   if (!type) fail(`${path}: only jpg, png, gif, webp and avif can be uploaded`);
+  let data = await readFile(path);
+  if (type === 'image/jpeg') data = stripJpegMetadata(data);
+  if (data.length > MAX_BYTES) fail(`${path}: ${(data.length / 1048576).toFixed(1)} MB is over the 5 MB limit; shrink it first (long side 2000 px is plenty).`);
   const form = new FormData();
-  form.append('file', new Blob([await readFile(path)], { type }), basename(path));
+  form.append('file', new Blob([data], { type }), basename(path));
   const { url } = await api('/upload', { method: 'POST', form });
   console.error(`uploaded ${path} → ${url}`);
   uploaded.set(path, url);

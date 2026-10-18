@@ -211,7 +211,40 @@
     }
   }
 
-  async function upload(file) {
+  // Photos are shrunk to MAX_SIDE on the long side and re-encoded before upload. Re-encoding also
+  // drops EXIF, so a phone photo's GPS position never reaches the site. GIF (may be animated) and
+  // AVIF (no canvas encoder) go up as they are.
+  const MAX_SIDE = 2000;
+
+  const encode = (canvas, type, quality) => new Promise((resolve) => canvas.toBlob(resolve, type, quality));
+
+  async function shrink(file) {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return file;
+    let bitmap;
+    try {
+      bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    } catch {
+      return file;
+    }
+    const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+
+    // WebP where the browser can encode it; otherwise keep JPEG for photos and PNG for the rest
+    let blob = await encode(canvas, 'image/webp', 0.85);
+    if (!blob || blob.type !== 'image/webp') {
+      blob = file.type === 'image/jpeg' ? await encode(canvas, 'image/jpeg', 0.85) : await encode(canvas, 'image/png');
+    }
+    if (!blob) return file;
+    const ext = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' }[blob.type];
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.' + ext, { type: blob.type });
+  }
+
+  async function upload(original) {
+    const file = await shrink(original);
     const form = new FormData();
     form.append('file', file);
     const { url } = await api('/upload', { method: 'POST', form });
