@@ -8,6 +8,9 @@ import { JSDOM } from 'jsdom';
 /**
  * Create a mock DOM environment for testing
  */
+// Node 21+ ships its own global navigator; keep its descriptor so cleanup can restore it
+const nativeNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+
 export function createDOM(html = '<!DOCTYPE html><html><body></body></html>') {
   const dom = new JSDOM(html, {
     url: 'http://localhost:8000/',
@@ -92,7 +95,11 @@ export function createMockMatchMedia(matches = false) {
 export function cleanupDOM() {
   delete global.window;
   delete global.document;
-  delete global.navigator;
+  if (nativeNavigator) {
+    Object.defineProperty(global, 'navigator', nativeNavigator);
+  } else {
+    delete global.navigator;
+  }
   delete global.localStorage;
   delete global.location;
   delete global.history;
