@@ -70,17 +70,19 @@ const rows = works.map((w) => Math.max(0.4, w.data.title.length / longest).toFix
     opacity: 0;
   }
 
+  /* Phones: the text column has no room beside it, so the visual takes the lower part of the
+     screen and the act text sticks to the upper part (see index.astro). */
   @media (max-width: 48rem) {
-    .top-scene__fallback {
-      top: auto;
-      bottom: 6vh;
-      right: var(--gutter);
-      width: 52vw;
-      opacity: 0.6;
+    .top-scene {
+      top: 48svh;
     }
 
-    .top-scene:global(.is-live) .top-scene__canvas {
-      opacity: 0.55;
+    .top-scene__fallback {
+      top: 50%;
+      right: 50%;
+      transform: translate(50%, -50%);
+      width: min(64vw, 18rem);
+      opacity: 0.7;
     }
   }
 

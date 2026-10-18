@@ -147,8 +147,8 @@ export async function start(root: HTMLElement, canvas: HTMLCanvasElement): Promi
 
   // --- layout --------------------------------------------------------------
   const resize = () => {
-    const w = innerWidth;
-    const h = innerHeight;
+    const w = canvas.clientWidth || innerWidth;
+    const h = canvas.clientHeight || innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();

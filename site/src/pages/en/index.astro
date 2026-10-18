@@ -25,9 +25,11 @@ const acts = [
   <section class="acts wrap" aria-label="How I work" data-scene="acts">
     {acts.map((a, i) => (
       <div class="act" data-act={i + 1}>
-        <p class="eyebrow">{a.n}</p>
-        <h2>{a.verb}</h2>
-        <p>{a.line}</p>
+        <div class="act-text">
+          <p class="eyebrow">{a.n}</p>
+          <h2>{a.verb}</h2>
+          <p>{a.line}</p>
+        </div>
       </div>
     ))}
   </section>
@@ -86,6 +88,21 @@ const acts = [
     flex-direction: column;
     justify-content: center;
     max-width: 28rem;
+  }
+
+  @media (max-width: 48rem) {
+    .act {
+      justify-content: flex-start;
+      max-width: none;
+    }
+
+    /* Text stays in the upper part while the scene plays in the lower part */
+    .act-text {
+      position: sticky;
+      top: 4.5rem;
+      background: var(--bg);
+      padding-block: 1rem;
+    }
   }
 
   .act h2 {
