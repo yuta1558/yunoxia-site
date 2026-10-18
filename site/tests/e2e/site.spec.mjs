@@ -33,6 +33,21 @@ test('no page contains the owner’s real name, employer or location', async ({ 
   }
 });
 
+// Local targets of public/_redirects must be served (astro preview does not apply the redirects themselves)
+test('redirect targets exist', async ({ request }) => {
+  const targets = readFileSync('public/_redirects', 'utf8')
+    .split('\n')
+    .filter((l) => l.trim() && !l.startsWith('#'))
+    .map((l) => l.trim().split(/\s+/)[1])
+    .filter((t) => t.startsWith('/'));
+  expect(targets.length).toBeGreaterThan(0);
+  for (const t of new Set(targets)) expect((await request.get(t)).status(), t).toBe(200);
+});
+
+test('sitemap-index.xml references the CMS posts sitemap', () => {
+  expect(readFileSync('dist/sitemap-index.xml', 'utf8')).toContain('<loc>https://yunoxia.one/sitemap-posts.xml</loc>');
+});
+
 test('footer links are at least 24px tall at 390px', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
@@ -48,6 +63,53 @@ test('unknown paths show the 404 page', async ({ page }) => {
   expect(res?.status()).toBe(404);
   await expect(page.locator('h1')).toHaveText('このページは見つかりませんでした。');
 });
+
+test('/en/ unknown paths show the 404 page', async ({ page }) => {
+  const res = await page.goto('/en/no-such-page/');
+  expect(res?.status()).toBe(404);
+  await expect(page.locator('h1')).toHaveCount(1);
+});
+
+// Head metadata of every sitemap page. Canonical and hreflang URLs carry the production origin, so paths are compared.
+const pathOf = (href) => new URL(href).pathname;
+const alternatesCache = new Map();
+async function alternatesOf(request, path) {
+  if (!alternatesCache.has(path)) {
+    const html = await (await request.get(path)).text();
+    const links = [...html.matchAll(/<link\b[^>]*>/g)].map((m) => m[0]).filter((l) => /rel="alternate"/.test(l) && /hreflang=/.test(l));
+    alternatesCache.set(path, Object.fromEntries(links.map((l) => [l.match(/hreflang="([^"]+)"/)[1], pathOf(l.match(/href="([^"]+)"/)[1])])));
+  }
+  return alternatesCache.get(path);
+}
+
+for (const path of routes) {
+  test(`head metadata: ${path}`, async ({ page, request }) => {
+    await page.goto(path);
+    const canon = await page.locator('link[rel="canonical"]').evaluateAll((els) => els.map((e) => e.href));
+    expect(canon).toHaveLength(1);
+    expect(pathOf(canon[0])).toBe(path);
+
+    const og = await page.locator('meta[property="og:image"]').getAttribute('content');
+    expect(og).toMatch(/^https?:\/\//);
+
+    for (const json of await page.locator('script[type="application/ld+json"]').allTextContents()) {
+      expect(() => JSON.parse(json)).not.toThrow();
+    }
+
+    const alts = await alternatesOf(request, path);
+    if (path.startsWith('/log/')) {
+      expect(alts).toEqual({});
+    } else if (Object.keys(alts).length) {
+      expect(alts['x-default']).toBeTruthy();
+      for (const lang of ['ja', 'en']) {
+        const target = alts[lang];
+        expect(target, `${lang} alternate`).toBeTruthy();
+        // Reciprocal: the page we point at points back with the same pair
+        expect((await alternatesOf(request, target))[path.startsWith('/en/') ? 'en' : 'ja'], `${target} lists ${path}`).toBe(path);
+      }
+    }
+  });
+}
 
 for (const path of routes) {
   test(`no horizontal overflow at 390px: ${path}`, async ({ page }) => {
@@ -125,4 +187,48 @@ test('the bead follows the pointer, also after the page was hidden and shown aga
   expect(after).toMatch(/^translate3d\(/);
   expect(after).not.toContain('NaN');
   expect(after).not.toBe(before);
+});
+
+test('dark theme changes the paper and keeps body text readable', async ({ page }) => {
+  const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
+  const lum = (c) => {
+    const [r, g, b] = c.map((v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  // The theme script in Base.astro reads localStorage 'theme' and sets html[data-theme]
+  const read = async (theme) => {
+    await page.goto('/about/');
+    await page.evaluate((t) => localStorage.setItem('theme', t), theme);
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    const cs = await page.evaluate(() => ({ bg: getComputedStyle(document.body).backgroundColor, fg: getComputedStyle(document.body).color }));
+    const [bg, fg] = [rgb(cs.bg), rgb(cs.fg)];
+    const [hi, lo] = [lum(bg), lum(fg)].sort((x, y) => y - x);
+    return { bg, ratio: (hi + 0.05) / (lo + 0.05) };
+  };
+  const light = await read('light');
+  const dark = await read('dark');
+  expect(dark.bg).not.toEqual(light.bg);
+  expect(dark.ratio).toBeGreaterThanOrEqual(4.5);
+  expect(light.ratio).toBeGreaterThanOrEqual(4.5);
+});
+
+test('rss.xml is a valid feed and updates.json holds ISO dates', async ({ request }) => {
+  const xml = await (await request.get('/rss.xml')).text();
+  expect(xml).toContain('<channel>');
+  expect(xml).toMatch(/<atom:link [^>]*rel="self"/);
+  const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1]);
+  expect(items.length).toBeGreaterThan(0);
+  for (const item of items) {
+    expect(item).toMatch(/<link>https?:\/\/[^<]+<\/link>/);
+    const pub = item.match(/<pubDate>([^<]+)<\/pubDate>/)?.[1];
+    expect(Number.isNaN(Date.parse(pub))).toBe(false);
+  }
+
+  const updates = await (await request.get('/updates.json')).json();
+  expect(Object.keys(updates).length).toBeGreaterThan(0);
+  for (const [path, value] of Object.entries(updates)) {
+    expect(path).toMatch(/^\//);
+    expect(value).toMatch(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/);
+  }
 });

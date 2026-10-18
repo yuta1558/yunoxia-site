@@ -44,8 +44,16 @@ export async function onRequestGet(context) {
       <div class="prose">${image}${renderMarkdown(post.content)}</div>
     </article>`;
 
+  const ogImage = post.featured_image ? new URL(post.featured_image, context.request.url).href : undefined;
   const structured = jsonLdString(
-    blogPosting({ title: post.title, date: post.published_at, url: canonical, description: postDescription(post) }),
+    blogPosting({
+      title: post.title,
+      date: post.published_at,
+      modified: post.updated_at,
+      image: ogImage,
+      url: canonical,
+      description: postDescription(post),
+    }),
   );
 
   const setAttr = (attr, value) => ({ element: (el) => el.setAttribute(attr, value) });
@@ -58,7 +66,7 @@ export async function onRequestGet(context) {
     .on('meta[property="og:url"]', setAttr('content', canonical))
     .on('meta[property="og:type"]', setAttr('content', 'article'))
     .on('link[rel="canonical"]', setAttr('href', canonical))
-    .on('meta[property="og:image"]', post.featured_image ? setAttr('content', new URL(post.featured_image, context.request.url).href) : {})
+    .on('meta[property="og:image"]', ogImage ? setAttr('content', ogImage) : {})
     .on('meta[property="og:image:width"], meta[property="og:image:height"]', post.featured_image ? { element: (el) => el.remove() } : {})
     // The Log shell has no hreflang alternates for posts; drop any it carries
     .on('link[rel="alternate"][hreflang]', { element: (el) => el.remove() })

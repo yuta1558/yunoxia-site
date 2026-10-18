@@ -5,3 +5,4 @@
 /log.html    /log/     301
 /links.html  /about/   301
 /blog.html   /log/     301
+/sitemap.xml  /sitemap-index.xml  301
