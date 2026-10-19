@@ -12,7 +12,16 @@ test('three ## sections become the three steps', () => {
 });
 
 test('other shapes stay prose', () => {
-  assert.equal(threeSteps('intro\n\n## a\n\nx\n\n## b\n\ny\n\n## c\n\nz'), null);
+  const ja = (a, b, c) => `## 分解。\n\n${a}\n\n## 理解。\n\n${b}\n\n## 作り替え。\n\n${c}`;
+  assert.equal(threeSteps('intro\n\n' + ja('x', 'y', 'z')), null);
+  // Three sections with other headings
+  assert.equal(threeSteps('## 背景。\n\nx\n\n## 方法。\n\ny\n\n## 結果。\n\nz'), null);
+  // A "## " line inside a code fence
+  assert.equal(threeSteps(ja('x', '```\n## not a heading\n```', 'z')), null);
+  assert.deepEqual(
+    threeSteps('## Take it apart.\n\nx\n\n## Understand it.\n\ny\n\n## Remake it.\n\nz').map((s) => s.heading),
+    ['Take it apart.', 'Understand it.', 'Remake it.'],
+  );
   assert.equal(threeSteps('## a\n\nx\n\n## b\n\ny'), null);
   assert.equal(threeSteps('## a\n\nx\n\n## b\n\ny\n\n## c\n\nz\n\n## d\n\nw'), null);
   assert.equal(threeSteps('## a\n\n## b\n\ny\n\n## c\n\nz'), null);

@@ -155,10 +155,6 @@ html[lang='en'] body {
   letter-spacing: -0.03em;
 }
 
-html[lang='ko'] .prose > p {
-  text-align: left;
-}
-
 /* Headlines are light and tight; Geist sets the Latin, Zen Kaku Gothic New the Japanese */
 h1,
 h2,
@@ -405,6 +401,12 @@ html[lang='ja'] .prose > p {
 
 html[lang='en'] .prose > p {
   hyphens: auto;
+}
+
+/* Korean is ragged right, also inside a Japanese page (as specific as the Japanese rule, and after it) */
+:is(html[lang='ko'], [lang='ko']) .prose > p,
+html .prose[lang='ko'] > p {
+  text-align: left;
 }
 
 .prose h2 {
@@ -1108,7 +1110,7 @@ html[lang='en'] .prose > p {
   width: var(--play-size);
   height: var(--play-size);
   border: var(--rule-heavy) solid var(--band-ink);
-  background: rgb(13 20 48 / 0.4);
+  background: color-mix(in srgb, var(--band) 40%, transparent);
   color: var(--band-ink);
   cursor: pointer;
   transition: background var(--dur-base) var(--ease-standard);
