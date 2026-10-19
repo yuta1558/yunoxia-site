@@ -61,7 +61,7 @@ test('footer links are at least 24px tall at 390px', async ({ page }) => {
 test('unknown paths show the 404 page', async ({ page }) => {
   const res = await page.goto('/no-such-page/');
   expect(res?.status()).toBe(404);
-  await expect(page.locator('h1')).toHaveText('このページは見つかりませんでした。');
+  await expect(page.locator('h1')).toHaveText('この層は、まだ積まれていない。');
 });
 
 test('/en/ unknown paths show the 404 page', async ({ page }) => {
@@ -247,4 +247,19 @@ test('full Zen Kaku Gothic New stylesheet for CMS posts: every url() is a copied
   expect(css).not.toMatch(/\.woff\)/);
   const base = href.replace(/full\.css$/, '');
   for (const u of new Set(urls)) expect((await request.head(base + u)).ok(), u).toBe(true);
+});
+
+test('footer theme switch: PAPER / BLUEPRINT are stored, AUTO clears the choice', async ({ page }) => {
+  await page.goto('/about/');
+  const group = page.locator('[data-theme-switch]');
+  await group.getByRole('button', { name: 'BLUEPRINT' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(group.getByRole('button', { name: 'BLUEPRINT' })).toHaveAttribute('aria-pressed', 'true');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await group.getByRole('button', { name: 'PAPER' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await group.getByRole('button', { name: 'AUTO' }).click();
+  expect(await page.evaluate(() => localStorage.getItem('theme'))).toBeNull();
+  await expect(group.getByRole('button', { name: 'AUTO' })).toHaveAttribute('aria-pressed', 'true');
 });

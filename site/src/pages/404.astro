@@ -1,21 +1,94 @@
 ---
 import Base from '../layouts/Base.astro';
+// The layer metaphor of the design system's EmptyState: the top three layers are dashed, not printed yet
 ---
 
-<Base title="404" description="お探しのページは見つかりませんでした。" noindex noCanonical>
-  <section class="wrap page">
-    <p class="eyebrow">404</p>
-    <h1 class="page-title phrases"><span>このページは</span><span>見つかりません</span><span>でした。</span></h1>
-    <p>URL が変わったか、ページを削除した可能性があります。</p>
-    <p><a href="/">トップへ戻る</a></p>
+<Base title="404" description="このページは見つかりませんでした。作ったものの一覧から探せます。" noindex noCanonical>
+  <section class="wrap missing">
+    <svg class="missing__art" viewBox="0 0 280 200" aria-hidden="true" focusable="false">
+      <g class="done">
+        <path d="M40 170 H240" opacity="0.25" /><path d="M44 158 H236" opacity="0.4" /><path d="M48 146 H232" opacity="0.55" /><path d="M52 134 H228" opacity="0.7" />
+      </g>
+      <g class="new">
+        <path d="M56 122 H130" /><path d="M60 110 H118" /><path d="M64 98 H104" />
+      </g>
+      <g class="todo">
+        <path d="M130 122 H224" /><path d="M118 110 H220" /><path d="M104 98 H216" />
+      </g>
+      <text x="140" y="80" text-anchor="middle">LAYER 404 · NOT PRINTED</text>
+    </svg>
+    <div class="missing__copy">
+      <p class="eyebrow">Error 404 · Page not found</p>
+      <h1 class="page-title phrases"><span>この層は、</span><br /><span>まだ積まれていない。</span></h1>
+      <p class="missing__text">ページが移動したか、URL が違う。作ったものの一覧から探せる。</p>
+      <p class="missing__actions">
+        <a class="btn btn--dark" href="/">トップに戻る</a>
+        <a class="btn btn--line" href="/works/">作ったものを見る</a>
+      </p>
+    </div>
   </section>
 </Base>
 
 <style>
-  .page {
-    padding-block: 6rem;
-    display: grid;
-    gap: 1rem;
+  .missing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-12);
+    padding-block: var(--section-y);
   }
 
+  .missing__art {
+    flex: 1 1 18rem;
+    max-width: 22.5rem;
+    height: auto;
+    margin-inline: auto;
+  }
+
+  .missing__art path {
+    fill: none;
+  }
+
+  .done path {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .new path {
+    stroke: var(--pen);
+    stroke-width: 1.6;
+  }
+
+  .todo path {
+    stroke: var(--pen);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+  }
+
+  .missing__art text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    fill: var(--pen);
+  }
+
+  .missing__copy {
+    flex: 1 1 22rem;
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+  }
+
+  .missing__copy .page-title {
+    margin: 0;
+  }
+
+  .missing__text {
+    max-width: 28em;
+  }
+
+  .missing__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
 </style>

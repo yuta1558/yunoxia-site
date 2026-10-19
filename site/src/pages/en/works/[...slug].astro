@@ -1,7 +1,7 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
-import { withFullStop } from '../../../lib/headline.mjs';
+import WorkPage from '../../../components/WorkPage.astro';
 
 export async function getStaticPaths() {
   const works = await getCollection('worksEn');
@@ -9,43 +9,8 @@ export async function getStaticPaths() {
 }
 
 const { work } = Astro.props;
-const { Content } = await render(work);
-const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 ---
 
 <Base title={work.data.title} description={work.data.description ?? work.data.summary}>
-  <article class="wrap page">
-    <p class="eyebrow"><a href="/en/works/">Works</a></p>
-    <h1 class="page-title">{withFullStop(work.data.title, 'en')}</h1>
-    <p class="summary">{work.data.summary}</p>
-    <p class="meta">
-      {work.data.status} · <time datetime={work.data.updated.toISOString()}>{fmt(work.data.updated)}</time> updated
-      {work.data.tags.length > 0 && <> · {work.data.tags.join(' / ')}</>}
-    </p>
-    <div class="prose">
-      <Content />
-    </div>
-  </article>
+  <WorkPage work={work} lang="en" />
 </Base>
-
-<style>
-
-  .eyebrow a {
-    text-decoration: none;
-  }
-
-
-  .summary {
-    font-family: var(--font-sans);
-    font-weight: 300;
-    font-size: var(--step-1);
-    line-height: 1.45;
-    letter-spacing: -0.03em;
-    max-width: var(--measure);
-    margin-bottom: 0.75rem;
-  }
-
-  .prose {
-    margin-top: 2rem;
-  }
-</style>

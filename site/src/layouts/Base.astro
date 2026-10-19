@@ -62,6 +62,12 @@ const nav = [
   { href: localPath(lang, '/about/'), label: 'About' },
 ];
 const current = Astro.url.pathname;
+// Footer: the build date as the sheet's revision (JST)
+const rev = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' })
+  .format(new Date())
+  .replaceAll('-', '.');
+const year = rev.slice(0, 4);
+const otherLang = lang === 'ja' ? 'en' : 'ja';
 
 // JSON-LD: WebSite on the top pages, plus whatever the page passes
 const isTop = current === '/' || current === '/en/' || current === '/en';
@@ -104,7 +110,9 @@ const structured = [
     <meta name="theme-color" content="#efece5" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0d1430" media="(prefers-color-scheme: dark)" />
 
-    <!-- Apply the theme before first paint (stored choice, then system preference) -->
+    <!-- Apply the theme before first paint. A stored 'light' / 'dark' wins; nothing stored is AUTO
+         (the system preference). html[data-theme] always holds the resolved theme: the scene and the
+         bead watch that attribute. -->
     <script is:inline>
       (() => {
         let theme;
@@ -141,9 +149,6 @@ const structured = [
           {t.langSwitch}<span class="sr-only"> — {t.langSwitchLabel}</span>
         </a>
       )}
-      <button class="theme" type="button" aria-label={t.theme} data-theme-toggle>
-        <span aria-hidden="true"></span>
-      </button>
     </header>
 
     <main id="main">
@@ -151,28 +156,89 @@ const structured = [
     </main>
 
     <footer class="site-footer">
-      <p class="meta">
+      <div class="foot-mark">
+        <a class="brand" href={localPath(lang, '/')} aria-label={t.home}>yunoxia</a>
+        <p class="foot-line">{t.siteTagline}</p>
+      </div>
+      <nav class="foot-nav" aria-label={t.footerNav}>
+        {nav.map((item) => (
+          <a href={item.href} hreflang={item.hreflang}>{item.label}</a>
+        ))}
+      </nav>
+      <div class="foot-links">
         {/* Keep Cloudflare Email Obfuscation off this link; set:html writes the comments out verbatim */}
-        <Fragment set:html="<!--email_off-->" /><a href="mailto:contact@yunoxia.one">contact@yunoxia.one</a><Fragment set:html="<!--/email_off-->" />
-        <span aria-hidden="true"> · </span>
+        <Fragment set:html="<!--email_off-->" /><a href="mailto:contact@yunoxia.one">{t.contact}</a><Fragment set:html="<!--/email_off-->" />
         <a href="/rss.xml">RSS</a>
-      </p>
-      <p class="meta">© {new Date().getFullYear()} yunoxia</p>
+      </div>
+      <div class="foot-controls">
+        {other && (
+          <div class="seg" role="group" aria-label={t.language}>
+            <span class="seg__on" aria-current="true">{lang.toUpperCase()}</span>
+            <a href={other} hreflang={otherLang} lang={otherLang}>
+              {otherLang.toUpperCase()}<span class="sr-only"> — {t.langSwitchLabel}</span>
+            </a>
+          </div>
+        )}
+        <div class="seg" role="group" aria-label={t.theme} data-theme-switch>
+          <button type="button" data-choice="auto" aria-pressed="true">AUTO</button>
+          <button type="button" data-choice="light" aria-pressed="false">PAPER</button>
+          <button type="button" data-choice="dark" aria-pressed="false">BLUEPRINT</button>
+        </div>
+      </div>
+      <div class="foot-sheet meta">
+        <span>© {year} yunoxia</span>
+        <span>REV <time datetime={rev.replaceAll('.', '-')}>{rev}</time></span>
+      </div>
     </footer>
 
     <script is:inline>
       (() => {
-        const toggle = document.querySelector('[data-theme-toggle]');
-        if (!toggle) return;
-        // aria-pressed = the dark theme is on
-        const sync = () => toggle.setAttribute('aria-pressed', String(document.documentElement.dataset.theme === 'dark'));
-        sync();
-        toggle.addEventListener('click', () => {
-          const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-          document.documentElement.dataset.theme = next;
-          try { localStorage.setItem('theme', next); } catch {}
-          sync();
+        const group = document.querySelector('[data-theme-switch]');
+        if (!group) return;
+        const root = document.documentElement;
+        const system = matchMedia('(prefers-color-scheme: dark)');
+        let choice = 'auto';
+        try {
+          const stored = localStorage.getItem('theme');
+          if (stored === 'light' || stored === 'dark') choice = stored;
+        } catch {}
+        const apply = () => {
+          root.dataset.theme = choice === 'auto' ? (system.matches ? 'dark' : 'light') : choice;
+          for (const b of group.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.choice === choice));
+        };
+        apply();
+        // AUTO follows the system while the page is open
+        system.addEventListener('change', () => choice === 'auto' && apply());
+        group.addEventListener('click', (e) => {
+          const b = e.target.closest('button[data-choice]');
+          if (!b) return;
+          choice = b.dataset.choice;
+          try {
+            if (choice === 'auto') localStorage.removeItem('theme');
+            else localStorage.setItem('theme', choice);
+          } catch {}
+          apply();
         });
+      })();
+    </script>
+    <script is:inline>
+      // Contents of a post: the section last scrolled past is the current one (ink, heavy rule)
+      (() => {
+        const links = [...document.querySelectorAll('[data-toc] a[href^="#"]')];
+        if (links.length < 2 || !('IntersectionObserver' in window)) return;
+        const byId = new Map(links.map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
+        const heads = [...byId.keys()].map((id) => document.getElementById(id)).filter(Boolean);
+        const mark = () => {
+          let current = heads[0];
+          for (const h of heads) if (h.getBoundingClientRect().top < innerHeight * 0.3) current = h;
+          for (const a of links) {
+            if (byId.get(current.id) === a) a.setAttribute('aria-current', 'true');
+            else a.removeAttribute('aria-current');
+          }
+        };
+        const io = new IntersectionObserver(mark, { rootMargin: '0px 0px -70% 0px' });
+        for (const h of heads) io.observe(h);
+        mark();
       })();
     </script>
     <Bead />
@@ -223,11 +289,11 @@ const structured = [
     color: var(--ink);
   }
 
-  nav {
+  .site-header nav {
     display: flex;
   }
 
-  nav ul {
+  .site-header nav ul {
     display: flex;
     gap: clamp(1rem, 3vw, 2.5rem);
     list-style: none;
@@ -235,11 +301,11 @@ const structured = [
     padding: 0;
   }
 
-  nav li {
+  .site-header nav li {
     display: flex;
   }
 
-  nav a {
+  .site-header nav a {
     display: flex;
     align-items: center;
     font-family: var(--font-sans);
@@ -252,12 +318,12 @@ const structured = [
     margin-bottom: -1px;
   }
 
-  nav a:hover,
-  nav a[aria-current='page'] {
+  .site-header nav a:hover,
+  .site-header nav a[aria-current='page'] {
     color: var(--ink);
   }
 
-  nav a[aria-current='page'] {
+  .site-header nav a[aria-current='page'] {
     border-bottom-color: var(--ink);
   }
 
@@ -277,51 +343,140 @@ const structured = [
     color: var(--ink);
   }
 
-  .theme {
-    align-self: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    display: grid;
-    place-items: center;
-    border: 0;
-    background: none;
-    color: var(--ink);
-    cursor: pointer;
-    margin-right: -0.75rem;
-  }
-
-  /* Half-filled square: paper / blueprint */
-  .theme span {
-    width: 0.85rem;
-    height: 0.85rem;
-    border: 1.5px solid currentColor;
-    background: linear-gradient(90deg, currentColor 50%, transparent 50%);
-    transition: transform var(--dur-base) var(--ease);
-  }
-
-  :global([data-theme='dark']) .theme span {
-    transform: rotate(180deg);
-  }
-
   main {
     min-height: 70vh;
   }
 
-  /* Footer links: a 24px target (WCAG 2.5.8); the negative margin keeps the layout where it was */
-  .site-footer .meta a {
-    display: inline-block;
-    padding-block: 0.25rem;
-    margin-block: -0.25rem;
+  /* Footer: four columns over a hairline, the sheet's bottom row under another */
+  .site-footer {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: var(--space-8);
+    margin: var(--section-y) var(--gutter) 0;
+    padding: var(--space-8) 0 var(--space-6);
+    border-top: 1px solid var(--line);
   }
 
-  .site-footer {
+  .foot-mark .brand {
+    display: inline-block;
+  }
+
+  .foot-line {
+    margin-top: var(--space-3);
+    font-size: 0.875rem;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+
+  .foot-nav,
+  .foot-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  /* Each link is at least 24px tall (WCAG 2.5.8) */
+  .foot-nav a,
+  .foot-links a {
+    padding-block: 4px;
+    line-height: 1.5;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .foot-nav a {
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 0.95rem;
+    letter-spacing: -0.03em;
+  }
+
+  .foot-links a {
+    font-size: 0.875rem;
+  }
+
+  .foot-nav a:hover,
+  .foot-links a:hover {
+    color: var(--pen);
+  }
+
+  .foot-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-3);
+  }
+
+  /* Language and theme: framed mono labels, the chosen one filled with ink */
+  .seg {
+    display: inline-flex;
+    border: 1px solid var(--muted);
+  }
+
+  .seg > * {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 12px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      color var(--dur-fast) var(--ease-standard),
+      background var(--dur-base) var(--ease-standard);
+  }
+
+  .seg > * + * {
+    border-left: 1px solid var(--muted);
+  }
+
+  .seg > :hover {
+    color: var(--pen);
+  }
+
+  .seg > .seg__on,
+  .seg > [aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--paper);
+    cursor: default;
+  }
+
+  .seg > :active {
+    transition: none;
+  }
+
+  .foot-sheet {
+    grid-column: 1 / -1;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 0.5rem 1.5rem;
-    margin-top: var(--section-y);
-    padding: 1.25rem var(--gutter);
+    gap: var(--space-2) var(--space-6);
+    padding-top: var(--space-3);
     border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 48rem) {
+    .site-footer {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6);
+    }
+
+    .foot-mark {
+      grid-column: 1 / -1;
+    }
+
+    .foot-controls {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
   }
 
   /* Phones: the nav drops to its own row under the wordmark, keeping the bottom-edge underline */
@@ -335,13 +490,13 @@ const structured = [
       padding-block: 0.9rem;
     }
 
-    nav {
+    .site-header nav {
       order: 3;
       width: 100%;
       height: 2.75rem;
     }
 
-    nav ul {
+    .site-header nav ul {
       width: 100%;
       justify-content: space-between;
     }

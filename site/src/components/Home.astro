@@ -99,7 +99,7 @@ const xray = Array.from({ length: 30 }, (_, i) => i);
   <WorkCards works={works} lang={lang} />
 </section>
 
-<section class="dark">
+<section class="dark band-edge">
   <p class="statement phrases">{t.statement.map((s) => <span>{s}</span>)}</p>
   <svg class="xray" viewBox="0 0 600 260" aria-hidden="true" focusable="false">
     {xray.map((i) => <path d={contour(i, 300, 240, 7, 230 - i * 3)} style={`opacity:${(0.12 + (i / 30) * 0.6).toFixed(3)}`} />)}

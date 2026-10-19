@@ -6,7 +6,7 @@
 
 - **Hosting**: Cloudflare Pages project `yunoxia-next` (root directory `site`, build `npm run build`, output `dist`), auto-deployed from `main`. Every PR gets a preview at `*.yunoxia-next.pages.dev`. The old project `yunoxia-site` (the pre-2026 static site at the repository root) has automatic deployments turned off and no longer serves the domain.
 - **Languages**: Japanese at the root, English under `/en/` (Log is Japanese only).
-- **Design system**: v3 (drafting paper, one pen-blue signal colour, light headlines; only the wordmark and the top h1 are heavy). The reference lives in a Claude Design System artifact; the code is the source of truth for values.
+- **Design system**: v4 (drafting paper, one pen-blue signal colour, light headlines; only the wordmark and the top h1 are heavy; states shown by rule weight, line style, fill and symbol, never by a new colour). The reference lives in a Claude Design System artifact; the code is the source of truth for values. Page types: Log article (`.article-*` in `global.css`, shared with the CMS post Function), Works page (`components/WorkPage.astro`), 404. The theme switch (AUTO / PAPER / BLUEPRINT) is in the footer.
 
 ## Directory Structure
 
@@ -65,7 +65,7 @@ npm run test:e2e     # needs a build first; set CHROMIUM_PATH to use a preinstal
 - **Effects**: every effect needs a row in the effects ledger (`src/scene/README.md`): what it conveys, its reduced-motion / no-WebGL fallback, and its performance budget. Reduced motion and no-WebGL keep the static drawing and never request three.js or the bead.
 - **Performance**: Lighthouse (mobile) ≥ 90 on reading pages, ≥ 80 on the top page. `?fps=1` on the top page shows a frame meter for real-device checks (headless Chromium renders WebGL in software, so fps measured there is meaningless).
 - **Fonts**: Zen Kaku Gothic New is served only for the characters the site uses (`scripts/font-subsets.mjs`). Weight 700 is used only by the top h1. CMS post pages (`/log/p/<slug>/`) show characters the build never sees, so they also load a non-blocking full 300/400/500 stylesheet from `/assets/fonts/zen-<hash>/`, holding only the faces the subset lacks (generated and gitignored, written by `font-subsets.mjs`; the path is in `src/styles/fonts.generated.json`; `/log/` names the path in a `<template data-cms-font>` that the post Function turns into the link). Do not import Fontsource's full weight CSS in pages: it adds ~180 KB of render-blocking CSS.
-- **Colours**: use the v3 tokens in `global.css` (`--paper`, `--ink`, `--muted`, `--line`, `--pen`, `--panel`, `--band`…), defined for both themes. `--bg` / `--fg` / `--accent` are aliases read at runtime by the scene, the bead and the research figures; keep them.
+- **Colours**: use the v4 tokens in `global.css` (`--paper`, `--ink`, `--muted`, `--line`, `--pen`, `--panel`, `--band`…), defined for both themes. `--bg` / `--fg` / `--accent` are aliases read at runtime by the scene, the bead and the research figures; keep them.
 - **Typography**: headlines are light (300) and end with a full stop; break Japanese headlines only between phrases (`.phrases` spans). Bold only for the wordmark and the top h1; inline `strong` in prose is 500. The full stop rule covers section heads, prose h2s in Markdown and pages, and Work and Log h1s; for titles it is added in the h1 only (`src/lib/headline.mjs`, also used by CMS posts), so `<title>`, cards and RSS keep the bare title. Names such as "HevORT-lite" get none.
 - **One h1 per page**, `lang` set, no page errors: the e2e suite checks every sitemap page.
 

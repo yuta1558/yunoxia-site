@@ -8,6 +8,7 @@ import { getPublishedBySlug } from '../../_lib/posts.js';
 import { fontLinks } from '../../_lib/fonts.js';
 import { fetchAsset, formatDate, withHtmlHeaders } from '../../_lib/shell.js';
 import { withFullStop } from '../../../src/lib/headline.mjs';
+import { numberHeadings, tocMarkup } from '../../../src/lib/toc.mjs';
 import { blogPosting, jsonLdString } from '../../../src/lib/jsonld.mjs';
 
 async function notFound(context) {
@@ -33,19 +34,28 @@ export async function onRequestGet(context) {
   const canonical = new URL(`/log/p/${post.slug}/`, context.request.url).href;
   const title = `${post.title} — yunoxia`;
   const description = postDescription(post) || post.title;
-  const tags = post.tags.length ? ` · ${post.tags.map(escapeHtml).join(' / ')}` : '';
+  const tags = post.tags.length ? `<span>${post.tags.map(escapeHtml).join(' · ')}</span>` : '';
   const size = post.featured_image ? sizeFromKey(post.featured_image) : null;
   const dims = size ? ` width="${size.width}" height="${size.height}"` : '';
   const image = post.featured_image
     ? `<p><img src="${escapeHtml(post.featured_image)}" alt=""${dims} loading="lazy" decoding="async"></p>`
     : '';
-  // Same page head as the static reading pages: label, light title, mono meta, prose (global.css)
+  const lead = post.excerpt ? `<p class="article-lead">${escapeHtml(post.excerpt)}</p>` : '';
+  const body = numberHeadings(renderMarkdown(post.content));
+  // The article type of the design system, as in src/pages/log/[...slug].astro (styles in global.css)
   const article = `
-    <article class="wrap page">
-      <p class="eyebrow"><a href="/log/">Log</a></p>
-      <h1 class="page-title">${escapeHtml(withFullStop(post.title, 'ja'))}</h1>
-      <p class="meta"><time datetime="${escapeHtml(post.published_at || '')}">${formatDate(post.published_at)}</time>${tags}</p>
-      <div class="prose">${image}${renderMarkdown(post.content)}</div>
+    <article class="article">
+      <header class="article-head grid-paper">
+        <div class="wrap article-head__in">
+          <p class="sheet-strip meta"><span><a href="/log/">Log</a> · <time datetime="${escapeHtml(post.published_at || '')}">${formatDate(post.published_at)}</time></span>${tags}</p>
+          <h1 class="page-title">${escapeHtml(withFullStop(post.title, 'ja'))}</h1>
+          ${lead}
+        </div>
+      </header>
+      <div class="wrap article-layout">
+        <div class="prose article-body">${image}${body.html}</div>
+        ${tocMarkup(body.toc)}
+      </div>
     </article>`;
 
   const ogImage = post.featured_image ? new URL(post.featured_image, context.request.url).href : undefined;

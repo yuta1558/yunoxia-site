@@ -1,0 +1,132 @@
+---
+// A Works page (ja and en), the "Works 詳細" type of the design system v4: a gridded panel hero
+// (drawing left; label, name, line and state tag right), the body, then other works as cards.
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { type Lang, localPath } from '../i18n/ui';
+import { withFullStop } from '../lib/headline.mjs';
+import WorkArt from './WorkArt.astro';
+import WorkCards from './WorkCards.astro';
+
+interface Props {
+  work: CollectionEntry<'works'> | CollectionEntry<'worksEn'>;
+  lang: Lang;
+}
+
+const { work, lang } = Astro.props;
+const { Content } = await render(work);
+const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
+
+const all = (await getCollection(lang === 'ja' ? 'works' : 'worksEn')).sort((a, b) => +b.data.updated - +a.data.updated);
+const index = all.findIndex((w) => w.id === work.id);
+const others = all.filter((w) => w.id !== work.id).slice(0, 3);
+
+// State tags tell states apart by symbol and line, never by colour
+const states = {
+  完了: ['done', '■ Done'],
+  Done: ['done', '■ Done'],
+  進行中: ['wip', '◐ WIP'],
+  'In progress': ['wip', '◐ WIP'],
+  構想: ['plan', '○ Planned'],
+  Planned: ['plan', '○ Planned'],
+} as const;
+const [stateKind, stateLabel] = states[work.data.status];
+
+const t = {
+  ja: { updated: '更新', others: ['ほかに', '作ったもの。'], all: 'すべて見る' },
+  en: { updated: 'updated', others: ['Other', 'things I made.'], all: 'See all' },
+}[lang];
+---
+
+<article>
+  <div class="work-hero-wrap">
+    <header class="work-hero grid-panel">
+      <div class="work-hero__art">
+        <WorkArt id={work.id} cover={work.data.cover} coverAlt={work.data.coverAlt} index={index} large />
+      </div>
+      <div class="work-hero__copy">
+        <p class="eyebrow">
+          <a href={localPath(lang, '/works/')}>Works</a> {String(index + 1).padStart(2, '0')}
+          {work.data.tags.length > 0 && <> · {work.data.tags.join(' · ')}</>}
+        </p>
+        <h1 class="page-title">{withFullStop(work.data.title, lang)}</h1>
+        <p class="work-hero__line">{work.data.summary}</p>
+        <p class="work-hero__state">
+          <span class:list={['tag', { 'tag--done': stateKind === 'done', 'tag--wip': stateKind === 'wip' }]}>{stateLabel}</span>
+          <span class="meta"><time datetime={work.data.updated.toISOString()}>{fmt(work.data.updated)}</time> {t.updated}</span>
+        </p>
+      </div>
+    </header>
+  </div>
+
+  <div class="wrap work-body">
+    <div class="prose">
+      <Content />
+    </div>
+  </div>
+
+  {others.length > 0 && (
+    <section class="wrap work-others">
+      <div class="section-head">
+        <h2 class="phrases">{t.others.map((p) => <span>{p}</span>)}</h2>
+        <span></span>
+        <a class="btn btn--line" href={localPath(lang, '/works/')}>{t.all}</a>
+      </div>
+      <WorkCards works={others} lang={lang} />
+    </section>
+  )}
+</article>
+
+<style>
+  .work-hero-wrap {
+    padding: var(--gutter);
+  }
+
+  .work-hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-8);
+    padding: clamp(24px, 5vw, 56px);
+    min-height: 27.5rem;
+  }
+
+  .work-hero__art {
+    flex: 1 1 20rem;
+    display: grid;
+    place-items: center;
+  }
+
+  .work-hero__copy {
+    flex: 1 1 20rem;
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+  }
+
+  .work-hero__copy .page-title {
+    margin: 0;
+  }
+
+  .eyebrow a {
+    text-decoration: none;
+  }
+
+  .work-hero__line {
+    max-width: 28em;
+  }
+
+  .work-hero__state {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-6);
+  }
+
+  .work-body {
+    padding-block: clamp(32px, 6vw, 64px) 0;
+  }
+
+  .work-others {
+    padding-top: var(--section-y);
+  }
+</style>

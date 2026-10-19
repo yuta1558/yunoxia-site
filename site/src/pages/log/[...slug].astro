@@ -1,18 +1,25 @@
 ---
+// A Log post: the "記事" type of the design system v4. CMS posts (functions/log/p/[slug].js) build the
+// same markup; the styles live in global.css (.article-*) so both pick them up.
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { withFullStop } from '../../lib/headline.mjs';
 import { excerpt } from '../../lib/excerpt.mjs';
 import { blogPosting } from '../../lib/jsonld.mjs';
+import { tocFromText, tocMarkup } from '../../lib/toc.mjs';
 
 export async function getStaticPaths() {
-  const logs = await getCollection('log');
-  return logs.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+  const logs = (await getCollection('log')).sort((a, b) => +a.data.date - +b.data.date);
+  return logs.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: { entry, prev: logs[i - 1], next: logs[i + 1] },
+  }));
 }
 
-const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { entry, prev, next } = Astro.props;
+const { Content, headings } = await render(entry);
 const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
+const toc = tocMarkup(tocFromText(headings.filter((h) => h.depth === 2)));
 
 // Description: the first paragraph as plain text (also used by the RSS feed)
 const description = excerpt(entry.body) || undefined;
@@ -24,27 +31,31 @@ const description = excerpt(entry.body) || undefined;
   ogType="article"
   jsonLd={blogPosting({ title: entry.data.title, date: entry.data.date, url: new URL(Astro.url.pathname, Astro.site), description })}
 >
-  <article class="wrap page">
-    <p class="eyebrow"><a href="/log/">Log</a></p>
-    <h1 class="page-title">{withFullStop(entry.data.title, 'ja')}</h1>
-    <p class="meta">
-      <time datetime={entry.data.date.toISOString()}>{fmt(entry.data.date)}</time>
-      {entry.data.tags.length > 0 && <> · {entry.data.tags.join(' / ')}</>}
-    </p>
-    <div class="prose">
-      <Content />
+  <article class="article">
+    <header class="article-head grid-paper">
+      <div class="wrap article-head__in">
+        <p class="sheet-strip meta">
+          <span><a href="/log/">Log</a> · <time datetime={entry.data.date.toISOString()}>{fmt(entry.data.date)}</time></span>
+          {entry.data.tags.length > 0 && <span>{entry.data.tags.join(' · ')}</span>}
+        </p>
+        <h1 class="page-title">{withFullStop(entry.data.title, 'ja')}</h1>
+      </div>
+    </header>
+    <div class="wrap article-layout">
+      <div class="prose article-body">
+        <Content />
+      </div>
+      <Fragment set:html={toc} />
     </div>
+    {(prev || next) && (
+      <nav class="wrap article-pager" aria-label="前後の記事">
+        {prev ? (
+          <a href={`/log/${prev.id}/`}><span class="meta">← {fmt(prev.data.date)}</span><span class="article-pager__title">{prev.data.title}</span></a>
+        ) : <span></span>}
+        {next && (
+          <a class="article-pager__next" href={`/log/${next.id}/`}><span class="meta">{fmt(next.data.date)} →</span><span class="article-pager__title">{next.data.title}</span></a>
+        )}
+      </nav>
+    )}
   </article>
 </Base>
-
-<style>
-
-  .eyebrow a {
-    text-decoration: none;
-  }
-
-
-  .prose {
-    margin-top: 2rem;
-  }
-</style>
