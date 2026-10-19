@@ -18,7 +18,7 @@ const { items } = Astro.props as { items: Item[] };
 
 <dl class="specs">
   {items.map((s) => (
-    <div>
+    <div class="rule-draw">
       <dt class="meta">{s.l}</dt>
       <dd>
         <span class:list={['num', { 'num--long': s.v.length > 6 }]}>{s.v}</span>
@@ -37,8 +37,8 @@ const { items } = Astro.props as { items: Item[] };
     margin: 0;
   }
 
+  /* The heavy rule on top is .rule-draw (global.css), so it can be drawn */
   .specs > div {
-    border-top: 1.5px solid var(--ink);
     padding-top: 1rem;
   }
 

@@ -60,6 +60,7 @@
   --grid-40: 40px;
   --rule-heavy: 1.5px;
   --rule-hair: 1px;
+  --rise-layer: 8px;
   --icon-size: 24px;
   --icon-size-inline: 16px;
   --icon-stroke: 1.5px;
@@ -810,6 +811,54 @@ html[lang='en'] .prose > p {
 
 .article-pager a:hover .article-pager__title {
   color: var(--pen);
+}
+
+/* Motion for blocks that scroll into view (src/motion/reveal.ts). Only blocks below the first screen
+   are marked pending, and only when motion is allowed; without the script nothing is hidden. */
+@keyframes stack {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise-layer));
+  }
+}
+
+@keyframes draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+[data-reveal='pending'] {
+  opacity: 0;
+  transform: translateY(var(--rise-layer));
+}
+
+[data-reveal='in'] {
+  animation: stack var(--dur-enter) var(--ease-machine) both;
+  animation-delay: calc(var(--reveal-step, 0) * var(--stagger-layer));
+}
+
+/* A heavy rule that can be drawn: the 1.5px line is a pseudo-element, so it moves by transform only */
+.rule-draw {
+  position: relative;
+}
+
+.rule-draw::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--rule-heavy);
+  background: var(--rule-color, var(--ink));
+  transform-origin: left;
+}
+
+[data-reveal='pending'].rule-draw::before {
+  transform: scaleX(0);
+}
+
+[data-reveal='in'].rule-draw::before {
+  animation: draw var(--dur-draw) var(--ease-machine) both;
+  animation-delay: calc(var(--reveal-step, 0) * var(--stagger-layer));
 }
 
 /* Cross-document page transitions (no JS). Disabled under reduced motion below. */

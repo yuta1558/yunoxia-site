@@ -95,7 +95,7 @@ const steps = threeSteps(work.body ?? '')?.map((s, i) => ({ ...s, label: STEP_LA
       <p class="work-steps__statement phrases"><Phrases parts={t.statement} lang={lang} /></p>
       <ol class="work-steps__list">
         {steps.map((s) => (
-          <li>
+          <li class="rule-draw">
             <p class="work-steps__label">{s.label}</p>
             <h2>{s.heading}</h2>
             <div class="work-steps__text" set:html={s.html} />
@@ -204,7 +204,7 @@ const steps = threeSteps(work.body ?? '')?.map((s, i) => ({ ...s, label: STEP_LA
     align-content: start;
     gap: var(--space-2);
     padding-top: var(--space-3);
-    border-top: var(--rule-heavy) solid var(--band-ink);
+    --rule-color: var(--band-ink);
   }
 
   .work-steps__label {

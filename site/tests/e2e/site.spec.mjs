@@ -263,3 +263,25 @@ test('footer theme switch: PAPER / BLUEPRINT are stored, AUTO clears the choice'
   expect(await page.evaluate(() => localStorage.getItem('theme'))).toBeNull();
   await expect(group.getByRole('button', { name: 'AUTO' })).toHaveAttribute('aria-pressed', 'true');
 });
+
+test('blocks below the first screen stack in once they are scrolled to', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await page.goto('/works/hevort-lite/');
+  const cards = page.locator('.cards > li');
+  await expect(cards.first()).toHaveAttribute('data-reveal', 'pending');
+  await cards.first().scrollIntoViewIfNeeded();
+  await expect(cards.first()).toHaveAttribute('data-reveal', 'in');
+  await expect.poll(() => cards.first().evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+  // The spec numeral counts up and ends on its written value
+  await page.locator('.specs').scrollIntoViewIfNeeded();
+  await expect(page.locator('.specs .num').first()).toHaveText('180');
+});
+
+test.describe('reduced motion', () => {
+  test.use({ reducedMotion: 'reduce' });
+  test('nothing is hidden for the reveal', async ({ page }) => {
+    await page.goto('/works/hevort-lite/');
+    await page.waitForLoadState('load');
+    expect(await page.locator('[data-reveal]').count()).toBe(0);
+  });
+});
