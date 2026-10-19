@@ -10,16 +10,18 @@ interface Props {
   cover?: string;
   coverAlt?: string;
   index: number;
+  /** The hero of a Works page: no height cap */
+  large?: boolean;
 }
 
-const { id, cover, coverAlt = '', index } = Astro.props;
+const { id, cover, coverAlt = '', index, large = false } = Astro.props;
 const k = index % 3;
 ---
 
 {cover ? (
-  <img class="cover" src={cover} alt={coverAlt} loading="lazy" decoding="async" />
+  <img class:list={['cover', { large }]} src={cover} alt={coverAlt} loading="lazy" decoding="async" />
 ) : (
-  <svg class="art" viewBox="0 0 300 220" aria-hidden="true" focusable="false">
+  <svg class:list={['art', { large }]} viewBox="0 0 300 220" aria-hidden="true" focusable="false">
     {id === 'lpd8-dmx-kit' ? (
       <g>
         {/* Pad controller: 8 knobs, 8 pads (one pressed), a cable to a light and its beam */}
@@ -152,5 +154,12 @@ const k = index % 3;
     .cover {
       height: 9rem;
     }
+  }
+
+  .art.large,
+  .cover.large {
+    max-height: none;
+    height: auto;
+    max-width: 28rem;
   }
 </style>

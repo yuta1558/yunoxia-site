@@ -1,4 +1,4 @@
-/* yunoxia — base styles (design system v3)
+/* yunoxia — base styles (design system v4)
    Drafting paper, one pen-blue signal, light headlines. Only two things are heavy: the wordmark and the top h1.
    Tokens follow the design system; the older names (--bg, --fg, --accent…) stay as aliases for the scene,
    the bead and the research figures, which read them at runtime. */
@@ -18,8 +18,13 @@
   --ramp-0: #1f3dff;
   --ramp-1: #6e7fd6;
   --ramp-2: #c9b9a0;
-  --ramp-3: #ff9a3c;
-  --ramp-4: #ff4d1a;
+  /* Diverging data ramp, figures only (v4: the warm side matched in lightness to the cool side) */
+  --ramp-3: #e0652e;
+  --ramp-4: #b0300a;
+  /* Reserved, unused: errors are shown in ink (design system "エラーと状態") */
+  --alert: var(--ramp-4);
+  --grid-line: rgb(18 18 17 / 0.045);
+  --grid-line-panel: rgb(18 18 17 / 0.06);
 
   /* Aliases read by scene.ts, bead.ts and the research figures */
   --bg: var(--paper);
@@ -44,9 +49,33 @@
   --step-3: clamp(2rem, 5vw, 4rem);
   --step-4: clamp(2.6rem, 5.6vw, 5rem);
 
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --grid-40: 40px;
+  --rule-heavy: 1.5px;
+  --rule-hair: 1px;
+  --icon-size: 24px;
+  --icon-size-inline: 16px;
+  --icon-stroke: 1.5px;
+  --touch-target: 44px;
+
+  /* Motion: "switch" uses ease-standard; "stack", "draw" and "read" use ease-machine */
   --dur-fast: 150ms;
   --dur-base: 200ms;
-  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-enter: 400ms;
+  --dur-draw: 600ms;
+  --dur-count: 800ms;
+  --stagger-layer: 60ms;
+  --dur-cap: 1200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-machine: cubic-bezier(0.3, 0, 0.7, 1);
+  --ease: var(--ease-standard);
   --ease-out: var(--ease);
   color-scheme: light;
 }
@@ -58,10 +87,16 @@
   --panel: #1b2550;
   --ink: #e8ebf4;
   --muted: #8e97b3;
-  --line: #2a335a;
+  --line: #323c68;
   --pen: #8fa2ff;
   --band: #060a1a;
   --ramp-0: #8fa2ff;
+  --ramp-1: #5b6bc0;
+  --ramp-2: #3d4360;
+  --ramp-3: #c85a2a;
+  --ramp-4: #ff9a5c;
+  --grid-line: rgb(143 162 255 / 0.07);
+  --grid-line-panel: rgb(143 162 255 / 0.07);
   --accent-soft: rgb(143 162 255 / 0.14);
   color-scheme: dark;
 }
@@ -256,6 +291,11 @@ a:hover {
   color: var(--ink);
 }
 
+.btn--line {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
 .btn--outline {
   border-color: var(--band-ink);
   color: var(--band-ink);
@@ -300,7 +340,9 @@ a:hover {
   }
 }
 
-/* Long-form text (Markdown bodies) */
+/* Long-form text (Markdown bodies). Typesetting rules of the design system v4:
+   paragraphs 24px apart and never indented; 48px before a heading, 24px after (half before a heading
+   that follows another); Japanese justified, English ragged and hyphenated. */
 .prose {
   max-width: var(--measure);
 }
@@ -311,14 +353,38 @@ a:hover {
 }
 
 .prose > * + * {
-  margin-top: 1.25em;
+  margin-top: var(--space-6);
+}
+
+.prose > :is(h2, h3, h4, h5, h6) {
+  margin-top: var(--space-12);
+}
+
+.prose > :is(h2, h3, h4, h5, h6) + :is(h2, h3, h4, h5, h6) {
+  margin-top: var(--space-6);
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose p {
+  text-wrap: pretty;
+}
+
+html[lang='ja'] .prose > p {
+  text-align: justify;
+  text-justify: inter-character;
+}
+
+html[lang='en'] .prose > p {
+  hyphens: auto;
 }
 
 .prose h2 {
-  font-size: var(--step-1);
+  font-size: 1.5rem;
   line-height: 1.2;
   letter-spacing: -0.03em;
-  margin-top: 2.5em;
 }
 
 .prose h3,
@@ -326,16 +392,54 @@ a:hover {
 .prose h5,
 .prose h6 {
   font-size: 1.15rem;
-  margin-top: 2em;
 }
 
+/* Numbers, units and dates never split at a line end */
+.nw {
+  white-space: nowrap;
+}
+
+/* Lists: no bullets. An em dash for unordered items, a two-digit mono number for ordered ones. */
 .prose ul,
 .prose ol {
-  padding-left: 1.25em;
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
 }
 
-.prose li + li {
-  margin-top: 0.4em;
+.prose ol {
+  counter-reset: item;
+}
+
+.prose li {
+  position: relative;
+  padding-left: var(--space-6);
+}
+
+.prose ul > li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+}
+
+.prose ol > li::before {
+  counter-increment: item;
+  content: counter(item, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: inherit;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* One level of nesting at most */
+.prose li ul,
+.prose li ol {
+  margin-top: var(--space-2);
 }
 
 .prose img {
@@ -343,11 +447,12 @@ a:hover {
   height: auto;
 }
 
+/* Inline code and code blocks: the surface, mono, no highlighting */
 .prose code {
   font-family: var(--font-mono);
   font-size: 0.875em;
   background: var(--surface);
-  padding: 0.1em 0.35em;
+  padding: 0.1em 6px;
 }
 
 .prose pre {
@@ -355,40 +460,327 @@ a:hover {
   font-size: 0.875rem;
   line-height: 1.6;
   background: var(--surface);
-  padding: 1rem;
+  padding: var(--space-4);
   overflow-x: auto;
+  text-align: left;
 }
 
 .prose pre code {
   background: none;
   padding: 0;
+  font-size: inherit;
 }
 
+/* Quotes: a hairline above and below, no left rule */
 .prose blockquote {
   margin-inline: 0;
-  padding-left: 1rem;
-  border-left: 1.5px solid var(--ink);
+  padding-block: var(--space-3);
+  border-block: var(--rule-hair) solid var(--line);
   color: var(--muted);
+  text-align: left;
 }
 
+.prose blockquote > * + * {
+  margin-top: var(--space-3);
+}
+
+.prose blockquote cite {
+  display: block;
+  text-align: right;
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+/* Tables: no vertical rules; a heavy rule on top, hairlines between rows */
 .prose table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--step--1);
   font-variant-numeric: tabular-nums;
+  border-top: var(--rule-heavy) solid var(--ink);
 }
 
 .prose th,
 .prose td {
   text-align: left;
-  padding: 0.6em 0.75em 0.6em 0;
-  border-bottom: 1px solid var(--line);
+  padding: var(--space-3) var(--space-4) var(--space-3) 0;
+  border-bottom: var(--rule-hair) solid var(--line);
   vertical-align: top;
 }
 
 .prose th {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
   font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--muted);
+}
+
+.prose th[align='right'],
+.prose td[align='right'] {
+  text-align: right;
+}
+
+.prose hr {
+  border: 0;
+  border-top: var(--rule-hair) solid var(--line);
+}
+
+/* Figures: a mono FIG. label and one sentence */
+.prose figure {
+  margin-inline: 0;
+}
+
+.prose figcaption {
+  margin-top: var(--space-2);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* Note: a heavy rule on top, the label in the left column. Two weights only: NOTE and CAUTION. */
+.note {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: var(--space-4);
+  padding: 14px 0 var(--space-4);
+  border-top: var(--rule-heavy) solid var(--ink);
+  border-bottom: var(--rule-hair) solid var(--line);
+  font-size: 0.95rem;
+  line-height: 1.8;
+}
+
+.note__label {
+  padding-top: 3px;
+}
+
+.note--caution .note__label span {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 2px 6px;
+}
+
+/* Tags: classification (muted frame) and state (told apart by symbol and line, colour only for NEW) */
+.tag {
+  display: inline-block;
+  padding: 4px 8px;
+  border: var(--rule-hair) solid var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.tag--new {
+  border-color: var(--pen);
+  color: var(--pen);
+}
+
+.tag--wip {
+  border: var(--rule-heavy) solid var(--ink);
+}
+
+.tag--done {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.tag--archived {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+/* The 40px grid: only behind article title blocks, the top of a Works page and figure stands */
+.grid-paper {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-40) var(--grid-40);
+}
+
+.grid-panel {
+  background-color: var(--panel);
+  background-image:
+    linear-gradient(var(--grid-line-panel) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-panel) 1px, transparent 1px);
+  background-size: var(--grid-40) var(--grid-40);
+}
+
+/* Blueprint: the dark band is only 1.1:1 against the paper, so a hairline marks where it starts and ends */
+:root[data-theme='dark'] .band-edge {
+  border-block: var(--rule-hair) solid var(--line);
+}
+
+/* Icons: a 24px grid, a 1.5px stroke, square ends and corners */
+.icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--icon-stroke);
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+}
+
+.icon--inline {
+  width: var(--icon-size-inline);
+  height: var(--icon-size-inline);
+}
+
+/* Article (Log): a gridded title block with the sheet strip, then the body with the contents on its
+   right (above it on phones), then the previous and next posts. Shared by the static posts and the
+   CMS post Function, which is why it lives here. */
+.article-head {
+  border-bottom: var(--rule-hair) solid var(--line);
+}
+
+.article-head__in {
+  display: grid;
+  gap: var(--space-6);
+  padding-block: clamp(32px, 6vw, 64px) clamp(32px, 5vw, 56px);
+}
+
+.article-head .page-title {
+  margin: 0;
+}
+
+.article-lead {
+  max-width: var(--measure);
+}
+
+.sheet-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  padding-block: var(--space-2);
+  border-top: var(--rule-heavy) solid var(--ink);
+  border-bottom: var(--rule-hair) solid var(--line);
+}
+
+.sheet-strip a {
+  text-decoration: none;
+}
+
+.article-layout {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  /* wrap-reverse swaps the cross axis, so flex-start would sink the contents to the line's bottom;
+     start keeps them at the top beside the body */
+  align-items: flex-start;
+  align-items: start;
+  gap: var(--space-12);
+  padding-block: clamp(32px, 6vw, 64px);
+}
+
+.article-body {
+  flex: 999 1 35rem;
+  min-width: 0;
+  counter-reset: section;
+}
+
+/* Section numbers in mono before each h2; the contents carry the same numbers */
+.article-body > h2::before {
+  display: inline-block;
+  margin-right: var(--space-3);
+  vertical-align: baseline;
+  counter-increment: section;
+  content: counter(section, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.toc {
+  flex: 1 1 15rem;
+  min-width: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.toc nav {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.toc a {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  padding-block: var(--space-2);
+  border-top: var(--rule-hair) solid var(--line);
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.toc a:last-child {
+  border-bottom: var(--rule-hair) solid var(--line);
+}
+
+.toc a:hover {
+  color: var(--pen);
+}
+
+.toc a[aria-current] {
+  border-top: var(--rule-heavy) solid var(--ink);
+  color: var(--ink);
+}
+
+.toc a span {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.article-pager {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-3);
+}
+
+.article-pager a {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+  padding: var(--space-5) var(--space-6);
+  background: var(--surface);
+  text-decoration: none;
+  transition: background var(--dur-base) var(--ease-standard);
+}
+
+.article-pager a:hover {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.article-pager__next {
+  text-align: right;
+}
+
+.article-pager__title {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 1.35rem;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+
+.article-pager a:hover .article-pager__title {
+  color: var(--pen);
 }
 
 /* Cross-document page transitions (no JS). Disabled under reduced motion below. */
@@ -396,10 +788,15 @@ a:hover {
   navigation: auto;
 }
 
-::view-transition-old(root),
+/* Switch: the old page fades in 150ms, the new one in 200ms; nothing slides */
+::view-transition-old(root) {
+  animation-duration: var(--dur-fast);
+  animation-timing-function: var(--ease-standard);
+}
+
 ::view-transition-new(root) {
-  animation-duration: 0.2s;
-  animation-timing-function: var(--ease);
+  animation-duration: var(--dur-base);
+  animation-timing-function: var(--ease-standard);
 }
 
 @media (prefers-reduced-motion: reduce) {
