@@ -7,6 +7,7 @@ import { withFullStop } from '../../lib/headline.mjs';
 import { excerpt } from '../../lib/excerpt.mjs';
 import { blogPosting } from '../../lib/jsonld.mjs';
 import { tocFromText, tocMarkup } from '../../lib/toc.mjs';
+import { breadcrumbMarkup } from '../../lib/breadcrumb.mjs';
 
 export async function getStaticPaths() {
   const logs = (await getCollection('log')).sort((a, b) => +a.data.date - +b.data.date);
@@ -19,6 +20,11 @@ export async function getStaticPaths() {
 const { entry, prev, next } = Astro.props;
 const { Content, headings } = await render(entry);
 const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
+const crumbs = breadcrumbMarkup([
+  { label: 'yunoxia', href: '/' },
+  { label: 'Log', href: '/log/' },
+  { label: entry.data.title },
+]);
 const toc = tocMarkup(tocFromText(headings.filter((h) => h.depth === 2)));
 
 // Description: the first paragraph as plain text (also used by the RSS feed)
@@ -34,8 +40,9 @@ const description = excerpt(entry.body) || undefined;
   <article class="article">
     <header class="article-head grid-paper">
       <div class="wrap article-head__in">
+        <Fragment set:html={crumbs} />
         <p class="sheet-strip meta">
-          <span><a href="/log/">Log</a> · <time datetime={entry.data.date.toISOString()}>{fmt(entry.data.date)}</time></span>
+          <span><time datetime={entry.data.date.toISOString()}>{fmt(entry.data.date)}</time></span>
           {entry.data.tags.length > 0 && <span>{entry.data.tags.join(' · ')}</span>}
         </p>
         <h1 class="page-title">{withFullStop(entry.data.title, 'ja')}</h1>

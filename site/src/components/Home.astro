@@ -4,11 +4,14 @@
 import { getCollection } from 'astro:content';
 import TopScene from '../scene/TopScene.astro';
 import WorkCards from './WorkCards.astro';
+import SpecList from './SpecList.astro';
+import Phrases from './Phrases.astro';
 import { contour } from './toolpath';
 import { type Lang, localPath } from '../i18n/ui';
 
 interface Props {
-  lang: Lang;
+  // The top page exists in Japanese and English only
+  lang: Exclude<Lang, 'ko'>;
 }
 
 const { lang } = Astro.props;
@@ -100,7 +103,7 @@ const xray = Array.from({ length: 30 }, (_, i) => i);
 </section>
 
 <section class="dark band-edge">
-  <p class="statement phrases">{t.statement.map((s) => <span>{s}</span>)}</p>
+  <p class="statement phrases"><Phrases parts={t.statement} lang={lang} /></p>
   <svg class="xray" viewBox="0 0 600 260" aria-hidden="true" focusable="false">
     {xray.map((i) => <path d={contour(i, 300, 240, 7, 230 - i * 3)} style={`opacity:${(0.12 + (i / 30) * 0.6).toFixed(3)}`} />)}
     {xray.map((i) => <path class="b" d={contour(i, 300, 240, 7, 120 + i * 2)} style={`opacity:${(0.08 + (i / 30) * 0.4).toFixed(3)}`} />)}
@@ -118,18 +121,7 @@ const xray = Array.from({ length: 30 }, (_, i) => i);
     <p>{t.numbersText}</p>
     <span></span>
   </div>
-  <dl class="specs">
-    {t.specs.map((s) => (
-      <div>
-        <dt class="meta">{s.l}</dt>
-        <dd>
-          <span class:list={['num', { 'num--long': s.v.length > 6 }]}>{s.v}</span>
-          {s.u && <span class="unit">{s.u}</span>}
-        </dd>
-        <dd class="desc">{s.t}</dd>
-      </div>
-    ))}
-  </dl>
+  <SpecList items={t.specs} />
 </section>
 
 <section class="band-section">
@@ -257,57 +249,6 @@ const xray = Array.from({ length: 30 }, (_, i) => i);
     outline-color: var(--band-pen);
   }
 
-  /* Numbers */
-  .specs {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.75rem;
-    margin: 0;
-  }
-
-  .specs > div {
-    border-top: 1.5px solid var(--ink);
-    padding-top: 1rem;
-  }
-
-  .specs dd {
-    margin: 0;
-  }
-
-  .specs dd:not(.desc) {
-    margin: 1.5rem 0 0.75rem;
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-  }
-
-  .num {
-    font-family: var(--font-sans);
-    font-weight: 300;
-    font-size: clamp(2.2rem, 4.2vw, 3.6rem);
-    line-height: 1;
-    letter-spacing: -0.05em;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* A from → to pair: smaller so it stays on one line in a half-width column at 390px */
-  .num--long {
-    font-size: clamp(1.45rem, 2.6vw, 2.4rem);
-    white-space: nowrap;
-  }
-
-  .unit {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    color: var(--muted);
-  }
-
-  .specs .desc {
-    font-size: 0.875rem;
-    line-height: 1.7;
-    color: var(--muted);
-  }
-
   /* Log */
   .logs {
     list-style: none;
@@ -345,11 +286,6 @@ const xray = Array.from({ length: 30 }, (_, i) => i);
 
     .hero__copy {
       padding: 0 1.25rem 3.5rem;
-    }
-
-    .specs {
-      grid-template-columns: 1fr 1fr;
-      row-gap: 2rem;
     }
 
     .logs a {

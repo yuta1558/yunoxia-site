@@ -33,3 +33,9 @@ test('empty input', () => {
   assert.equal(withFullStop('', 'ja'), '');
   assert.equal(withFullStop(undefined, 'en'), '');
 });
+
+test('Korean titles end with a period; names stay bare', () => {
+  assert.equal(withFullStop('BLTouch 문제 해결 (다국어)', 'ko'), 'BLTouch 문제 해결 (다국어).');
+  assert.equal(withFullStop('만든 것.', 'ko'), '만든 것.');
+  assert.equal(withFullStop('HevORT-lite', 'ko'), 'HevORT-lite');
+});

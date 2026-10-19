@@ -5,6 +5,9 @@ summary: 知り合いが作った CoreXY の 3D プリンターを譲り受け�
 status: 進行中
 updated: 2026-09-01
 tags: [3D プリンター, CoreXY, Klipper]
+specs:
+  - { l: Build class, v: '180', u: mm, t: 造形範囲は 180 mm 角クラス。 }
+  - { l: Parts cost, v: '≤ 500', u: USD, t: 部品代の目安。 }
 ---
 
 ## 分解。

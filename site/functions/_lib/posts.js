@@ -110,3 +110,21 @@ export async function listPublished(db, limit = 50, { withContent = false } = {}
     .all();
   return (results || []).map(rowToPost);
 }
+
+// The published posts just older and just newer than this one (the article's previous / next links).
+// Ties on published_at are broken by slug so every post has one place in the order.
+export async function getNeighbours(db, post) {
+  const at = post.published_at || '';
+  const cols = 'slug, title, published_at';
+  const [prev, next] = await Promise.all([
+    db
+      .prepare(`SELECT ${cols} FROM posts WHERE status = 'published' AND (published_at < ?1 OR (published_at = ?1 AND slug < ?2)) ORDER BY published_at DESC, slug DESC LIMIT 1`)
+      .bind(at, post.slug)
+      .first(),
+    db
+      .prepare(`SELECT ${cols} FROM posts WHERE status = 'published' AND (published_at > ?1 OR (published_at = ?1 AND slug > ?2)) ORDER BY published_at ASC, slug ASC LIMIT 1`)
+      .bind(at, post.slug)
+      .first(),
+  ]);
+  return { prev: prev || null, next: next || null };
+}

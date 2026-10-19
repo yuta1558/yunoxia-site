@@ -1,0 +1,76 @@
+---
+// Media (design system v4): a video or an embedded page in a 16:9 frame that loads nothing until it is
+// pressed. Video: the poster on the blueprint ground, a 64px play button, native controls once loaded,
+// no autoplay, no loop, muted by default. Frame (iframe): a "press to load" button on the gridded panel.
+// The caption goes outside, in a figure, as for Figure.
+interface Props {
+  kind: 'video' | 'frame';
+  /** mono label at the bottom left: kind, length or size, sound */
+  label: string;
+  /** what the play / load button says (also its accessible name) */
+  action: string;
+  /** video: poster image; frame: none */
+  poster?: string;
+  /** video: { src, type } in order of preference (WebM, then MP4) */
+  sources?: { src: string; type: string }[];
+  /** video: WebVTT captions */
+  captions?: { src: string; srclang: string; label: string };
+  /** frame: the page to embed, and its title */
+  src?: string;
+  title?: string;
+}
+
+const { kind, label, action, poster, sources = [], captions, src, title } = Astro.props;
+const payload = JSON.stringify(kind === 'video' ? { sources, captions } : { src, title });
+---
+
+<div class:list={['media', `media--${kind}`]} data-media={kind} data-payload={payload}>
+  {poster && <img src={poster} alt="" loading="lazy" decoding="async" />}
+  {kind === 'video' ? (
+    <button type="button" class="media__play" aria-label={action}>
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg>
+    </button>
+  ) : (
+    <button type="button" class="btn btn--line media__load">{action}</button>
+  )}
+  <span class="media__label">{label}</span>
+</div>
+
+<script>
+  for (const box of document.querySelectorAll<HTMLElement>('[data-media]')) {
+    const button = box.querySelector('button')!;
+    button.addEventListener('click', () => {
+      const data = JSON.parse(box.dataset.payload || '{}');
+      let el: HTMLVideoElement | HTMLIFrameElement;
+      if (box.dataset.media === 'video') {
+        const video = document.createElement('video');
+        video.controls = true;
+        video.muted = true;
+        video.preload = 'metadata';
+        const poster = box.querySelector('img');
+        if (poster) video.poster = poster.src;
+        for (const s of data.sources || []) {
+          const source = document.createElement('source');
+          source.src = s.src;
+          source.type = s.type;
+          video.append(source);
+        }
+        if (data.captions) {
+          const track = document.createElement('track');
+          Object.assign(track, { kind: 'captions', src: data.captions.src, srclang: data.captions.srclang, label: data.captions.label });
+          video.append(track);
+        }
+        el = video;
+      } else {
+        const frame = document.createElement('iframe');
+        frame.src = data.src;
+        frame.title = data.title || '';
+        frame.loading = 'lazy';
+        el = frame;
+      }
+      box.replaceChildren(el);
+      el.focus();
+      if (el instanceof HTMLVideoElement) el.play().catch(() => {});
+    });
+  }
+</script>

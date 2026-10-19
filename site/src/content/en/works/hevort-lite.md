@@ -4,6 +4,9 @@ summary: A CoreXY 3D printer built by a friend, which I took over and am modifyi
 status: In progress
 updated: 2026-09-01
 tags: [3D printer, CoreXY, Klipper]
+specs:
+  - { l: Build class, v: '180', u: mm, t: A 180 mm-class build area. }
+  - { l: Parts cost, v: '≤ 500', u: USD, t: The target for the parts. }
 ---
 
 ## Take it apart.

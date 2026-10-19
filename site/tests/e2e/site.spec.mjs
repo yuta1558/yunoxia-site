@@ -3,6 +3,8 @@ import { test, expect } from '@playwright/test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { FORBIDDEN } from '../../scripts/forbidden.mjs';
 
+const langOfPath = (path) => (path.startsWith('/en/') ? 'en' : path.startsWith('/ko/') ? 'ko' : 'ja');
+
 // Every page listed in the built sitemap(s)
 const routes = readdirSync('dist')
   .filter((f) => /^sitemap-\d+\.xml$/.test(f))
@@ -20,7 +22,7 @@ for (const path of routes) {
     expect(res?.status()).toBe(200);
     await expect(page).toHaveTitle(/yunoxia/);
     await expect(page.locator('h1')).toHaveCount(1);
-    await expect(page.locator('html')).toHaveAttribute('lang', path.startsWith('/en/') ? 'en' : 'ja');
+    await expect(page.locator('html')).toHaveAttribute('lang', langOfPath(path));
     await page.waitForTimeout(300);
     expect(errors).toEqual([]);
   });
@@ -101,11 +103,14 @@ for (const path of routes) {
       expect(alts).toEqual({});
     } else if (Object.keys(alts).length) {
       expect(alts['x-default']).toBeTruthy();
-      for (const lang of ['ja', 'en']) {
-        const target = alts[lang];
-        expect(target, `${lang} alternate`).toBeTruthy();
-        // Reciprocal: the page we point at points back with the same pair
-        expect((await alternatesOf(request, target))[path.startsWith('/en/') ? 'en' : 'ja'], `${target} lists ${path}`).toBe(path);
+      // Every page with alternates has Japanese and lists itself
+      expect(alts.ja, 'ja alternate').toBeTruthy();
+      expect(alts[langOfPath(path)]).toBe(path);
+      for (const [lang, target] of Object.entries(alts)) {
+        if (lang === 'x-default') continue;
+        expect(langOfPath(target), `${target} is ${lang}`).toBe(lang);
+        // Reciprocal: the page we point at points back with the same set
+        expect(await alternatesOf(request, target), `${target} lists the same versions`).toEqual(alts);
       }
     }
   });
@@ -142,10 +147,21 @@ test('first engagement loads the scene and replaces the illustration', async ({ 
   const scene = page.waitForRequest(/\/scene\.[^/]*\.js$/);
   await page.goto('/');
   await page.waitForTimeout(800);
-  await expect(page.locator('[data-top-scene]')).not.toHaveClass(/is-live/);
+  // Which event (if any) counted as the first engagement: named in the message if this fails
+  const engagedBy = await page.evaluate(() => window.__yxEngagedBy ?? 'none');
+  await expect(page.locator('[data-top-scene]'), `engaged by ${engagedBy}`).not.toHaveClass(/is-live/);
   await page.mouse.wheel(0, 400);
   await scene;
   await expect(page.locator('[data-top-scene]')).toHaveClass(/is-live/, { timeout: 15_000 });
+});
+
+test('a real pointer move counts as engagement', async ({ page }) => {
+  const scene = page.waitForRequest(/\/scene\.[^/]*\.js$/);
+  await page.goto('/');
+  await page.mouse.move(200, 200);
+  await page.mouse.move(260, 240, { steps: 4 });
+  await scene;
+  expect(await page.evaluate(() => window.__yxEngagedBy)).toBe('pointermove');
 });
 
 test('items updated since the last visit are marked', async ({ page }) => {
@@ -262,4 +278,101 @@ test('footer theme switch: PAPER / BLUEPRINT are stored, AUTO clears the choice'
   await group.getByRole('button', { name: 'AUTO' }).click();
   expect(await page.evaluate(() => localStorage.getItem('theme'))).toBeNull();
   await expect(group.getByRole('button', { name: 'AUTO' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('blocks below the first screen stack in once they are scrolled to', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await page.goto('/works/hevort-lite/');
+  const cards = page.locator('.cards > li');
+  await expect(cards.first()).toHaveAttribute('data-reveal', 'pending');
+  await cards.first().scrollIntoViewIfNeeded();
+  await expect(cards.first()).toHaveAttribute('data-reveal', 'in');
+  await expect.poll(() => cards.first().evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+  // The spec numeral counts up and ends on its written value
+  await page.locator('.specs').scrollIntoViewIfNeeded();
+  await expect(page.locator('.specs .num').first()).toHaveText('180');
+});
+
+test.describe('reduced motion', () => {
+  test.use({ reducedMotion: 'reduce' });
+  test('nothing is hidden for the reveal', async ({ page }) => {
+    await page.goto('/works/hevort-lite/');
+    await page.waitForLoadState('load');
+    expect(await page.locator('[data-reveal]').count()).toBe(0);
+  });
+});
+
+test('lab components: tabs follow the arrow keys, media loads only when pressed', async ({ page }) => {
+  await page.goto('/lab/components/');
+  const tabs = page.getByRole('tab');
+  await expect(tabs).toHaveCount(3);
+  await tabs.first().focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+  await expect(tabs.nth(1)).toBeFocused();
+  await expect(page.getByRole('tabpanel', { name: '設定値' })).toBeVisible();
+  await expect(page.getByRole('tabpanel', { name: '概要' })).toBeHidden();
+  await page.keyboard.press('End');
+  await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
+
+  await expect(page.locator('.media iframe')).toHaveCount(0);
+  await page.getByRole('button', { name: '押して読み込む' }).click();
+  const frame = page.locator('.media iframe');
+  await expect(frame).toHaveAttribute('title', 'デザイン案 D');
+  await expect(frame).toHaveAttribute('src', '/lab/d/');
+});
+
+test('a page opened at a #fragment is left alone by the reveal', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await page.goto('/works/hevort-lite/#main');
+  await page.waitForLoadState('load');
+  expect(await page.locator('[data-reveal]').count()).toBe(0);
+});
+
+test('a reloaded page is left alone by the reveal', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await page.goto('/works/hevort-lite/');
+  await page.reload();
+  await page.waitForLoadState('load');
+  expect(await page.locator('[data-reveal]').count()).toBe(0);
+});
+
+test('without JavaScript the lab tabs show every panel and no tab list', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto('/lab/components/');
+  await expect(page.locator('[role="tablist"]')).toBeHidden();
+  await expect(page.locator('[role="tabpanel"]')).toHaveCount(3);
+  for (const panel of await page.locator('[role="tabpanel"]').all()) await expect(panel).toBeVisible();
+  await context.close();
+});
+
+test('blocks still waiting to stack in are printed in their final state', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await page.goto('/works/hevort-lite/');
+  const card = page.locator('.cards > li').first();
+  await expect(card).toHaveAttribute('data-reveal', 'pending');
+  await page.emulateMedia({ media: 'print' });
+  await expect.poll(() => card.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+});
+
+test('the Korean Works page: Korean type, its own font subset, and the language switch', async ({ page, request }) => {
+  await page.goto('/ko/works/bltouch-troubleshooting/');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
+  await expect(page.locator('h1')).toHaveText('BLTouch 문제 해결 (다국어).');
+  // The three steps are in the band
+  await expect(page.locator('.work-steps__list > li')).toHaveCount(3);
+  // Pretendard: a linked stylesheet of woff2 slices that exist
+  const href = await page.locator('link[rel="stylesheet"][href*="/assets/fonts/pretendard-"]').getAttribute('href');
+  expect(href).toMatch(/^\/assets\/fonts\/pretendard-[0-9a-f]{10}\/ko\.css$/);
+  const css = await (await request.get(href)).text();
+  expect(css).toContain('SIL Open Font License');
+  const files = [...css.matchAll(/url\(\.\/(files\/[^)]+\.woff2)\)/g)].map((m) => m[1]);
+  expect(files.length).toBeGreaterThan(0);
+  for (const f of files) expect((await request.head(href.replace(/ko\.css$/, f))).ok(), f).toBe(true);
+  // Footer switch: JA / EN / KO with KO current; Japanese pages do not load Pretendard
+  await expect(page.locator('.foot-controls .seg').first().locator('[aria-current]')).toHaveText('KO');
+  await page.goto('/works/bltouch-troubleshooting/');
+  await expect(page.locator('.foot-controls .seg').first()).toContainText('KO');
+  await expect(page.locator('link[href*="pretendard"]')).toHaveCount(0);
 });

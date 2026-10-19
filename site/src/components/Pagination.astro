@@ -1,0 +1,38 @@
+---
+// Pagination (design system v4): 44px squares, two-digit mono numbers, the current page filled with
+// ink and not a link; the previous / next squares are the only framed ones.
+import { pageItems } from '../lib/pages.mjs';
+import type { Lang } from '../i18n/ui';
+
+interface Props {
+  current: number;
+  total: number;
+  /** URL of page n (1-based) */
+  href: (n: number) => string;
+  lang?: Lang;
+}
+
+const { current, total, href, lang = 'ja' } = Astro.props;
+const t = {
+  ja: { nav: 'ページ送り', prev: '前のページ', next: '次のページ' },
+  en: { nav: 'Pages', prev: 'Previous page', next: 'Next page' },
+  ko: { nav: '페이지', prev: '이전 페이지', next: '다음 페이지' },
+}[lang];
+const two = (n: number) => String(n).padStart(2, '0');
+---
+
+{total > 1 && (
+  <nav class="pagination" aria-label={t.nav}>
+    {current > 1 && <a class="pagination__edge" href={href(current - 1)} aria-label={t.prev} rel="prev">←</a>}
+    {pageItems(current, total).map((n) =>
+      n === '…' ? (
+        <span class="pagination__gap" aria-hidden="true">…</span>
+      ) : n === current ? (
+        <span aria-current="page">{two(n)}</span>
+      ) : (
+        <a href={href(n)}>{two(n)}</a>
+      ),
+    )}
+    {current < total && <a class="pagination__edge" href={href(current + 1)} aria-label={t.next} rel="next">→</a>}
+  </nav>
+)}

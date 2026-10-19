@@ -5,7 +5,7 @@
 **yunoxia.one** is Yu's site for making and research. It lives in `site/`: an Astro 7 static site with a small blog CMS on Cloudflare Pages Functions + D1. Everything outside `site/` is repository housekeeping (this file, `README.md`, `REVIEW.md`, `.gitignore`, `.github/workflows/`).
 
 - **Hosting**: Cloudflare Pages project `yunoxia-next` (root directory `site`, build `npm run build`, output `dist`), auto-deployed from `main`. Every PR gets a preview at `*.yunoxia-next.pages.dev`. The old project `yunoxia-site` (the pre-2026 static site at the repository root) has automatic deployments turned off and no longer serves the domain.
-- **Languages**: Japanese at the root, English under `/en/` (Log is Japanese only).
+- **Languages**: Japanese at the root, English under `/en/` (Log is Japanese only), Korean under `/ko/` only for Works with a file in `src/content/ko/works/` (its nav links lead to the Japanese pages). `versionsOf()` in `src/i18n/ui.ts` gives every version of a page for hreflang and the footer switch.
 - **Design system**: v4 (drafting paper, one pen-blue signal colour, light headlines; only the wordmark and the top h1 are heavy; states shown by rule weight, line style, fill and symbol, never by a new colour). The reference lives in a Claude Design System artifact; the code is the source of truth for values. Page types: Log article (`.article-*` in `global.css`, shared with the CMS post Function), Works page (`components/WorkPage.astro`), 404. The theme switch (AUTO / PAPER / BLUEPRINT) is in the footer.
 
 ## Directory Structure
@@ -35,14 +35,15 @@ site/
 ├── src/
 │   ├── admin/editor.ts     # CMS body editor (CodeMirror 6, Obsidian-style live preview)
 │   ├── layouts/Base.astro  # head, header, footer, theme script, bead
-│   ├── components/         # Home (top page, ja/en), WorkCards, toolpath geometry
-│   ├── pages/              # index, works, research, log, about, 404, en/*, rss, updates.json, lab/d
+│   ├── components/         # Home (top page, ja/en), WorkPage, WorkCards, SpecList, Phrases, Icon, Tabs, Pagination, Media, toolpath geometry
+│   ├── pages/              # index, works, research, log, about, 404, en/*, rss, updates.json, lab/d, lab/components (v4 parts not used by any page yet)
 │   ├── content/            # works (ja/en) and log Markdown
 │   ├── scene/              # top-page WebGL scene (README.md has the effects ledger)
 │   ├── bead/               # molten bead cursor + "updated since last visit" marks
+│   ├── motion/             # reveal.ts: stack / draw / read for blocks that scroll into view (effects ledger rows)
 │   ├── research/           # Research figures
 │   ├── i18n/ui.ts          # UI strings and ja/en path mapping
-│   └── styles/global.css   # v3 tokens, type, buttons, section heads, prose
+│   └── styles/global.css   # v4 tokens, type, buttons, section heads, prose, article, form parts, media
 └── tests/
     ├── e2e/                # Playwright against the built site
     └── unit/
@@ -64,7 +65,7 @@ npm run test:e2e     # needs a build first; set CHROMIUM_PATH to use a preinstal
 - **Privacy**: the site never shows the owner's real name, employer, employer product names or location. The e2e suite checks every page, `rss.xml` and `updates.json` against an encoded list (`scripts/forbidden.mjs`); run `node scripts/privacy-check.mjs` before committing. Never spell the strings out in code, commits or PR comments.
 - **Effects**: every effect needs a row in the effects ledger (`src/scene/README.md`): what it conveys, its reduced-motion / no-WebGL fallback, and its performance budget. Reduced motion and no-WebGL keep the static drawing and never request three.js or the bead.
 - **Performance**: Lighthouse (mobile) ≥ 90 on reading pages, ≥ 80 on the top page. `?fps=1` on the top page shows a frame meter for real-device checks (headless Chromium renders WebGL in software, so fps measured there is meaningless).
-- **Fonts**: Zen Kaku Gothic New is served only for the characters the site uses (`scripts/font-subsets.mjs`). Weight 700 is used only by the top h1. CMS post pages (`/log/p/<slug>/`) show characters the build never sees, so they also load a non-blocking full 300/400/500 stylesheet from `/assets/fonts/zen-<hash>/`, holding only the faces the subset lacks (generated and gitignored, written by `font-subsets.mjs`; the path is in `src/styles/fonts.generated.json`; `/log/` names the path in a `<template data-cms-font>` that the post Function turns into the link). Do not import Fontsource's full weight CSS in pages: it adds ~180 KB of render-blocking CSS.
+- **Fonts**: Zen Kaku Gothic New is served only for the characters the site uses (`scripts/font-subsets.mjs`). Weight 700 is used only by the top h1. CMS post pages (`/log/p/<slug>/`) show characters the build never sees, so they also load a non-blocking full 300/400/500 stylesheet from `/assets/fonts/zen-<hash>/`, holding only the faces the subset lacks (generated and gitignored, written by `font-subsets.mjs`; the path is in `src/styles/fonts.generated.json`; `/log/` names the path in a `<template data-cms-font>` that the post Function turns into the link). Do not import Fontsource's full weight CSS in pages: it adds ~180 KB of render-blocking CSS. Korean pages use Pretendard (devDependency `pretendard`, SIL OFL): `font-subsets.mjs` keeps the 300/400 slices holding characters of `src/content/ko`, `src/pages/ko` and any Hangul elsewhere in `src`, copies them to `/assets/fonts/pretendard-<hash>/` (gitignored) and records `koFont` in `fonts.generated.json`; Base.astro links it on `lang="ko"` pages only.
 - **Colours**: use the v4 tokens in `global.css` (`--paper`, `--ink`, `--muted`, `--line`, `--pen`, `--panel`, `--band`…), defined for both themes. `--bg` / `--fg` / `--accent` are aliases read at runtime by the scene, the bead and the research figures; keep them.
 - **Typography**: headlines are light (300) and end with a full stop; break Japanese headlines only between phrases (`.phrases` spans). Bold only for the wordmark and the top h1; inline `strong` in prose is 500. The full stop rule covers section heads, prose h2s in Markdown and pages, and Work and Log h1s; for titles it is added in the h1 only (`src/lib/headline.mjs`, also used by CMS posts), so `<title>`, cards and RSS keep the bare title. Names such as "HevORT-lite" get none.
 - **One h1 per page**, `lang` set, no page errors: the e2e suite checks every sitemap page.

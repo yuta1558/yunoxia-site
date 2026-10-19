@@ -8,6 +8,7 @@ const lastmod = new Map();
 for (const [dir, base, key] of [
   ['src/content/works', '/works/', 'updated'],
   ['src/content/en/works', '/en/works/', 'updated'],
+  ['src/content/ko/works', '/ko/works/', 'updated'],
   ['src/content/log', '/log/', 'date'],
 ]) {
   for (const file of readdirSync(new URL(dir, import.meta.url)).filter((f) => f.endsWith('.md'))) {
@@ -23,7 +24,7 @@ export default defineConfig({
   site,
   trailingSlash: 'ignore',
   build: { format: 'directory' },
-  // Japanese at the root, English under /en/; the sitemap emits hreflang alternates for pages that exist in both
+  // Japanese at the root, English under /en/, Korean under /ko/; the sitemap emits hreflang alternates for pages that exist in more than one
   integrations: [
     sitemap({
       // Design lab pages are for review only
@@ -33,7 +34,7 @@ export default defineConfig({
       i18n: {
         defaultLocale: 'ja',
         // Same codes as <html lang> and the hreflang links in Base.astro
-        locales: { ja: 'ja', en: 'en' },
+        locales: { ja: 'ja', en: 'en', ko: 'ko' },
       },
       serialize(item) {
         const date = lastmod.get(new URL(item.url).pathname);
