@@ -34,7 +34,8 @@
 
   --font-sans: 'Geist Variable', 'Zen Kaku Gothic New', system-ui, sans-serif;
   --font-jp: 'Zen Kaku Gothic New', 'Geist Variable', system-ui, sans-serif;
-  /* Korean: Pretendard once Korean pages ship (self-hosted subset, as for Zen Kaku Gothic New); until then the system's Hangul */
+  /* Korean: Pretendard, a self-hosted subset linked by Base.astro on html[lang='ko'] pages only; a lang="ko" part of
+     another page (such as the /lab/components/ sample) falls back to the system's Hangul */
   --font-ko: 'Pretendard', 'Geist Variable', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
