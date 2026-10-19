@@ -4,8 +4,13 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { type Lang, localPath } from '../i18n/ui';
 import { withFullStop } from '../lib/headline.mjs';
+import { breadcrumbMarkup } from '../lib/breadcrumb.mjs';
 import WorkArt from './WorkArt.astro';
 import WorkCards from './WorkCards.astro';
+import SpecList from './SpecList.astro';
+import Phrases from './Phrases.astro';
+import { threeSteps } from '../lib/sections.mjs';
+import { renderMarkdown } from '../../functions/_lib/markdown.js';
 
 interface Props {
   work: CollectionEntry<'works'> | CollectionEntry<'worksEn'>;
@@ -30,10 +35,34 @@ const states = {
 } as const;
 const [stateKind, stateLabel] = states[work.data.status];
 
+const crumbs = breadcrumbMarkup(
+  [
+    { label: 'yunoxia', href: localPath(lang, '/') },
+    { label: 'Works', href: localPath(lang, '/works/') },
+    { label: work.data.title },
+  ],
+  lang === 'ja' ? 'パンくず' : 'Breadcrumb',
+);
+
 const t = {
-  ja: { updated: '更新', others: ['ほかに', '作ったもの。'], all: 'すべて見る' },
-  en: { updated: 'updated', others: ['Other', 'things I made.'], all: 'See all' },
+  ja: {
+    updated: '更新',
+    others: ['ほかに', '作ったもの。'],
+    all: 'すべて見る',
+    statement: ['分解して、', '理解して、', '作り替える。'],
+  },
+  en: {
+    updated: 'updated',
+    others: ['Other', 'things I made.'],
+    all: 'See all',
+    statement: ['Take it apart.', 'Understand it.', 'Remake it.'],
+  },
 }[lang];
+
+// A body written as the three steps goes into the dark band; anything else stays prose.
+// The step texts go through the CMS renderer (escaped, links kept), which is enough for these paragraphs.
+const STEP_LABELS = ['01 · Tear down', '02 · Understand', '03 · Rebuild'];
+const steps = threeSteps(work.body ?? '')?.map((s, i) => ({ ...s, label: STEP_LABELS[i], html: renderMarkdown(s.body) }));
 ---
 
 <article>
@@ -43,10 +72,8 @@ const t = {
         <WorkArt id={work.id} cover={work.data.cover} coverAlt={work.data.coverAlt} large />
       </div>
       <div class="work-hero__copy">
-        <p class="eyebrow">
-          <a href={localPath(lang, '/works/')}>Works</a>
-          {work.data.tags.length > 0 && <> · {work.data.tags.join(' · ')}</>}
-        </p>
+        <Fragment set:html={crumbs} />
+        {work.data.tags.length > 0 && <p class="eyebrow">{work.data.tags.join(' · ')}</p>}
         <h1 class="page-title">{withFullStop(work.data.title, lang)}</h1>
         <p class="work-hero__line">{work.data.summary}</p>
         <p class="work-hero__state">
@@ -57,16 +84,37 @@ const t = {
     </header>
   </div>
 
-  <div class="wrap work-body">
-    <div class="prose">
-      <Content />
+  {work.data.specs && work.data.specs.length > 0 && (
+    <div class="wrap work-specs">
+      <SpecList items={work.data.specs} />
     </div>
-  </div>
+  )}
+
+  {steps ? (
+    <section class="work-steps band-edge">
+      <p class="work-steps__statement phrases"><Phrases parts={t.statement} lang={lang} /></p>
+      <ol class="work-steps__list">
+        {steps.map((s) => (
+          <li>
+            <p class="work-steps__label">{s.label}</p>
+            <h2>{s.heading}</h2>
+            <div class="work-steps__text" set:html={s.html} />
+          </li>
+        ))}
+      </ol>
+    </section>
+  ) : (
+    <div class="wrap work-body">
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  )}
 
   {others.length > 0 && (
     <section class="wrap work-others">
       <div class="section-head">
-        <h2 class="phrases">{t.others.map((p) => <span>{p}</span>)}</h2>
+        <h2 class="phrases"><Phrases parts={t.others} lang={lang} /></h2>
         <span></span>
         <a class="btn btn--line" href={localPath(lang, '/works/')}>{t.all}</a>
       </div>
@@ -106,10 +154,6 @@ const t = {
     margin: 0;
   }
 
-  .eyebrow a {
-    text-decoration: none;
-  }
-
   .work-hero__line {
     max-width: 28em;
   }
@@ -119,6 +163,84 @@ const t = {
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-3) var(--space-6);
+  }
+
+  .work-specs {
+    padding-top: clamp(32px, 6vw, 64px);
+  }
+
+  /* The three steps on the blueprint band */
+  .work-steps {
+    margin-top: clamp(32px, 6vw, 64px);
+    padding: var(--section-y) var(--gutter);
+    background: var(--band);
+    color: var(--band-ink);
+    display: grid;
+    gap: var(--space-12);
+  }
+
+  .work-steps__statement {
+    max-width: 18em;
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: clamp(1.8rem, 4vw, 3.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.045em;
+    font-feature-settings: 'palt' 1;
+    text-wrap: balance;
+  }
+
+  .work-steps__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: var(--space-8);
+  }
+
+  .work-steps__list li {
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: var(--rule-heavy) solid var(--band-ink);
+  }
+
+  .work-steps__label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--band-pen);
+  }
+
+  .work-steps h2 {
+    font-size: 1.35rem;
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+  }
+
+  .work-steps__text {
+    display: grid;
+    gap: var(--space-3);
+    font-size: 0.95rem;
+    line-height: 1.8;
+  }
+
+  .work-steps__text :global(a) {
+    color: var(--band-ink);
+    text-decoration-color: var(--band-muted);
+  }
+
+  .work-steps__text :global(a:hover) {
+    color: var(--band-pen);
+    text-decoration-color: var(--band-pen);
+  }
+
+  .work-steps :focus-visible,
+  .work-steps :global(:focus-visible) {
+    outline-color: var(--band-pen);
   }
 
   .work-body {

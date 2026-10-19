@@ -4,6 +4,8 @@ summary: ノブを一つずつ回していた DJ イベントの照明を、パ�
 status: 完了
 updated: 2026-10-18
 tags: [DMX, MIDI, QLC+]
+specs:
+  - { l: Pads, v: '8', t: 場面を割り当てる AKAI LPD8 のパッド。 }
 ---
 
 ## 分解。

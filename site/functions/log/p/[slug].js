@@ -4,11 +4,12 @@ import { postDescription } from '../../_lib/feed.js';
 import { escapeHtml } from '../../_lib/http.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { sizeFromKey } from '../../_lib/imagesize.js';
-import { getPublishedBySlug } from '../../_lib/posts.js';
+import { getNeighbours, getPublishedBySlug } from '../../_lib/posts.js';
 import { fontLinks } from '../../_lib/fonts.js';
 import { fetchAsset, formatDate, withHtmlHeaders } from '../../_lib/shell.js';
 import { withFullStop } from '../../../src/lib/headline.mjs';
 import { numberHeadings, tocMarkup } from '../../../src/lib/toc.mjs';
+import { breadcrumbMarkup } from '../../../src/lib/breadcrumb.mjs';
 import { blogPosting, jsonLdString } from '../../../src/lib/jsonld.mjs';
 
 async function notFound(context) {
@@ -42,12 +43,28 @@ export async function onRequestGet(context) {
     : '';
   const lead = post.excerpt ? `<p class="article-lead">${escapeHtml(post.excerpt)}</p>` : '';
   const body = numberHeadings(renderMarkdown(post.content));
+  // Previous / next among the CMS posts; a failed lookup only drops the links
+  const { prev, next } = await getNeighbours(env.DB, post).catch(() => ({ prev: null, next: null }));
+  const pagerLink = (p, dir) =>
+    p
+      ? `<a${dir === 'next' ? ' class="article-pager__next"' : ''} href="/log/p/${escapeHtml(p.slug)}/"><span class="meta">${dir === 'prev' ? `← ${formatDate(p.published_at)}` : `${formatDate(p.published_at)} →`}</span><span class="article-pager__title">${escapeHtml(p.title)}</span></a>`
+      : '';
+  const pager =
+    prev || next
+      ? `<nav class="wrap article-pager" aria-label="前後の記事">${pagerLink(prev, 'prev') || '<span></span>'}${pagerLink(next, 'next')}</nav>`
+      : '';
+  const crumbs = breadcrumbMarkup([
+    { label: 'yunoxia', href: '/' },
+    { label: 'Log', href: '/log/' },
+    { label: post.title },
+  ]);
   // The article type of the design system, as in src/pages/log/[...slug].astro (styles in global.css)
   const article = `
     <article class="article">
       <header class="article-head grid-paper">
         <div class="wrap article-head__in">
-          <p class="sheet-strip meta"><span><a href="/log/">Log</a> · <time datetime="${escapeHtml(post.published_at || '')}">${formatDate(post.published_at)}</time></span>${tags}</p>
+          ${crumbs}
+          <p class="sheet-strip meta"><span><time datetime="${escapeHtml(post.published_at || '')}">${formatDate(post.published_at)}</time></span>${tags}</p>
           <h1 class="page-title">${escapeHtml(withFullStop(post.title, 'ja'))}</h1>
           ${lead}
         </div>
@@ -56,6 +73,7 @@ export async function onRequestGet(context) {
         <div class="prose article-body">${image}${body.html}</div>
         ${tocMarkup(body.toc)}
       </div>
+      ${pager}
     </article>`;
 
   const ogImage = post.featured_image ? new URL(post.featured_image, context.request.url).href : undefined;

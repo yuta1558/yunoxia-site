@@ -15,6 +15,8 @@ const works = defineCollection({
     // Card picture: a photo, screenshot or drawing under /assets/works/ (new file name on change)
     cover: z.string().optional(),
     coverAlt: z.string().optional(),
+    // Numbers for the SpecList: label, value as written, unit, one line. Only real, checked values.
+    specs: z.array(z.object({ l: z.string(), v: z.string(), u: z.string().optional(), t: z.string().optional() })).optional(),
   }),
 });
 
@@ -31,6 +33,8 @@ const worksEn = defineCollection({
     tags: z.array(z.string()).default([]),
     cover: z.string().optional(),
     coverAlt: z.string().optional(),
+    // Numbers for the SpecList: label, value as written, unit, one line. Only real, checked values.
+    specs: z.array(z.object({ l: z.string(), v: z.string(), u: z.string().optional(), t: z.string().optional() })).optional(),
   }),
 });
 

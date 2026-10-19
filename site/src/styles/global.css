@@ -632,6 +632,39 @@ html[lang='en'] .prose > p {
   height: var(--icon-size-inline);
 }
 
+/* Breadcrumb: mono labels split by "/"; the current page in ink, not a link */
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) 10px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.breadcrumb a {
+  display: inline-block;
+  padding-block: 4px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+
+.breadcrumb a:hover {
+  color: var(--pen);
+}
+
+.breadcrumb [aria-current] {
+  color: var(--ink);
+  /* The current page is a title: keep names such as HevORT-lite as written */
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
 /* Article (Log): a gridded title block with the sheet strip, then the body with the contents on its
    right (above it on phones), then the previous and next posts. Shared by the static posts and the
    CMS post Function, which is why it lives here. */

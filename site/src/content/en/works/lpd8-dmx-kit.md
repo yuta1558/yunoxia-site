@@ -4,6 +4,8 @@ summary: A kit that turns DJ-event lighting from turning knobs one by one into a
 status: Done
 updated: 2026-10-18
 tags: [DMX, MIDI, QLC+]
+specs:
+  - { l: Pads, v: '8', t: The AKAI LPD8 pads that scenes are assigned to. }
 ---
 
 ## Take it apart.
