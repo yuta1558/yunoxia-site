@@ -26,7 +26,7 @@ Each loop remakes the part into the next of three shapes (vase, cup, spool). Whi
 
 ## Loading and fallbacks
 
-- `boot.ts` is the only code in the initial page. three.js is dynamically imported after the first scroll, pointer, touch or key, then after `load` + idle.
+- `boot.ts` is the only code in the initial page. three.js is dynamically imported after the first scroll, pointer, touch or key, then after `load` + idle. A pointermove without movement (Chromium synthesises these when content shifts under a resting cursor) and a scroll event that leaves the page at the top do not count; `window.__yxEngagedBy` names the event that did.
 - `prefers-reduced-motion: reduce` or no WebGL: nothing is requested and the static drawing stays. Switching to reduced motion while the page is open tears the scene down.
 - Rendering runs only while the hero is on screen (IntersectionObserver) and the tab is visible.
 - Colours come from `--panel`, `--fg` and `--accent` and follow `html[data-theme]` changes.

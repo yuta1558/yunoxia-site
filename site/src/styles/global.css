@@ -140,6 +140,13 @@ html[lang='en'] body {
 
 /* Korean: Pretendard for headings and text alike (Hangul beside Geist's Latin jumps in height);
    break between words (어절), never inside one; ragged right, as English */
+/* Every stack becomes Pretendard inside Korean (the statement, card names and other --font-sans users
+   included); mono stays Geist Mono */
+:is(html[lang='ko'], [lang='ko']) {
+  --font-sans: var(--font-ko);
+  --font-jp: var(--font-ko);
+}
+
 :is(html[lang='ko'] body, [lang='ko']) {
   font-family: var(--font-ko);
   line-height: 1.8;

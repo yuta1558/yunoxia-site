@@ -147,10 +147,21 @@ test('first engagement loads the scene and replaces the illustration', async ({ 
   const scene = page.waitForRequest(/\/scene\.[^/]*\.js$/);
   await page.goto('/');
   await page.waitForTimeout(800);
-  await expect(page.locator('[data-top-scene]')).not.toHaveClass(/is-live/);
+  // Which event (if any) counted as the first engagement: named in the message if this fails
+  const engagedBy = await page.evaluate(() => window.__yxEngagedBy ?? 'none');
+  await expect(page.locator('[data-top-scene]'), `engaged by ${engagedBy}`).not.toHaveClass(/is-live/);
   await page.mouse.wheel(0, 400);
   await scene;
   await expect(page.locator('[data-top-scene]')).toHaveClass(/is-live/, { timeout: 15_000 });
+});
+
+test('a real pointer move counts as engagement', async ({ page }) => {
+  const scene = page.waitForRequest(/\/scene\.[^/]*\.js$/);
+  await page.goto('/');
+  await page.mouse.move(200, 200);
+  await page.mouse.move(260, 240, { steps: 4 });
+  await scene;
+  expect(await page.evaluate(() => window.__yxEngagedBy)).toBe('pointermove');
 });
 
 test('items updated since the last visit are marked', async ({ page }) => {

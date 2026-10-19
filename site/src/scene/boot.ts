@@ -17,13 +17,19 @@ const afterFirstPaint = (fn: () => void) => {
 // pointer, touch or key before paying that cost.
 const afterEngagement = (fn: () => void) => {
   const events = ['scroll', 'wheel', 'pointerdown', 'pointermove', 'touchstart', 'keydown'] as const;
-  const go = () => {
-    events.forEach((e) => removeEventListener(e, go));
+  const go = (e: Event) => {
+    // Not engagement: a pointermove with no movement (Chromium synthesises these when content shifts
+    // under a resting cursor) and a scroll event that left the page at the top (layout, not the visitor)
+    if (e.type === 'pointermove' && !(e as PointerEvent).movementX && !(e as PointerEvent).movementY) return;
+    if (e.type === 'scroll' && scrollY === 0) return;
+    events.forEach((ev) => removeEventListener(ev, go));
     // Read by the ?fps=1 meter: the start-up cost lands on the first scroll, not on load
-    (window as unknown as { __yxEngagedAt?: number }).__yxEngagedAt = performance.now();
+    const w = window as unknown as { __yxEngagedAt?: number; __yxEngagedBy?: string };
+    w.__yxEngagedAt = performance.now();
+    w.__yxEngagedBy = e.type;
     afterFirstPaint(fn);
   };
-  events.forEach((e) => addEventListener(e, go, { once: true, passive: true }));
+  events.forEach((ev) => addEventListener(ev, go, { passive: true }));
 };
 
 // ?fps=1: show why the scene is (not) running, for checks on a phone without devtools.
