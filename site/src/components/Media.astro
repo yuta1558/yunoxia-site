@@ -3,6 +3,8 @@
 // pressed. Video: the poster on the blueprint ground, a 64px play button, native controls once loaded,
 // no autoplay, no loop, muted by default. Frame (iframe): a "press to load" button on the gridded panel.
 // The caption goes outside, in a figure, as for Figure.
+import Icon from './Icon.astro';
+
 interface Props {
   kind: 'video' | 'frame';
   /** mono label at the bottom left: kind, length or size, sound */
@@ -28,7 +30,7 @@ const payload = JSON.stringify(kind === 'video' ? { sources, captions } : { src,
   {poster && <img src={poster} alt="" loading="lazy" decoding="async" />}
   {kind === 'video' ? (
     <button type="button" class="media__play" aria-label={action}>
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg>
+      <Icon name="play" />
     </button>
   ) : (
     <button type="button" class="btn btn--line media__load">{action}</button>
