@@ -305,3 +305,12 @@ test('lab components: tabs follow the arrow keys, media loads only when pressed'
   await expect(frame).toHaveAttribute('title', 'デザイン案 D');
   await expect(frame).toHaveAttribute('src', '/lab/d/');
 });
+
+test('blocks still waiting to stack in are printed in their final state', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await page.goto('/works/hevort-lite/');
+  const card = page.locator('.cards > li').first();
+  await expect(card).toHaveAttribute('data-reveal', 'pending');
+  await page.emulateMedia({ media: 'print' });
+  await expect.poll(() => card.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+});

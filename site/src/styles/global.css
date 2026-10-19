@@ -1196,6 +1196,18 @@ html .prose[lang='ko'] > p {
   animation-delay: calc(var(--reveal-step, 0) * var(--stagger-layer));
 }
 
+/* Printing never scrolls, so blocks still waiting would print blank: show them in their final state */
+@media print {
+  [data-reveal='pending'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-reveal='pending'].rule-draw::before {
+    transform: none;
+  }
+}
+
 /* Cross-document page transitions (no JS). Disabled under reduced motion below. */
 @view-transition {
   navigation: auto;
