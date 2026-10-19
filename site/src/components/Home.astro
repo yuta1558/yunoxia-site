@@ -10,7 +10,8 @@ import { contour } from './toolpath';
 import { type Lang, localPath } from '../i18n/ui';
 
 interface Props {
-  lang: Lang;
+  // The top page exists in Japanese and English only
+  lang: Exclude<Lang, 'ko'>;
 }
 
 const { lang } = Astro.props;

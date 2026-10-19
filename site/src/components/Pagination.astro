@@ -16,6 +16,7 @@ const { current, total, href, lang = 'ja' } = Astro.props;
 const t = {
   ja: { nav: 'ページ送り', prev: '前のページ', next: '次のページ' },
   en: { nav: 'Pages', prev: 'Previous page', next: 'Next page' },
+  ko: { nav: '페이지', prev: '이전 페이지', next: '다음 페이지' },
 }[lang];
 const two = (n: number) => String(n).padStart(2, '0');
 ---

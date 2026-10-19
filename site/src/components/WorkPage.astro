@@ -40,8 +40,9 @@ const [stateKind, stateLabel] = states[work.data.status];
 
 const crumbs = breadcrumbMarkup(
   [
-    { label: 'yunoxia', href: localPath(lang, '/') },
-    { label: 'Works', href: localPath(lang, '/works/') },
+    // Korean has no top page or Works list of its own: these lead to the Japanese ones, as in the header
+    { label: 'yunoxia', href: localPath(lang, '/'), hreflang: lang === 'ko' ? 'ja' : undefined },
+    { label: 'Works', href: localPath(lang, '/works/'), hreflang: lang === 'ko' ? 'ja' : undefined },
     { label: work.data.title },
   ],
   { ja: 'パンくず', en: 'Breadcrumb', ko: '이동 경로' }[lang],
