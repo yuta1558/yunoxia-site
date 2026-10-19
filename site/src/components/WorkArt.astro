@@ -9,13 +9,13 @@ interface Props {
   id: string;
   cover?: string;
   coverAlt?: string;
-  index: number;
   /** The hero of a Works page: no height cap */
   large?: boolean;
 }
 
-const { id, cover, coverAlt = '', index, large = false } = Astro.props;
-const k = index % 3;
+const { id, cover, coverAlt = '', large = false } = Astro.props;
+// Variant of the fallback toolpath, from the id: the same on the card and the Works page, and unchanged by dates
+const k = [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0) % 3;
 ---
 
 {cover ? (

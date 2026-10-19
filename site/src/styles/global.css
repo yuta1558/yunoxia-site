@@ -408,10 +408,6 @@ html[lang='en'] .prose > p {
   gap: var(--space-2);
 }
 
-.prose ol {
-  counter-reset: item;
-}
-
 .prose li {
   position: relative;
   padding-left: var(--space-6);
@@ -425,8 +421,8 @@ html[lang='en'] .prose > p {
 }
 
 .prose ol > li::before {
-  counter-increment: item;
-  content: counter(item, decimal-leading-zero);
+  /* The built-in list-item counter, so <ol start> and <li value> keep their numbers */
+  content: counter(list-item, decimal-leading-zero);
   position: absolute;
   left: 0;
   font-family: var(--font-mono);
