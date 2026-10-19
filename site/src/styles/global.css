@@ -674,7 +674,10 @@ html[lang='en'] .prose > p {
 .article-layout {
   display: flex;
   flex-wrap: wrap-reverse;
+  /* wrap-reverse swaps the cross axis, so flex-start would sink the contents to the line's bottom;
+     start keeps them at the top beside the body */
   align-items: flex-start;
+  align-items: start;
   gap: var(--space-12);
   padding-block: clamp(32px, 6vw, 64px);
 }
@@ -686,13 +689,10 @@ html[lang='en'] .prose > p {
 }
 
 /* Section numbers in mono before each h2; the contents carry the same numbers */
-.article-body > h2 {
-  display: flex;
-  gap: var(--space-3);
-  align-items: baseline;
-}
-
 .article-body > h2::before {
+  display: inline-block;
+  margin-right: var(--space-3);
+  vertical-align: baseline;
   counter-increment: section;
   content: counter(section, decimal-leading-zero);
   font-family: var(--font-mono);
