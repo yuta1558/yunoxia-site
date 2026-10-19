@@ -2,6 +2,9 @@
 // equivalents) becomes the three columns of the dark band on its page. Anything else stays prose:
 // other headings, another number of sections, text before the first one, deeper headings, or code
 // fences (a "## " line inside one is not a heading).
+// The band renders the steps with the CMS renderer (functions/_lib/markdown.js), which has no tables,
+// escapes raw HTML and drops links that are not absolute paths, #fragments, http(s) or mailto. A body
+// using any of those stays prose, so it never breaks silently.
 
 const STEPS = [
   ['分解。', '理解。', '作り替え。'],
@@ -15,6 +18,8 @@ const STEPS = [
 export function threeSteps(markdown) {
   const text = String(markdown).replace(/\r\n?/g, '\n');
   if (/^ {0,3}(```|~~~)/m.test(text)) return null;
+  // Tables, raw HTML, and links the CMS renderer would drop (relative paths such as ../log/)
+  if (/^\s*\|/m.test(text) || /<[A-Za-z/!]/.test(text) || /\]\((?!https?:|mailto:|#|\/(?![/\\]))/i.test(text)) return null;
   const parts = text.split(/^## +(.+)$/m);
   // parts: [before, heading1, body1, heading2, body2, …]
   if (parts[0].trim() !== '' || parts.length !== 7) return null;

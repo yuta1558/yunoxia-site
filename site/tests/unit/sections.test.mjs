@@ -16,6 +16,11 @@ test('other shapes stay prose', () => {
   assert.equal(threeSteps('intro\n\n' + ja('x', 'y', 'z')), null);
   // Three sections with other headings
   assert.equal(threeSteps('## 背景。\n\nx\n\n## 方法。\n\ny\n\n## 結果。\n\nz'), null);
+  // Shapes the CMS renderer cannot draw
+  assert.equal(threeSteps(ja('x', '| a | b |\n| - | - |\n| 1 | 2 |', 'z')), null);
+  assert.equal(threeSteps(ja('x', '<kbd>Ctrl</kbd>', 'z')), null);
+  assert.equal(threeSteps(ja('x', '[Log](../log/)', 'z')), null);
+  assert.ok(threeSteps(ja('x', '[Log](/log/) [a](https://example.com) [b](#s1)', 'z')));
   // A "## " line inside a code fence
   assert.equal(threeSteps(ja('x', '```\n## not a heading\n```', 'z')), null);
   assert.deepEqual(

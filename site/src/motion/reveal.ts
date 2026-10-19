@@ -51,8 +51,16 @@ function countUp(el: HTMLElement, delay: number) {
   requestAnimationFrame(tick);
 }
 
+// Opened at a #fragment, or come back to with the back / forward buttons: the browser moves the scroll
+// position after this script has decided what is "below the first screen", so leave the page alone.
+function restored(): boolean {
+  const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+  return location.hash !== '' || nav?.type === 'back_forward';
+}
+
 function init() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+  if (restored()) return;
   const below = [...document.querySelectorAll<HTMLElement>(TARGETS)].filter(
     (el) => el.getBoundingClientRect().top > innerHeight,
   );

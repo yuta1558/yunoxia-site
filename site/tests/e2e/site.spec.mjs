@@ -306,6 +306,13 @@ test('lab components: tabs follow the arrow keys, media loads only when pressed'
   await expect(frame).toHaveAttribute('src', '/lab/d/');
 });
 
+test('a page opened at a #fragment is left alone by the reveal', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await page.goto('/works/hevort-lite/#main');
+  await page.waitForLoadState('load');
+  expect(await page.locator('[data-reveal]').count()).toBe(0);
+});
+
 test('blocks still waiting to stack in are printed in their final state', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 700 });
   await page.goto('/works/hevort-lite/');
