@@ -329,6 +329,24 @@ test('a page opened at a #fragment is left alone by the reveal', async ({ page }
   expect(await page.locator('[data-reveal]').count()).toBe(0);
 });
 
+test('a reloaded page is left alone by the reveal', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await page.goto('/works/hevort-lite/');
+  await page.reload();
+  await page.waitForLoadState('load');
+  expect(await page.locator('[data-reveal]').count()).toBe(0);
+});
+
+test('without JavaScript the lab tabs show every panel and no tab list', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto('/lab/components/');
+  await expect(page.locator('[role="tablist"]')).toBeHidden();
+  await expect(page.locator('[role="tabpanel"]')).toHaveCount(3);
+  for (const panel of await page.locator('[role="tabpanel"]').all()) await expect(panel).toBeVisible();
+  await context.close();
+});
+
 test('blocks still waiting to stack in are printed in their final state', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 700 });
   await page.goto('/works/hevort-lite/');

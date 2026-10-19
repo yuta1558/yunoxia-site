@@ -1002,6 +1002,11 @@ html .prose[lang='ko'] > p {
 }
 
 /* Tabs: the header nav's look; the selected tab in ink with a heavy underline */
+/* Without JavaScript the tab list stays hidden and every panel shows */
+.tabs [role='tablist'][hidden] {
+  display: none;
+}
+
 .tabs [role='tablist'] {
   display: flex;
   flex-wrap: wrap;
