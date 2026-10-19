@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import WorkPage from '../../../components/WorkPage.astro';
+
+export async function getStaticPaths() {
+  const works = await getCollection('worksKo');
+  return works.map((work) => ({ params: { slug: work.id }, props: { work } }));
+}
+
+const { work } = Astro.props;
+---
+
+<Base title={work.data.title} description={work.data.description ?? work.data.summary}>
+  <WorkPage work={work} lang="ko" />
+</Base>

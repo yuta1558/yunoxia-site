@@ -88,6 +88,53 @@ rmSync('public/assets/fonts', { recursive: true, force: true });
 mkdirSync(`${FULL_DIR}/files`, { recursive: true });
 for (const f of copied) copyFileSync(`${PKG}/files/${f}`, `${FULL_DIR}/files/${f}`);
 writeFileSync(`${FULL_DIR}/full.css`, fullCss);
-writeFileSync('src/styles/fonts.generated.json', JSON.stringify({ cmsFont: `/assets/fonts/zen-${hash}/full.css` }) + '\n');
 const bytes = [...copied].reduce((n, f) => n + statSync(`${FULL_DIR}/files/${f}`).size, 0);
 console.log(`${FULL_DIR}/full.css: ${full.length} @font-face rules, ${copied.size} woff2 files, ${bytes} bytes`);
+
+// Pretendard for Korean pages (design system v4: Zen Kaku Gothic New has no Hangul). Like the subset
+// above: only the 300 and 400 unicode-range slices that hold a character of the Korean pages (content,
+// pages and the Korean UI strings; Latin too, since Korean pages set Latin in Pretendard as well).
+// Copied under a hashed /assets/fonts/pretendard-<hash>/ and linked by Base.astro on lang="ko" pages only.
+const KO_PKG = 'node_modules/pretendard/dist/web/static';
+const koFiles = ['src/content/ko', 'src/pages/ko'].flatMap((d) => {
+  try {
+    return walk(d);
+  } catch {
+    return [];
+  }
+});
+let koFont = null;
+if (koFiles.length) {
+  const koUsed = new Set();
+  for (const file of koFiles) for (const ch of readFileSync(file, 'utf8')) koUsed.add(ch.codePointAt(0));
+  // Hangul in the UI strings (src/i18n/ui.ts holds every language; only its Korean is needed here)
+  for (const ch of readFileSync('src/i18n/ui.ts', 'utf8')) if (/[\u1100-\u11ff\u3130-\u318f\uac00-\ud7af]/.test(ch)) koUsed.add(ch.codePointAt(0));
+  const koCopied = new Set();
+  const koSource = readFileSync(`${KO_PKG}/pretendard-dynamic-subset.css`, 'utf8');
+  // The source starts with the copyright and the SIL OFL 1.1 text: keep it with the copied fonts
+  const koLicense = koSource.slice(0, koSource.indexOf('@font-face')).replace(/\/\* \[\d+\] \*\/\s*$/, '').trim();
+  const koFaces = (koSource.match(/@font-face\s*\{[^}]*\}/g) ?? [])
+    .filter((face) => /font-weight:\s*(300|400);/.test(face) && hits(/unicode-range:\s*([^;]+);/.exec(face)[1], koUsed))
+    .map((face) =>
+      face.replace(/src:[^;]*;/, (src) => {
+        const m = /url\(\.\/woff2-dynamic-subset\/([^)]+\.woff2)\)/.exec(src);
+        if (!m) throw new Error('no woff2 source in pretendard-dynamic-subset.css');
+        koCopied.add(m[1]);
+        return `src: url(./files/${m[1]}) format('woff2');`;
+      }),
+    );
+  const koCss = `${koLicense}\n/* Subset by scripts/font-subsets.mjs */\n${koFaces.join('\n')}\n`;
+  const koHash = createHash('sha256').update(koCss).digest('hex').slice(0, 10);
+  const KO_DIR = `public/assets/fonts/pretendard-${koHash}`;
+  mkdirSync(`${KO_DIR}/files`, { recursive: true });
+  for (const f of koCopied) copyFileSync(`${KO_PKG}/woff2-dynamic-subset/${f}`, `${KO_DIR}/files/${f}`);
+  writeFileSync(`${KO_DIR}/ko.css`, koCss);
+  koFont = `/assets/fonts/pretendard-${koHash}/ko.css`;
+  const koBytes = [...koCopied].reduce((n, f) => n + statSync(`${KO_DIR}/files/${f}`).size, 0);
+  console.log(`${KO_DIR}/ko.css: ${koFaces.length} @font-face rules, ${koCopied.size} woff2 files, ${koBytes} bytes`);
+}
+
+writeFileSync(
+  'src/styles/fonts.generated.json',
+  JSON.stringify({ cmsFont: `/assets/fonts/zen-${hash}/full.css`, koFont }) + '\n',
+);

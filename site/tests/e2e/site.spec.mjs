@@ -3,6 +3,8 @@ import { test, expect } from '@playwright/test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { FORBIDDEN } from '../../scripts/forbidden.mjs';
 
+const langOfPath = (path) => (path.startsWith('/en/') ? 'en' : path.startsWith('/ko/') ? 'ko' : 'ja');
+
 // Every page listed in the built sitemap(s)
 const routes = readdirSync('dist')
   .filter((f) => /^sitemap-\d+\.xml$/.test(f))
@@ -20,7 +22,7 @@ for (const path of routes) {
     expect(res?.status()).toBe(200);
     await expect(page).toHaveTitle(/yunoxia/);
     await expect(page.locator('h1')).toHaveCount(1);
-    await expect(page.locator('html')).toHaveAttribute('lang', path.startsWith('/en/') ? 'en' : 'ja');
+    await expect(page.locator('html')).toHaveAttribute('lang', langOfPath(path));
     await page.waitForTimeout(300);
     expect(errors).toEqual([]);
   });
@@ -101,11 +103,14 @@ for (const path of routes) {
       expect(alts).toEqual({});
     } else if (Object.keys(alts).length) {
       expect(alts['x-default']).toBeTruthy();
-      for (const lang of ['ja', 'en']) {
-        const target = alts[lang];
-        expect(target, `${lang} alternate`).toBeTruthy();
-        // Reciprocal: the page we point at points back with the same pair
-        expect((await alternatesOf(request, target))[path.startsWith('/en/') ? 'en' : 'ja'], `${target} lists ${path}`).toBe(path);
+      // Every page with alternates has Japanese and lists itself
+      expect(alts.ja, 'ja alternate').toBeTruthy();
+      expect(alts[langOfPath(path)]).toBe(path);
+      for (const [lang, target] of Object.entries(alts)) {
+        if (lang === 'x-default') continue;
+        expect(langOfPath(target), `${target} is ${lang}`).toBe(lang);
+        // Reciprocal: the page we point at points back with the same set
+        expect(await alternatesOf(request, target), `${target} lists the same versions`).toEqual(alts);
       }
     }
   });
@@ -320,4 +325,25 @@ test('blocks still waiting to stack in are printed in their final state', async 
   await expect(card).toHaveAttribute('data-reveal', 'pending');
   await page.emulateMedia({ media: 'print' });
   await expect.poll(() => card.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+});
+
+test('the Korean Works page: Korean type, its own font subset, and the language switch', async ({ page, request }) => {
+  await page.goto('/ko/works/bltouch-troubleshooting/');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
+  await expect(page.locator('h1')).toHaveText('BLTouch 문제 해결 (다국어).');
+  // The three steps are in the band
+  await expect(page.locator('.work-steps__list > li')).toHaveCount(3);
+  // Pretendard: a linked stylesheet of woff2 slices that exist
+  const href = await page.locator('link[rel="stylesheet"][href*="/assets/fonts/pretendard-"]').getAttribute('href');
+  expect(href).toMatch(/^\/assets\/fonts\/pretendard-[0-9a-f]{10}\/ko\.css$/);
+  const css = await (await request.get(href)).text();
+  expect(css).toContain('SIL Open Font License');
+  const files = [...css.matchAll(/url\(\.\/(files\/[^)]+\.woff2)\)/g)].map((m) => m[1]);
+  expect(files.length).toBeGreaterThan(0);
+  for (const f of files) expect((await request.head(href.replace(/ko\.css$/, f))).ok(), f).toBe(true);
+  // Footer switch: JA / EN / KO with KO current; Japanese pages do not load Pretendard
+  await expect(page.locator('.foot-controls .seg').first().locator('[aria-current]')).toHaveText('KO');
+  await page.goto('/works/bltouch-troubleshooting/');
+  await expect(page.locator('.foot-controls .seg').first()).toContainText('KO');
+  await expect(page.locator('link[href*="pretendard"]')).toHaveCount(0);
 });

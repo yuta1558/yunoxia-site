@@ -5,7 +5,8 @@ import '@fontsource-variable/geist-mono';
 import '../styles/fonts.generated.css';
 import '../styles/global.css';
 import Bead from '../bead/Bead.astro';
-import { counterpart, langOf, localPath, ui } from '../i18n/ui';
+import { LANGS, langOf, localPath, ui, versionLabel, versionsOf, type Lang } from '../i18n/ui';
+import { koFont } from '../styles/fonts.generated.json';
 import { jsonLdString, webSite } from '../lib/jsonld.mjs';
 
 interface Props {
@@ -43,23 +44,24 @@ const fullTitle = title ? `${title} — ${siteName}` : `${siteName} — ${t.site
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL('/assets/ogp-v3.png', Astro.site);
 
-// hreflang alternates only where the page exists in both languages
-const other = counterpart(Astro.url.pathname);
-const jaPath = lang === 'ja' ? Astro.url.pathname : other;
-const enPath = lang === 'en' ? Astro.url.pathname : other;
-const alternates = other
+// The page in its other languages: hreflang alternates, og:locale, the header link and the footer switch
+const versions = versionsOf(Astro.url.pathname);
+const others = LANGS.filter((l) => l !== lang && versions[l]);
+const alternates = others.length
   ? [
-      { hreflang: 'ja', href: new URL(jaPath!, Astro.site) },
-      { hreflang: 'en', href: new URL(enPath!, Astro.site) },
-      { hreflang: 'x-default', href: new URL(jaPath!, Astro.site) },
+      ...LANGS.filter((l) => versions[l]).map((l) => ({ hreflang: l, href: new URL(versions[l]!, Astro.site) })),
+      ...(versions.ja ? [{ hreflang: 'x-default', href: new URL(versions.ja, Astro.site) }] : []),
     ]
   : [];
+// The header keeps one link: English from Japanese, Japanese from the others
+const headerLang: Lang | undefined = lang === 'ja' ? (versions.en ? 'en' : versions.ko ? 'ko' : undefined) : versions.ja ? 'ja' : undefined;
 
 const nav = [
-  { href: localPath(lang, '/works/'), label: 'Works' },
-  { href: localPath(lang, '/research/'), label: 'Research' },
-  { href: '/log/', label: t.logLabel, hreflang: lang === 'en' ? 'ja' : undefined },
-  { href: localPath(lang, '/about/'), label: 'About' },
+  // Korean has no Works list, Research or About of its own: those links lead to the Japanese pages
+  { href: localPath(lang, '/works/'), label: 'Works', hreflang: lang === 'ko' ? 'ja' : undefined },
+  { href: localPath(lang, '/research/'), label: 'Research', hreflang: lang === 'ko' ? 'ja' : undefined },
+  { href: '/log/', label: t.logLabel, hreflang: lang !== 'ja' ? 'ja' : undefined },
+  { href: localPath(lang, '/about/'), label: 'About', hreflang: lang === 'ko' ? 'ja' : undefined },
 ];
 const current = Astro.url.pathname;
 // Footer: the build date as the sheet's revision (JST)
@@ -67,7 +69,6 @@ const rev = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'nu
   .format(new Date())
   .replaceAll('-', '.');
 const year = rev.slice(0, 4);
-const otherLang = lang === 'ja' ? 'en' : 'ja';
 
 // JSON-LD: WebSite on the top pages, plus whatever the page passes
 const isTop = current === '/' || current === '/en/' || current === '/en';
@@ -103,7 +104,8 @@ const structured = [
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content={t.ogLocale} />
-    {other && <meta property="og:locale:alternate" content={ui[lang === 'ja' ? 'en' : 'ja'].ogLocale} />}
+    {others.map((l) => <meta property="og:locale:alternate" content={ui[l].ogLocale} />)}
+    {lang === 'ko' && koFont && <link rel="stylesheet" href={koFont} />}
     <meta name="twitter:card" content="summary_large_image" />
     {structured.map((data) => <script type="application/ld+json" set:html={jsonLdString(data)} />)}
 
@@ -144,9 +146,9 @@ const structured = [
           ))}
         </ul>
       </nav>
-      {other && (
-        <a class="lang" href={other} hreflang={lang === 'ja' ? 'en' : 'ja'} lang={lang === 'ja' ? 'en' : 'ja'}>
-          {t.langSwitch}<span class="sr-only"> — {t.langSwitchLabel}</span>
+      {headerLang && (
+        <a class="lang" href={versions[headerLang]} hreflang={headerLang} lang={headerLang}>
+          {headerLang.toUpperCase()}<span class="sr-only"> — {versionLabel[headerLang]}</span>
         </a>
       )}
     </header>
@@ -171,12 +173,17 @@ const structured = [
         <a href="/rss.xml">RSS</a>
       </div>
       <div class="foot-controls">
-        {other && (
+        {others.length > 0 && (
           <div class="seg" role="group" aria-label={t.language}>
-            <span class="seg__on" aria-current="true">{lang.toUpperCase()}</span>
-            <a href={other} hreflang={otherLang} lang={otherLang}>
-              {otherLang.toUpperCase()}<span class="sr-only"> — {t.langSwitchLabel}</span>
-            </a>
+            {LANGS.filter((l) => versions[l]).map((l) =>
+              l === lang ? (
+                <span class="seg__on" aria-current="true">{l.toUpperCase()}</span>
+              ) : (
+                <a href={versions[l]} hreflang={l} lang={l}>
+                  {l.toUpperCase()}<span class="sr-only"> — {versionLabel[l]}</span>
+                </a>
+              ),
+            )}
           </div>
         )}
         <div class="seg" role="group" aria-label={t.theme} data-theme-switch>

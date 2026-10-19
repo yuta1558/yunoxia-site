@@ -38,6 +38,22 @@ const worksEn = defineCollection({
   }),
 });
 
+// Korean versions of Works (only some have one). File names (ids) match the Japanese entries.
+const worksKo = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/ko/works' }),
+  schema: z.object({
+    title: z.string(),
+    summary: z.string(),
+    description: z.string().optional(),
+    status: z.enum(['진행 중', '완료', '계획']),
+    updated: z.coerce.date(),
+    tags: z.array(z.string()).default([]),
+    cover: z.string().optional(),
+    coverAlt: z.string().optional(),
+    specs: z.array(z.object({ l: z.string(), v: z.string(), u: z.string().optional(), t: z.string().optional() })).optional(),
+  }),
+});
+
 const log = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/log' }),
   schema: z.object({
@@ -47,4 +63,4 @@ const log = defineCollection({
   }),
 });
 
-export const collections = { works, worksEn, log };
+export const collections = { works, worksEn, worksKo, log };

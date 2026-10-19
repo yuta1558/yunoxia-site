@@ -1,5 +1,5 @@
 // A Works body written as the three steps (## 分解。 / ## 理解。 / ## 作り替え。, or the English
-// equivalents) becomes the three columns of the dark band on its page. Anything else stays prose:
+// and Korean equivalents) becomes the three columns of the dark band on its page. Anything else stays prose:
 // other headings, another number of sections, text before the first one, deeper headings, or code
 // fences (a "## " line inside one is not a heading).
 // The band renders the steps with the CMS renderer (functions/_lib/markdown.js), which has no tables,
@@ -9,6 +9,7 @@
 const STEPS = [
   ['分解。', '理解。', '作り替え。'],
   ['Take it apart.', 'Understand it.', 'Remake it.'],
+  ['분해.', '이해.', '다시 만들기.'],
 ];
 
 /**
