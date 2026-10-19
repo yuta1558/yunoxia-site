@@ -1,0 +1,179 @@
+---
+// Design lab: the v4 parts that no page uses yet, shown in place with the site's own styles.
+// Not linked, noindex, and left out of the sitemap with the other lab pages.
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import Media from '../../components/Media.astro';
+import Pagination from '../../components/Pagination.astro';
+import Tabs from '../../components/Tabs.astro';
+
+const icons = ['plus', 'close', 'arrow-right', 'arrow-left', 'arrow-up-right', 'menu', 'copy', 'play', 'download', 'check'] as const;
+---
+
+<Base title="Components" description="デザインシステム v4 の部品の見本。" noindex>
+  <div class="wrap page lab">
+    <p class="eyebrow">Lab · v4</p>
+    <h1 class="page-title">部品の見本。</h1>
+    <p class="intro">まだどのページにも使っていない部品を、サイトのスタイルのまま並べています。</p>
+
+    <section>
+      <h2>入力欄。</h2>
+      <div class="lab-grid">
+        <div class="field">
+          <label for="f-name">名前 <span class="field__hint">Default</span></label>
+          <input id="f-name" placeholder="ゆー" />
+        </div>
+        <div class="field">
+          <label for="f-topic">用件</label>
+          <select id="f-topic"><option>制作について</option><option>研究について</option></select>
+        </div>
+        <div class="field">
+          <label for="f-nozzle">ノズル径 <span class="field__hint">Error</span></label>
+          <input id="f-nozzle" value="0,4" aria-invalid="true" aria-describedby="f-nozzle-err" />
+          <p id="f-nozzle-err" class="field__error">小数点はピリオドで。例: <span class="nw">0.4 mm</span></p>
+        </div>
+        <div class="field">
+          <label for="f-serial">シリアル番号 <span class="field__hint">Disabled</span></label>
+          <input id="f-serial" value="自動で入ります" disabled />
+        </div>
+        <div class="field lab-wide">
+          <label for="f-body">本文</label>
+          <textarea id="f-body" rows="4"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>選択肢。</h2>
+      <div class="lab-grid">
+        <fieldset class="choices">
+          <legend>関心のある領域</legend>
+          <label class="choice"><input type="checkbox" checked />産業用 3D プリンティング</label>
+          <label class="choice"><input type="checkbox" />ファームウェアと Klipper</label>
+        </fieldset>
+        <fieldset class="choices">
+          <legend>返信の言語</legend>
+          <label class="choice"><input type="radio" name="reply" checked />日本語</label>
+          <label class="choice"><input type="radio" name="reply" />English</label>
+        </fieldset>
+      </div>
+    </section>
+
+    <section>
+      <h2>タブ。</h2>
+      <Tabs id="lab-tabs" label="表示の切り替え" labels={['概要', '設定値', 'ログ']}>
+        <p slot="tab-0">概要のパネル。矢印キーでタブを移れる。</p>
+        <p slot="tab-1">設定値のパネル。</p>
+        <p slot="tab-2">ログのパネル。</p>
+      </Tabs>
+    </section>
+
+    <section>
+      <h2>ページ送り。</h2>
+      <Pagination current={2} total={12} href={(n) => `#page-${n}`} />
+    </section>
+
+    <section>
+      <h2>埋め込み。</h2>
+      <div class="lab-grid">
+        <figure>
+          <Media kind="video" label="Video · 見本 · 無音" action="動画を再生" />
+          <figcaption><span class="meta">Fig. 01</span> 動画の枠。押すまで何も読み込まない。</figcaption>
+        </figure>
+        <figure>
+          <Media kind="frame" label="Page · 見本" action="押して読み込む" src="/works/" title="作ったものの一覧" />
+          <figcaption><span class="meta">Fig. 02</span> 埋め込みの枠。押すと iframe を作る。</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>注記とタグ。</h2>
+      <div class="lab-stack">
+        <aside class="note"><p class="note__label meta">Note</p><p>補足は本文の流れから外れる話だけに使う。</p></aside>
+        <aside class="note note--caution"><p class="note__label meta"><span>Caution</span></p><p>作業前に電源を切る。</p></aside>
+        <p class="lab-tags">
+          <span class="tag">3D Printing</span>
+          <span class="tag tag--new">● New</span>
+          <span class="tag tag--wip">◐ WIP</span>
+          <span class="tag tag--done">■ Done</span>
+          <span class="tag tag--archived">○ Archived</span>
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>記号。</h2>
+      <ul class="lab-icons">
+        {icons.map((name) => (
+          <li><Icon name={name} /><span class="meta">{name}</span></li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .lab section {
+    margin-top: var(--section-y);
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .lab h2 {
+    font-size: var(--step-2);
+  }
+
+  .lab-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: var(--space-6) var(--space-8);
+  }
+
+  .lab-wide {
+    grid-column: 1 / -1;
+  }
+
+  .lab figure {
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .lab figcaption {
+    display: flex;
+    gap: var(--space-3);
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .lab-stack {
+    display: grid;
+    gap: var(--space-4);
+    max-width: 35rem;
+  }
+
+  .lab-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .lab-icons {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+    gap: 4px;
+  }
+
+  .lab-icons li {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    padding: var(--space-5) 0;
+    background: var(--surface);
+  }
+</style>

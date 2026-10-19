@@ -1,0 +1,33 @@
+---
+// Icon (design system v4): ten marks on a 24px grid, a 1.5px stroke, square ends, straight lines only.
+// The colour is currentColor. Decorative by default; pass `label` when the icon carries meaning.
+const PATHS = {
+  plus: 'M12 4v16M4 12h16',
+  close: 'M5 5l14 14M19 5L5 19',
+  'arrow-right': 'M4 12h16M13 5l7 7-7 7',
+  'arrow-left': 'M20 12H4M11 5l-7 7 7 7',
+  'arrow-up-right': 'M6 18L18 6M8 6h10v10',
+  menu: 'M4 7h16M4 12h16M4 17h16',
+  copy: 'M8 8V4h12v12h-4M4 8h12v12H4z',
+  play: 'M7 4l13 8-13 8z',
+  download: 'M12 4v12M6 10l6 6 6-6M4 20h16',
+  check: 'M4 12l5 5L20 6',
+} as const;
+
+interface Props {
+  name: keyof typeof PATHS;
+  /** 16px, for links in running text */
+  inline?: boolean;
+  label?: string;
+}
+
+const { name, inline = false, label } = Astro.props;
+---
+
+<svg
+  class:list={['icon', { 'icon--inline': inline }]}
+  viewBox="0 0 24 24"
+  aria-hidden={label ? undefined : 'true'}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  focusable="false"><path d={PATHS[name]} /></svg>

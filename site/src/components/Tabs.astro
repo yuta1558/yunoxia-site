@@ -1,0 +1,61 @@
+---
+// Tabs (design system v4): switch views within a page. The header nav's type; the selected tab in ink
+// with a 1.5px underline. Panels go in named slots tab-0, tab-1 …. Arrow keys, Home and End move
+// between tabs (WAI-ARIA tabs pattern, automatic activation). Without JavaScript every panel shows.
+interface Props {
+  id: string;
+  labels: string[];
+  /** accessible name of the tab list */
+  label: string;
+}
+
+const { id, labels, label } = Astro.props;
+const panels = await Promise.all(labels.map((_, i) => Astro.slots.render(`tab-${i}`)));
+---
+
+<div class="tabs" data-tabs>
+  <div role="tablist" aria-label={label} hidden>
+    {labels.map((l, i) => (
+      <button
+        type="button"
+        role="tab"
+        id={`${id}-tab-${i}`}
+        aria-controls={`${id}-panel-${i}`}
+        aria-selected={i === 0 ? 'true' : 'false'}
+        tabindex={i === 0 ? 0 : -1}
+      >
+        {l}
+      </button>
+    ))}
+  </div>
+  {panels.map((html, i) => (
+    <div role="tabpanel" id={`${id}-panel-${i}`} aria-labelledby={`${id}-tab-${i}`} tabindex="0" set:html={html} />
+  ))}
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-tabs]')) {
+    const list = root.querySelector<HTMLElement>('[role="tablist"]')!;
+    const tabs = [...list.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = tabs.map((t) => document.getElementById(t.getAttribute('aria-controls')!)!);
+    const select = (i: number, focus = false) => {
+      tabs.forEach((t, k) => {
+        t.setAttribute('aria-selected', String(k === i));
+        t.tabIndex = k === i ? 0 : -1;
+        panels[k].hidden = k !== i;
+      });
+      if (focus) tabs[i].focus();
+    };
+    list.hidden = false;
+    select(0);
+    tabs.forEach((t, i) => t.addEventListener('click', () => select(i)));
+    list.addEventListener('keydown', (e) => {
+      const i = tabs.indexOf(document.activeElement as HTMLButtonElement);
+      if (i < 0) return;
+      const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+      if (next === undefined) return;
+      e.preventDefault();
+      select((next + tabs.length) % tabs.length, true);
+    });
+  }
+</script>

@@ -35,14 +35,15 @@ site/
 ├── src/
 │   ├── admin/editor.ts     # CMS body editor (CodeMirror 6, Obsidian-style live preview)
 │   ├── layouts/Base.astro  # head, header, footer, theme script, bead
-│   ├── components/         # Home (top page, ja/en), WorkCards, toolpath geometry
-│   ├── pages/              # index, works, research, log, about, 404, en/*, rss, updates.json, lab/d
+│   ├── components/         # Home (top page, ja/en), WorkPage, WorkCards, SpecList, Phrases, Icon, Tabs, Pagination, Media, toolpath geometry
+│   ├── pages/              # index, works, research, log, about, 404, en/*, rss, updates.json, lab/d, lab/components (v4 parts not used by any page yet)
 │   ├── content/            # works (ja/en) and log Markdown
 │   ├── scene/              # top-page WebGL scene (README.md has the effects ledger)
 │   ├── bead/               # molten bead cursor + "updated since last visit" marks
+│   ├── motion/             # reveal.ts: stack / draw / read for blocks that scroll into view (effects ledger rows)
 │   ├── research/           # Research figures
 │   ├── i18n/ui.ts          # UI strings and ja/en path mapping
-│   └── styles/global.css   # v3 tokens, type, buttons, section heads, prose
+│   └── styles/global.css   # v4 tokens, type, buttons, section heads, prose, article, form parts, media
 └── tests/
     ├── e2e/                # Playwright against the built site
     └── unit/

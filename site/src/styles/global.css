@@ -65,6 +65,8 @@
   --icon-size-inline: 16px;
   --icon-stroke: 1.5px;
   --touch-target: 44px;
+  --field-height: 48px;
+  --play-size: 64px;
 
   /* Motion: "switch" uses ease-standard; "stack", "draw" and "read" use ease-machine */
   --dur-fast: 150ms;
@@ -811,6 +813,314 @@ html[lang='en'] .prose > p {
 
 .article-pager a:hover .article-pager__title {
   color: var(--pen);
+}
+
+/* Field: input, textarea, select. The surface with a muted underline (line is under 3:1 against it).
+   Errors are told in ink: a heavier underline, the panel, an ERR label and a sentence; never a colour. */
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.field label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: 0.875rem;
+}
+
+.field :is(input, textarea, select) {
+  width: 100%;
+  min-height: var(--field-height);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-bottom: var(--rule-hair) solid var(--muted);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px; /* 16px keeps iOS from zooming */
+}
+
+.field textarea {
+  padding-block: var(--space-3);
+  line-height: 1.8;
+  resize: vertical;
+}
+
+.field select {
+  appearance: none;
+  padding-right: calc(var(--space-4) * 2 + 10px);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink) 50% calc(50% + 1.5px), transparent calc(50% + 1.5px)),
+    linear-gradient(-45deg, transparent 50%, var(--ink) 50% calc(50% + 1.5px), transparent calc(50% + 1.5px));
+  background-size: 6px 6px;
+  background-position:
+    right calc(var(--space-4) + 5px) center,
+    right var(--space-4) center;
+  background-repeat: no-repeat;
+}
+
+.field ::placeholder {
+  color: var(--muted);
+}
+
+.field :is(input, textarea, select):focus-visible {
+  border-bottom: var(--rule-heavy) solid var(--ink);
+}
+
+.field [aria-invalid='true'] {
+  border-bottom: var(--rule-heavy) solid var(--ink);
+  background-color: var(--panel);
+}
+
+.field :is(input, textarea, select):disabled {
+  background-color: transparent;
+  border-bottom-style: dashed;
+  color: var(--muted);
+}
+
+.field__hint {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.field__error {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+}
+
+.field__error::before {
+  content: 'ERR';
+  flex: none;
+  padding: 1px 6px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+/* Choice: native checkboxes and radios redrawn; the radio is the system's only circle */
+.choices {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choices legend {
+  padding: 0;
+  margin-bottom: var(--space-3);
+  font-size: 0.875rem;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 28px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.choice input {
+  appearance: none;
+  flex: none;
+  display: grid;
+  place-content: center;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: var(--rule-heavy) solid var(--ink);
+  background: transparent;
+  cursor: pointer;
+}
+
+.choice input[type='radio'] {
+  border-radius: 50%;
+}
+
+.choice input[type='checkbox']:checked {
+  background: var(--ink);
+}
+
+.choice input[type='checkbox']:checked::after {
+  content: '';
+  width: 9px;
+  height: 5px;
+  border: solid var(--paper);
+  border-width: 0 0 1.5px 1.5px;
+  transform: translate(0, -1px) rotate(-45deg);
+}
+
+.choice input[type='radio']:checked::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+/* Tabs: the header nav's look; the selected tab in ink with a heavy underline */
+.tabs [role='tablist'] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-8);
+  border-bottom: var(--rule-hair) solid var(--line);
+}
+
+.tabs [role='tab'] {
+  min-height: var(--touch-target);
+  padding: 0;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: var(--rule-heavy) solid transparent;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+
+.tabs [role='tab']:hover,
+.tabs [role='tab'][aria-selected='true'] {
+  color: var(--ink);
+}
+
+.tabs [role='tab'][aria-selected='true'] {
+  border-bottom-color: var(--ink);
+}
+
+.tabs [role='tabpanel'] {
+  padding-top: var(--space-6);
+}
+
+/* Pagination: 44px squares, two-digit mono numbers; the current page filled with ink */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pagination > * {
+  display: grid;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.pagination a {
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+
+.pagination a:hover {
+  color: var(--pen);
+}
+
+.pagination .pagination__edge {
+  border: var(--rule-hair) solid var(--line);
+}
+
+.pagination [aria-current] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.pagination .pagination__gap {
+  color: var(--muted);
+}
+
+/* Media: video, iframe; nothing is loaded until it is pressed */
+.media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  outline: var(--rule-hair) solid var(--line);
+}
+
+.media--video {
+  background: var(--band);
+}
+
+.media--frame {
+  background-color: var(--panel);
+  background-image:
+    linear-gradient(var(--grid-line-panel) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-panel) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.media > :is(img, video, iframe) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+
+.media__play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: var(--play-size);
+  height: var(--play-size);
+  border: var(--rule-heavy) solid var(--band-ink);
+  background: rgb(13 20 48 / 0.4);
+  color: var(--band-ink);
+  cursor: pointer;
+  transition: background var(--dur-base) var(--ease-standard);
+}
+
+.media__play:hover {
+  background: var(--band-pen);
+  border-color: var(--band-pen);
+  color: var(--band);
+}
+
+.media__play:focus-visible {
+  outline-color: var(--band-pen);
+}
+
+.media__load {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.media__label {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.media--video .media__label {
+  color: var(--band-muted);
 }
 
 /* Motion for blocks that scroll into view (src/motion/reveal.ts). Only blocks below the first screen

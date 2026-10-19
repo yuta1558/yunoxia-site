@@ -285,3 +285,23 @@ test.describe('reduced motion', () => {
     expect(await page.locator('[data-reveal]').count()).toBe(0);
   });
 });
+
+test('lab components: tabs follow the arrow keys, media loads only when pressed', async ({ page }) => {
+  await page.goto('/lab/components/');
+  const tabs = page.getByRole('tab');
+  await expect(tabs).toHaveCount(3);
+  await tabs.first().focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+  await expect(tabs.nth(1)).toBeFocused();
+  await expect(page.getByRole('tabpanel', { name: '設定値' })).toBeVisible();
+  await expect(page.getByRole('tabpanel', { name: '概要' })).toBeHidden();
+  await page.keyboard.press('End');
+  await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
+
+  await expect(page.locator('.media iframe')).toHaveCount(0);
+  await page.getByRole('button', { name: '押して読み込む' }).click();
+  const frame = page.locator('.media iframe');
+  await expect(frame).toHaveAttribute('title', '作ったものの一覧');
+  await expect(frame).toHaveAttribute('src', '/works/');
+});
