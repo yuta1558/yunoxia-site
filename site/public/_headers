@@ -20,6 +20,12 @@
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
 
+# Design lab (noindex review pages): framable by the site itself, so the Media sample on
+# /lab/components/ can show /lab/d/ in its iframe. Every other page stays DENY.
+/lab/*
+  ! X-Frame-Options
+  X-Frame-Options: SAMEORIGIN
+
 # Service worker kill switch must always be revalidated
 /sw.js
   Service-Worker-Allowed: /

@@ -302,6 +302,6 @@ test('lab components: tabs follow the arrow keys, media loads only when pressed'
   await expect(page.locator('.media iframe')).toHaveCount(0);
   await page.getByRole('button', { name: '押して読み込む' }).click();
   const frame = page.locator('.media iframe');
-  await expect(frame).toHaveAttribute('title', '作ったものの一覧');
-  await expect(frame).toHaveAttribute('src', '/works/');
+  await expect(frame).toHaveAttribute('title', 'デザイン案 D');
+  await expect(frame).toHaveAttribute('src', '/lab/d/');
 });
