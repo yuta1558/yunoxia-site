@@ -34,6 +34,8 @@
 
   --font-sans: 'Geist Variable', 'Zen Kaku Gothic New', system-ui, sans-serif;
   --font-jp: 'Zen Kaku Gothic New', 'Geist Variable', system-ui, sans-serif;
+  /* Korean: Pretendard once Korean pages ship (self-hosted subset, as for Zen Kaku Gothic New); until then the system's Hangul */
+  --font-ko: 'Pretendard', 'Geist Variable', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   --measure: 38em;
@@ -134,6 +136,27 @@ html[lang='en'] body {
   font-family: var(--font-sans);
   letter-spacing: 0;
   line-height: 1.7;
+}
+
+/* Korean: Pretendard for headings and text alike (Hangul beside Geist's Latin jumps in height);
+   break between words (어절), never inside one; ragged right, as English */
+:is(html[lang='ko'] body, [lang='ko']) {
+  font-family: var(--font-ko);
+  line-height: 1.8;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  font-feature-settings: normal;
+}
+
+:is(html[lang='ko'], [lang='ko']) :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-ko);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+html[lang='ko'] .prose > p {
+  text-align: left;
 }
 
 /* Headlines are light and tight; Geist sets the Latin, Zen Kaku Gothic New the Japanese */
