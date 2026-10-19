@@ -7,6 +7,8 @@ const works = defineCollection({
   schema: z.object({
     title: z.string(),
     summary: z.string(),
+    // Meta description only (falls back to summary)
+    description: z.string().optional(),
     status: z.enum(['進行中', '完了', '構想']),
     updated: z.coerce.date(),
     tags: z.array(z.string()).default([]),
@@ -22,6 +24,8 @@ const worksEn = defineCollection({
   schema: z.object({
     title: z.string(),
     summary: z.string(),
+    // Meta description only (falls back to summary)
+    description: z.string().optional(),
     status: z.enum(['In progress', 'Done', 'Planned']),
     updated: z.coerce.date(),
     tags: z.array(z.string()).default([]),

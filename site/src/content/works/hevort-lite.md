@@ -1,5 +1,6 @@
 ---
 title: HevORT-lite
+description: 知り合いが作った CoreXY の 3D プリンターを譲り受け、手を入れています。180 mm 角クラスで、部品代 500 ドル以下を目安にした構成の機体です。
 summary: 知り合いが作った CoreXY の 3D プリンターを譲り受け、手を入れている機体。
 status: 進行中
 updated: 2026-09-01

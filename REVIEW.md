@@ -24,7 +24,7 @@ This repository is public and so are review comments. Never write the owner's re
 - Effects: a new or changed effect has a row in the effects ledger (`site/src/scene/README.md`) with its reduced-motion / no-WebGL fallback and budget. Reduced motion and no WebGL must not request three.js or the bead.
 - Performance: nothing new in the initial page of the top page or reading pages that is large or render-blocking (full Fontsource CSS, eager three.js, unsized images).
 - Colours: v3 tokens only, defined for both themes; `--bg` / `--fg` / `--accent` aliases kept.
-- Typography: headlines weight 300 ending with a full stop; Japanese headlines break only between `.phrases` spans; bold only for the wordmark and the top h1.
+- Typography: headlines weight 300 ending with a full stop; Japanese headlines break only between `.phrases` spans; bold only for the wordmark and the top h1; inline `strong` in prose is 500.
 - Pages: one h1, `lang` set, ja/en paths mapped in `site/src/i18n/ui.ts` when a page has both.
 - Tests: a behaviour change in `site/functions/` or `site/scripts/` comes with a unit test or a stated reason why not.
 

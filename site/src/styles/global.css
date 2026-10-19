@@ -305,6 +305,11 @@ a:hover {
   max-width: var(--measure);
 }
 
+.prose strong,
+.prose b {
+  font-weight: 500;
+}
+
 .prose > * + * {
   margin-top: 1.25em;
 }

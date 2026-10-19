@@ -232,3 +232,19 @@ test('rss.xml is a valid feed and updates.json holds ISO dates', async ({ reques
     expect(value).toMatch(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/);
   }
 });
+
+test('full Zen Kaku Gothic New stylesheet for CMS posts: every url() is a copied woff2', async ({ request }) => {
+  // The /log/ shell names it for the post Function (functions/log/p/[slug].js)
+  const shell = await (await request.get('/log/')).text();
+  const href = /<template data-cms-font="([^"]+)"/.exec(shell)?.[1];
+  expect(href).toMatch(/^\/assets\/fonts\/zen-[0-9a-f]{10}\/full\.css$/);
+  const res = await request.get(href);
+  expect(res.ok()).toBe(true);
+  const css = await res.text();
+  for (const w of [300, 400, 500]) expect(css).toContain(`font-weight: ${w}`);
+  const urls = [...css.matchAll(/url\(\.\/(files\/[^)]+)\)/g)].map((m) => m[1]);
+  expect(urls.length).toBeGreaterThan(100);
+  expect(css).not.toMatch(/\.woff\)/);
+  const base = href.replace(/full\.css$/, '');
+  for (const u of new Set(urls)) expect((await request.head(base + u)).ok(), u).toBe(true);
+});

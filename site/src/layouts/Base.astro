@@ -21,6 +21,8 @@ interface Props {
    * WebSite object automatically. Never include a Person, author or any name.
    */
   jsonLd?: object | object[];
+  /** Versioned path of the full font for CMS posts; /log/ passes it, the post Function turns it into a stylesheet link */
+  cmsFont?: string;
 }
 
 const lang = langOf(Astro.url.pathname);
@@ -33,6 +35,7 @@ const {
   noCanonical = false,
   ogType = 'website',
   jsonLd,
+  cmsFont,
 } = Astro.props;
 
 const siteName = 'yunoxia';
@@ -112,6 +115,7 @@ const structured = [
         document.documentElement.dataset.theme = theme;
       })();
     </script>
+    {cmsFont && <template data-cms-font={cmsFont}></template>}
   </head>
   <body>
     <a class="skip" href="#main">{t.skip}</a>

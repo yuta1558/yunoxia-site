@@ -1,12 +1,14 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+// Where scripts/font-subsets.mjs put the full font for CMS posts (the post Function reads this marker)
+import { cmsFont } from '../../styles/fonts.generated.json';
 
 const logs = (await getCollection('log')).sort((a, b) => +b.data.date - +a.data.date);
 const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '.');
 ---
 
-<Base title="Log" description="制作と研究の進み具合の記録。作っているものの途中経過と、そのとき考えたことを日付の新しい順に残しています。RSS でも読めます。">
+<Base title="Log" cmsFont={cmsFont} description="制作と研究の進み具合の記録。作っているものの途中経過と、そのとき考えたことを日付の新しい順に残しています。RSS でも読めます。">
   <section class="wrap page">
     <p class="eyebrow">Log</p>
     <h1 class="page-title phrases"><span>進み具合の</span><span>記録。</span></h1>
