@@ -17,7 +17,7 @@ const now = Date.now();
 ---
 
 <ul class="cards">
-  {works.map((w, k) => {
+  {works.map((w) => {
     return (
       <li>
         <a class="card" href={localPath(lang, `/works/${w.id}/`)}>
@@ -25,7 +25,7 @@ const now = Date.now();
             <span class="title" data-badge>{w.data.title}</span>
             <span class="plus" aria-hidden="true">+</span>
           </span>
-          <WorkArt id={w.id} cover={w.data.cover} coverAlt={w.data.coverAlt} index={k} />
+          <WorkArt id={w.id} cover={w.data.cover} coverAlt={w.data.coverAlt} />
           <span class="foot">
             <span class="line">{w.data.summary}</span>
             <span class:list={['meta', { fresh: now - +w.data.updated < FRESH_MS }]}>
