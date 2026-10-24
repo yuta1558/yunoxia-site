@@ -3,7 +3,7 @@
 # so the result never depends on how overlapping rules merge.
 
 /*
-  Strict-Transport-Security: max-age=86400
+  Strict-Transport-Security: max-age=86400; includeSubDomains
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

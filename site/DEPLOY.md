@@ -52,7 +52,7 @@ CMS のバインディングがまだなら、`/api/posts` は 503 を返す。`
    - Browser Cache TTL は「既存のヘッダーを優先」のまま
 5. 切り戻し：問題があれば、Custom domains を新しいプロジェクトから外し、今のプロジェクトに戻す。DNS は Cloudflare 内で完結するので、数分で戻る。
 
-HSTS は付け替えとは別に段階的に入れる（1 日 → 1 か月 → 1 年）。段階 1（`max-age=86400`、1 日）は 2026-10-19 に開始した（`public/_headers` の `/*`、includeSubDomains と preload なし）。段階 2（1 か月）と段階 3（1 年）は、それぞれ別の変更として `max-age` を上げる。
+HSTS は付け替えとは別に段階的に入れる（1 日 → 1 か月 → 1 年）。段階 1（`max-age=86400`、1 日）は 2026-10-19 に開始した（`public/_headers` の `/*`、preload なし）。2026-10-22 に `includeSubDomains` を加えた（www は HTTPS で apex へ 301 を返し、ほかに応答するサブドメインはない）。段階 2（1 か月）と段階 3（1 年）は、それぞれ別の変更として `max-age` を上げる。
 
 ## 4. CMS（ブログ）
 
